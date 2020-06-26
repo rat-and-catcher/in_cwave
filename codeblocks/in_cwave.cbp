@@ -1,0 +1,117 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes" ?>
+<CodeBlocks_project_file>
+	<FileVersion major="1" minor="6" />
+	<Project>
+		<Option title="in_cwave" />
+		<Option pch_mode="2" />
+		<Option compiler="gcc" />
+		<Build>
+			<Target title="Debug">
+				<Option output="Debug/in_cwave" prefix_auto="1" extension_auto="1" />
+				<Option object_output="in_cwave/Debug/obj/" />
+				<Option type="3" />
+				<Option compiler="gcc" />
+				<Option createDefFile="1" />
+				<Option createStaticLib="1" />
+				<Compiler>
+					<Add option="-Wall" />
+					<Add option="-g" />
+					<Add option="-DBUILD_DLL" />
+				</Compiler>
+				<Linker>
+					<Add library="user32" />
+					<Add library="comctl32" />
+					<Add library="ole32" />
+				</Linker>
+			</Target>
+			<Target title="Release">
+				<Option output="Release/in_cwave" prefix_auto="1" extension_auto="1" />
+				<Option object_output="in_cwave/Release/obj/" />
+				<Option type="3" />
+				<Option compiler="gcc" />
+				<Option createDefFile="1" />
+				<Option createStaticLib="1" />
+				<Compiler>
+					<Add option="-O3" />
+					<Add option="-Wall" />
+					<Add option="-DBUILD_DLL" />
+				</Compiler>
+				<Linker>
+					<Add option="-s" />
+					<Add library="user32" />
+					<Add library="comctl32" />
+					<Add library="ole32" />
+				</Linker>
+			</Target>
+		</Build>
+		<Unit filename="../src/adv_modulator.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="../src/amod_gui_control.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="../src/cmalloc.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="../src/cmalloc.h" />
+		<Unit filename="../src/compatibility/compat_gcc.h" />
+		<Unit filename="../src/compatibility/compat_win32_gcc.h" />
+		<Unit filename="../src/config.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="../src/crc32.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="../src/crc32.h" />
+		<Unit filename="../src/cwave.h" />
+		<Unit filename="../src/fp_check.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="../src/fp_check.h" />
+		<Unit filename="../src/gui_cwave.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="../src/hblpf.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="../src/hblpf.h" />
+		<Unit filename="../src/hcontrols.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="../src/hcontrols.h" />
+		<Unit filename="../src/in_cwave.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="../src/in_cwave.h" />
+		<Unit filename="../src/in_cwave.rc">
+			<Option compilerVar="WINDRES" />
+		</Unit>
+		<Unit filename="../src/lpf_hilbert_quad.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="../src/lpf_hilbert_quad.h" />
+		<Unit filename="../src/mersene_twister/mt_jrnd.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="../src/mersene_twister/mt_jrnd.h" />
+		<Unit filename="../src/playback.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="../src/resource.h" />
+		<Unit filename="../src/sound_render.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="../src/sound_render.h" />
+		<Unit filename="../src/transcode.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="../src/xwave_reader.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Extensions>
+			<code_completion />
+			<envvars />
+			<debugger />
+		</Extensions>
+	</Project>
+</CodeBlocks_project_file>

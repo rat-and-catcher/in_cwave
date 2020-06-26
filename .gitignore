@@ -1,0 +1,31 @@
+# Ignore general build results
+*.exe
+*.dll
+*.lib
+*.obj
+*.res
+*.[ao]
+*.def
+*.pdb
+*.exp
+**/Release/
+**/Debug/
+*.log
+*.tlog
+**/*.log/
+# Ignore IDE profiles
+*.user
+*.suo
+*.sdf
+*.aps
+*.db
+**/.vs/
+*.layout
+# Documentation
+*.docx
+!in_cwave.docx
+# Code::Blocks tails
+**/codeblocks/in_cwave/
+**/codeblocks/test_mt_jrnd/
+# Version control
+**/.svn/

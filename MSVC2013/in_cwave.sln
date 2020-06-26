@@ -1,0 +1,28 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 2013
+VisualStudioVersion = 12.0.40629.0
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "in_cwave", "in_cwave.vcxproj", "{0B9570C7-FDFA-44E7-9AD2-1ED2CF3A2A4F}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "test_mt_jrnd", "test_mt_jrnd.vcxproj", "{652BF2C9-A1A2-4DBB-A151-28A8DF8F0EE9}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Win32 = Debug|Win32
+		Release|Win32 = Release|Win32
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{0B9570C7-FDFA-44E7-9AD2-1ED2CF3A2A4F}.Debug|Win32.ActiveCfg = Debug|Win32
+		{0B9570C7-FDFA-44E7-9AD2-1ED2CF3A2A4F}.Debug|Win32.Build.0 = Debug|Win32
+		{0B9570C7-FDFA-44E7-9AD2-1ED2CF3A2A4F}.Release|Win32.ActiveCfg = Release|Win32
+		{0B9570C7-FDFA-44E7-9AD2-1ED2CF3A2A4F}.Release|Win32.Build.0 = Release|Win32
+		{652BF2C9-A1A2-4DBB-A151-28A8DF8F0EE9}.Debug|Win32.ActiveCfg = Debug|Win32
+		{652BF2C9-A1A2-4DBB-A151-28A8DF8F0EE9}.Debug|Win32.Build.0 = Debug|Win32
+		{652BF2C9-A1A2-4DBB-A151-28A8DF8F0EE9}.Release|Win32.ActiveCfg = Release|Win32
+		{652BF2C9-A1A2-4DBB-A151-28A8DF8F0EE9}.Release|Win32.Build.0 = Release|Win32
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal

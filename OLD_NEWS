@@ -1,0 +1,39 @@
+The V1.*.* (Unpublic!) History:
+--- ------ ----------- --------
+17.07.2010 -- V1.0.0 -- first workable code, single .c file; no any setup
+18.07.2010 -- V1.0.1 -- Setup and File info dialogs, capability to call setup
+        via ALT+3, pseudo real time setup tune (with possible clicks); keep module
+        in one file and add GUI .c/.h files to continue development.
+25.07.2010 -- V1.0.2 -- add support for CWAVE 'HCW_FMT_PCM_INT16_FLT32' format,
+        support CWAVE V2
+21.10.2010 -- V1.0.3 -- add support for CWAVE 'HCW_FMT_PCM_FLT32' format.
+27.10.2010 -- V1.0.4 -- Add phase modulation output type.
+03.11.2010 -- V1.0.5 -- Add support files > 2GB
+15.11.2010 -- V1.1.0 -- Advanced playback!! Load / Save not implemented yet.
+        Linear scale for "Gain". So, need lots of work.
+11.01.2012 -- V1.1.1 -- VC2010; some fixes in bad English; WRITE_RAW, NULL
+        parent window for ALT-3 fake control; HAS_ATAN_PM and more good PM computation
+        fixes in File Info dialog (2 goto!!); set_output_plug() & Ko -- for clear
+        unused inout[] (exclude DC value in free variables).
+13.04.2012 -- V1.1.2 -- sign_lock_shift; avoid blinking clip indicators.
+11.02.2015 -- V1.1.3 -- change logic of sign_lock_shift and synch bypass controls by
+        'lock' states.
+02.03.2015 -- V1.1.3.2 -- move to MSVS2013.
+26.08.2015 -- V1.1.4 -- move to init() `frame = 0`; fix possible zerodivide in getlength().
+08.09.2015 -- V1.2.0 -- add "PM Phase (int)" PM's parameter; small advanced dialog fixes;
+        change some initial default values (Old "Angle" now call "Phase (int)"; "angle" now
+        call "Angle (ext)" Shizoidly, but all of this is completely experimental).
+19.09.2015 -- V1.3.0 -- Add transcode.c using winamp wavpack in_wv as template; some
+        minor correctios throw the all code for ability to use in_cwave routines
+        for transcoder.
+30.06.2016 -- V1.3.1 -- Minor texts fixes, block multiply running 'config()'
+        (for XMPlay Player)
+01.07.2016 -- V1.4.0 -- Add 24-bits decoding. (Native WinAmp transcoding to FLAC don't
+        correctly convert; WAV works). 24 bits set to default.
+12.07.2016 -- V1.4.1 -- different frame counters for playback and transcode; show/clear
+        frame counters via advanced setup dialog; remove some unsafe statics in functions;
+        inout[]'s now different too - one for playback and one for transcode.
+13.08.2016 -- V1.5.0 -- completely new design; lots of old code removed; lots of new code
+        added. WAV/RWAVE support (embedded Hilbert). Now possible to combine playback and
+        transcode.
+        == In some point this became V2.0.0 ==

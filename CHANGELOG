@@ -1,0 +1,30 @@
+in_cwave V1.*.* (Unpublic!) Versions History -- see OLD_NEWS
+
+25-Sep-2016 -- V2.0.0 -- The first V2.0.0 Release. Changes from V1.5.0:
+        Shift / Harmonic PM / Mix / Master DSP Node types.
+        "Bugs control" window as in V1.5.0 (WAV/RWAVE support, save config
+        on unload, Sleep() on playback timing).
+        1-st touch to unstableness of standard Noise Shaping loop.
+        +Dithering, +Noise Shaping (F-w, mE-w, iE-w); +Quantize type;
+        -unused Load/Save buttoms. BSD-Like license. Comments slightly fixed;
+        +Corosschannel exchange, +Spectrum inversion (old configs incompatible now!);
+        +Setting exact values for modulation parameters;
+        (== NOW WE HAVE ALGORITHMICALLY FULL MODULATOR);
+        +controlled 'long numbers' in setup dialog;
+        +versioning of config (weak solution, but better than nothing) and "About";
+        lots of small improvements in different places; the code in general
+        looks rather ugly, but less ugly than in V1.4.*-.
+        OLD_NEWS and CHANGELOG files.
+        Move VC2013 projects files to ./MSVC2013
+        +CodeBlocks projects (MinGW GCC 4.9.2) +corresponding compatibility .h-files.
+19-May-2017 -- V2.1.0 - FOUND FATAL BUG IN PHASE COMPUTATION -- ONLY INTEGER Fm WORK!!
+        Temporary fix it. Replace all <TABS> to spaces in src/*.
+15-May-2020 -- V2.2.0 - Add optional floating point checks for all of the IIR filters and
+        sound rendering computations;
+        Lots of Shibata's noise shapers added (now all known 14 FIR-based shapers total);
+        Some IIR NS filters (44K and 48K Gesemann);
+        Small fix in xwave_read_samples()@xwave_reader.c and some very small fixes.
+09-Jun-2020 -- V2.2.1 - fix bug @ xwave_reader.c -- fail/crash on wav-files with
+        metadata between 'fmt ' and 'data'.
+27-Jun-2020 -- V2.2.2 - more clean reading audiodata samples; some small fixes;
+        attempt to cleanup the comments (generally unsuccessful). Update doc.
