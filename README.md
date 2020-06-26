@@ -17,7 +17,7 @@ and mixing, as well as some stereo channels and signal component operations.
 setup the plugin completely controls all data path from the file data samples
 (complex- or real-valued) to selected in player system audio-interface.
 
-For effective use, please read documentation carefully. _Note, that while ypu
+For effective use, please read documentation carefully. _Note, that while you
 not make basic setup of the DSP-list, you don't hear any sound. At all._
 
 The project has started in 2010 as "2-hour-to-complete" experimental code.
