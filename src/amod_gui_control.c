@@ -4,7 +4,7 @@
  *      amod_gui_control.c -- advanced modulator GUI setup
  *      (this file is "add-in" to gui_cwave.c)
  *
- * Copyright (c) 2010-2020, Rat and Catcher Technologies
+ * Copyright (c) 2010-2021, Rat and Catcher Technologies
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -64,6 +64,8 @@ typedef struct tagAMOD_GUI_CONTEXT
  unsigned snfr_trans;                   // transcode sample counter
  unsigned sl_cnt;                       // clips counter -- left channel
  unsigned sr_cnt;                       // clips counter -- left channel
+ double sl_peak;                        // peak value -- left channel
+ double sr_peak;                        // peak value -- right channel
  // the shown values of the FP exception counters
  FP_EXCEPT_STATS fec_hilb_left;         // all Hilberts -- left channel
  FP_EXCEPT_STATS fec_hilb_right;        // all Hilberts -- right channel
@@ -258,10 +260,11 @@ static __inline int hdlbar_gain(HWND hwnd, HWND hwctl, AMOD_GUI_CONTEXT *agc)
  // left channel
  if(GetDlgItem(hwnd, IDC_GAINL) == hwctl)
  {
-  agc -> lCur -> l_gain = ((double)TB_GetTrack(hwnd, IDC_GAINL)) / 100.0;
+  adbl_copy(&(agc -> lCur -> l_gain), ((double)TB_GetTrack(hwnd, IDC_GAINL)) / 100.0);
   if(agc -> lCur -> lock_gain)
   {
-   updbar_gain(hwnd, agc -> lCur -> r_gain = agc -> lCur -> l_gain, IDC_GAINR);
+   adbl_copy(&(agc -> lCur -> r_gain), agc -> lCur -> l_gain);
+   updbar_gain(hwnd, agc -> lCur -> r_gain, IDC_GAINR);
   }
   updtxt_gain(hwnd, agc -> lCur -> l_gain, agc -> lCur -> r_gain);
   return 1;                                     // handled
@@ -269,7 +272,7 @@ static __inline int hdlbar_gain(HWND hwnd, HWND hwctl, AMOD_GUI_CONTEXT *agc)
  // right channel
  if(!agc -> lCur -> lock_gain && GetDlgItem(hwnd, IDC_GAINR) == hwctl)
  {
-  agc -> lCur -> r_gain = ((double)TB_GetTrack(hwnd, IDC_GAINR)) / 100.0;
+  adbl_copy(&(agc -> lCur -> r_gain), ((double)TB_GetTrack(hwnd, IDC_GAINR)) / 100.0);
   updtxt_gain(hwnd, agc -> lCur -> l_gain, agc -> lCur -> r_gain);
   return 1;                                     // handled
  }
@@ -280,16 +283,16 @@ static __inline int hdlbar_fshift(HWND hwnd, HWND hwctl, AMOD_GUI_CONTEXT *agc)
  // left channel
  if(GetDlgItem(hwnd, IDC_FSHIFTL) == hwctl)
  {
-  agc -> lCur -> dsp.mk_shift.le.fr_shift =
-        ((double)TB_GetTrack(hwnd, IDC_FSHIFTL)) / 10.0 - MAX_FSHIFT;
+  adbl_copy(&(agc -> lCur -> dsp.mk_shift.le.fr_shift),
+        ((double)TB_GetTrack(hwnd, IDC_FSHIFTL)) / 10.0 - MAX_FSHIFT);
   if(agc -> lCur -> dsp.mk_shift.lock_shift)
   {
-   updbar_fshift(hwnd,
-        agc -> lCur -> dsp.mk_shift.ri.fr_shift = agc -> lCur -> dsp.mk_shift.sign_lock_shift?
+   adbl_copy(&(agc -> lCur -> dsp.mk_shift.ri.fr_shift),
+        agc -> lCur -> dsp.mk_shift.sign_lock_shift?
                 -agc -> lCur -> dsp.mk_shift.le.fr_shift
                 :
-                agc -> lCur -> dsp.mk_shift.le.fr_shift,
-        IDC_FSHIFTR);
+                agc -> lCur -> dsp.mk_shift.le.fr_shift);
+   updbar_fshift(hwnd, agc -> lCur -> dsp.mk_shift.ri.fr_shift, IDC_FSHIFTR);
   }
   updtxt_fshift(hwnd,
         agc -> lCur -> dsp.mk_shift.le.fr_shift, agc -> lCur -> dsp.mk_shift.ri.fr_shift);
@@ -298,8 +301,8 @@ static __inline int hdlbar_fshift(HWND hwnd, HWND hwctl, AMOD_GUI_CONTEXT *agc)
  // right channel
  if(!agc -> lCur -> dsp.mk_shift.lock_shift && GetDlgItem(hwnd, IDC_FSHIFTR) == hwctl)
  {
-  agc -> lCur -> dsp.mk_shift.ri.fr_shift =
-        ((double)TB_GetTrack(hwnd, IDC_FSHIFTR)) / 10.0 - MAX_FSHIFT;
+  adbl_copy(&(agc -> lCur -> dsp.mk_shift.ri.fr_shift),
+        ((double)TB_GetTrack(hwnd, IDC_FSHIFTR)) / 10.0 - MAX_FSHIFT);
   updtxt_fshift(hwnd,
         agc -> lCur -> dsp.mk_shift.le.fr_shift, agc -> lCur -> dsp.mk_shift.ri.fr_shift);
   return 1;                                     // handled
@@ -311,13 +314,12 @@ static __inline int hdlbar_pmfreq(HWND hwnd, HWND hwctl, AMOD_GUI_CONTEXT *agc)
  // left channel
  if(GetDlgItem(hwnd, IDC_PMFRL) == hwctl)
  {
-  agc -> lCur -> dsp.mk_pm.le.freq =
-        ((double)TB_GetTrack(hwnd, IDC_PMFRL)) / 10.0;
+  adbl_copy(&(agc -> lCur -> dsp.mk_pm.le.freq),
+        ((double)TB_GetTrack(hwnd, IDC_PMFRL)) / 10.0);
  if(agc -> lCur -> dsp.mk_pm.lock_freq)
  {
-  updbar_pmfreq(hwnd,
-        agc -> lCur -> dsp.mk_pm.ri.freq = agc -> lCur -> dsp.mk_pm.le.freq,
-        IDC_PMFRR);
+  adbl_copy(&(agc -> lCur -> dsp.mk_pm.ri.freq), agc -> lCur -> dsp.mk_pm.le.freq);
+  updbar_pmfreq(hwnd, agc -> lCur -> dsp.mk_pm.ri.freq, IDC_PMFRR);
  }
  updtxt_pmfreq(hwnd,
         agc -> lCur -> dsp.mk_pm.le.freq, agc -> lCur -> dsp.mk_pm.ri.freq);
@@ -326,8 +328,8 @@ static __inline int hdlbar_pmfreq(HWND hwnd, HWND hwctl, AMOD_GUI_CONTEXT *agc)
  // right channel
  if(!agc -> lCur -> dsp.mk_pm.lock_freq && GetDlgItem(hwnd, IDC_PMFRR) == hwctl)
  {
-  agc -> lCur -> dsp.mk_pm.ri.freq =
-        ((double)TB_GetTrack(hwnd, IDC_PMFRR)) / 10.0;
+  adbl_copy(&(agc -> lCur -> dsp.mk_pm.ri.freq),
+        ((double)TB_GetTrack(hwnd, IDC_PMFRR)) / 10.0);
   updtxt_pmfreq(hwnd,
         agc -> lCur -> dsp.mk_pm.le.freq, agc -> lCur -> dsp.mk_pm.ri.freq);
   return 1;                                     // handled
@@ -339,13 +341,12 @@ static __inline int hdlbar_pmphase(HWND hwnd, HWND hwctl, AMOD_GUI_CONTEXT *agc)
  // left channel
  if(GetDlgItem(hwnd, IDC_PMIPHL) == hwctl)
  {
-  agc -> lCur -> dsp.mk_pm.le.phase =
-        ((double)TB_GetTrack(hwnd, IDC_PMIPHL)) / 100.0 - MAX_PMPHASE;
+  adbl_copy(&(agc -> lCur -> dsp.mk_pm.le.phase),
+        ((double)TB_GetTrack(hwnd, IDC_PMIPHL)) / 100.0 - MAX_PMPHASE);
   if(agc -> lCur -> dsp.mk_pm.lock_phase)
   {
-   updbar_pmphase(hwnd,
-        agc -> lCur -> dsp.mk_pm.ri.phase = agc -> lCur -> dsp.mk_pm.le.phase,
-        IDC_PMIPHR);
+   adbl_copy(&(agc -> lCur -> dsp.mk_pm.ri.phase), agc -> lCur -> dsp.mk_pm.le.phase);
+   updbar_pmphase(hwnd, agc -> lCur -> dsp.mk_pm.ri.phase, IDC_PMIPHR);
   }
   updtxt_pmphase(hwnd,
         agc -> lCur -> dsp.mk_pm.le.phase, agc -> lCur -> dsp.mk_pm.ri.phase);
@@ -354,8 +355,8 @@ static __inline int hdlbar_pmphase(HWND hwnd, HWND hwctl, AMOD_GUI_CONTEXT *agc)
  // right channel
  if(!agc -> lCur -> dsp.mk_pm.lock_phase && GetDlgItem(hwnd, IDC_PMIPHR) == hwctl)
  {
- agc ->  lCur -> dsp.mk_pm.ri.phase =
-        ((double)TB_GetTrack(hwnd, IDC_PMIPHR)) / 100.0 - MAX_PMPHASE;
+  adbl_copy(&(agc ->  lCur -> dsp.mk_pm.ri.phase),
+        ((double)TB_GetTrack(hwnd, IDC_PMIPHR)) / 100.0 - MAX_PMPHASE);
   updtxt_pmphase(hwnd,
         agc -> lCur -> dsp.mk_pm.le.phase, agc -> lCur -> dsp.mk_pm.ri.phase);
   return 1;                                     // handled
@@ -367,13 +368,12 @@ static __inline int hdlbar_pmlevel(HWND hwnd, HWND hwctl, AMOD_GUI_CONTEXT *agc)
  // left channel
  if(GetDlgItem(hwnd, IDC_PMLEVL) == hwctl)
  {
-  agc -> lCur -> dsp.mk_pm.le.level =
-        ((double)TB_GetTrack(hwnd, IDC_PMLEVL)) / 100.0;
+  adbl_copy(&(agc -> lCur -> dsp.mk_pm.le.level),
+        ((double)TB_GetTrack(hwnd, IDC_PMLEVL)) / 100.0);
   if(agc -> lCur -> dsp.mk_pm.lock_level)
   {
-   updbar_pmlevel(hwnd,
-        agc -> lCur -> dsp.mk_pm.ri.level = agc -> lCur -> dsp.mk_pm.le.level,
-        IDC_PMLEVR);
+   adbl_copy(&(agc -> lCur -> dsp.mk_pm.ri.level), agc -> lCur -> dsp.mk_pm.le.level);
+   updbar_pmlevel(hwnd, agc -> lCur -> dsp.mk_pm.ri.level, IDC_PMLEVR);
   }
   updtxt_pmlevel(hwnd,
         agc -> lCur -> dsp.mk_pm.le.level, agc -> lCur -> dsp.mk_pm.ri.level);
@@ -382,8 +382,8 @@ static __inline int hdlbar_pmlevel(HWND hwnd, HWND hwctl, AMOD_GUI_CONTEXT *agc)
  // right channel
  if(!agc -> lCur -> dsp.mk_pm.lock_level && GetDlgItem(hwnd, IDC_PMLEVR) == hwctl)
  {
-  agc -> lCur -> dsp.mk_pm.ri.level =
-        ((double)TB_GetTrack(hwnd, IDC_PMLEVR)) / 100.0;
+  adbl_copy(&(agc -> lCur -> dsp.mk_pm.ri.level),
+        ((double)TB_GetTrack(hwnd, IDC_PMLEVR)) / 100.0);
   updtxt_pmlevel(hwnd,
         agc -> lCur -> dsp.mk_pm.le.level, agc -> lCur -> dsp.mk_pm.ri.level);
   return 1;                                     // handled
@@ -395,13 +395,12 @@ static __inline int hdlbar_pmangle(HWND hwnd, HWND hwctl, AMOD_GUI_CONTEXT *agc)
  // left channel
  if(GetDlgItem(hwnd, IDC_PMANGL) == hwctl)
  {
-  agc -> lCur -> dsp.mk_pm.le.angle =
-        ((double)TB_GetTrack(hwnd, IDC_PMANGL)) / 100.0 - MAX_PMANGLE;
+  adbl_copy(&(agc -> lCur -> dsp.mk_pm.le.angle),
+        ((double)TB_GetTrack(hwnd, IDC_PMANGL)) / 100.0 - MAX_PMANGLE);
   if(agc -> lCur -> dsp.mk_pm.lock_angle)
   {
-   updbar_pmangle(hwnd,
-        agc -> lCur -> dsp.mk_pm.ri.angle = agc -> lCur -> dsp.mk_pm.le.angle,
-        IDC_PMANGR);
+   adbl_copy(&(agc -> lCur -> dsp.mk_pm.ri.angle), agc -> lCur -> dsp.mk_pm.le.angle);
+   updbar_pmangle(hwnd, agc -> lCur -> dsp.mk_pm.ri.angle, IDC_PMANGR);
   }
   updtxt_pmangle(hwnd,
         agc -> lCur -> dsp.mk_pm.le.angle, agc -> lCur -> dsp.mk_pm.ri.angle);
@@ -410,8 +409,8 @@ static __inline int hdlbar_pmangle(HWND hwnd, HWND hwctl, AMOD_GUI_CONTEXT *agc)
  // right channel
  if(!agc -> lCur -> dsp.mk_pm.lock_angle && GetDlgItem(hwnd, IDC_PMANGR) == hwctl)
  {
-  agc -> lCur -> dsp.mk_pm.ri.angle =
-        ((double)TB_GetTrack(hwnd, IDC_PMANGR)) / 100.0 - MAX_PMANGLE;
+  adbl_copy(&(agc -> lCur -> dsp.mk_pm.ri.angle),
+        ((double)TB_GetTrack(hwnd, IDC_PMANGR)) / 100.0 - MAX_PMANGLE);
   updtxt_pmangle(hwnd,
         agc -> lCur -> dsp.mk_pm.le.angle, agc -> lCur -> dsp.mk_pm.ri.angle);
   return 1;                                     // handled
@@ -424,7 +423,7 @@ static __inline int hdlbar_pmangle(HWND hwnd, HWND hwctl, AMOD_GUI_CONTEXT *agc)
 static void set_exact_value(HWND hwnd,
         int id_par_slider, int id_mirror_slider, int is_mirror_lock,
         int mirror_mirror, // 0==parameter; 1==mirror only; -1==neg. mirror
-        const TCHAR *title, volatile double *par_val, volatile double *mirror_val,
+        const TCHAR *title, DBL_VOLATILE double *par_val, DBL_VOLATILE double *mirror_val,
         double min_val, double max_val,
         UPDBAR_VAL updbar_val, UPDTXT_VAL updtxt_val, AMOD_GUI_CONTEXT *agc)
 {
@@ -446,11 +445,12 @@ static void set_exact_value(HWND hwnd,
         && neval >= min_val
         && neval <= max_val)
  {
-  (*updbar_val)(hwnd, *(mirror_mirror > 0? mirror_val : par_val) = neval, id_val);
+  adbl_copy(mirror_mirror > 0? mirror_val : par_val, neval);
+  (*updbar_val)(hwnd, neval, id_val);
 
   if(is_mirror_lock)
   {
-   *mirror_val = mirror_mirror < 0? -(*par_val) : *par_val;
+   adbl_copy(mirror_val, mirror_mirror < 0? -(*par_val) : *par_val);
    (*updbar_val)(hwnd, *mirror_val, id_mirror_slider);
   }
 
@@ -519,6 +519,16 @@ static void updtxt_quantize_type(HWND hwnd, unsigned ix)
 {
  SetWindowText(GetDlgItem(hwnd, IDB_QUANTIZE),
         ix <= SND_QUANTZ_MAX? sound_render_get_quantznames()[ix] : _T("???"));
+}
+
+/* update text according to global bypass DSP-list flag
+*/
+static void updtxt_bypass_list_flag(HWND hwnd)
+{
+ BOOL is_bypass = amod_get_bypass_list_flag();
+
+ SetWindowText(GetDlgItem(hwnd, IDC_BYPASS_LIST),
+    is_bypass? _T("-!- DSP LIST BYPASSED -!-") : _T("Bypass DSP-list"));
 }
 
 /* update controls according selected DSP-node
@@ -788,17 +798,54 @@ static void ShowCounters(HWND hwnd,
   TXT_PrintTxt(hwnd, IDS_NFR_TRANS, _T("%u"), agc -> snfr_trans = the.mc_transcode.n_frame);
 }
 
-/* show/reset clips indicators
+/* show/reset clips / peaks indicators
 */
-static void ShowClips(HWND hwnd, BOOL isReset, BOOL isRedraw, AMOD_GUI_CONTEXT *agc)
+static void ShowClipsPeaks(HWND hwnd, BOOL isReset, BOOL isRedraw, AMOD_GUI_CONTEXT *agc)
 {
  unsigned lc, rc;
+ double lpv, rpv;
 
- amod_get_clips(&lc, &rc, isReset);
- if((agc -> sl_cnt != lc) || isRedraw)
-  TXT_PrintTxt(hwnd, IDS_CLIPSL, _T("%lu"), agc -> sl_cnt = lc);
- if((agc -> sr_cnt != rc) || isRedraw)
-  TXT_PrintTxt(hwnd, IDS_CLIPSR, _T("%lu"), agc -> sr_cnt = rc);
+ amod_get_clips_peaks(&lc, &rc, &lpv, &rpv, isReset);
+
+ if((agc -> sl_cnt != lc) || (agc -> sl_peak != lpv) || isRedraw)
+ {
+  if(sound_render_get_zero_db() == lpv)             // peak == -Inf?
+  {
+   TXT_PrintTxt(hwnd, IDS_CLIPSL, _T("%lu:-Inf"), lc);
+  }
+  else
+  {
+   TXT_PrintTxt(
+      hwnd
+    , IDS_CLIPSL
+    , _T("%lu:%c%.1f")
+    , lc
+    , lpv < 0.0? _T('-') : _T('+')
+    , fabs(lpv));
+  }
+  agc -> sl_cnt = lc;
+  agc -> sl_peak = lpv;
+ }
+
+ if((agc -> sr_cnt != rc) || (agc -> sr_peak != rpv) || isRedraw)
+ {
+  if(sound_render_get_zero_db() == rpv)             // peak == -Inf?
+  {
+   TXT_PrintTxt(hwnd, IDS_CLIPSR, _T("%lu:-Inf"), rc);
+  }
+  else
+  {
+   TXT_PrintTxt(
+      hwnd
+    , IDS_CLIPSR
+    , _T("%lu:%c%.1f")
+    , rc
+    , rpv < 0.0? _T('-') : _T('+')
+    , fabs(rpv));
+  }
+  agc -> sr_cnt = rc;
+  agc -> sr_peak = rpv;
+ }
 }
 
 /* update FP exception counters -- there is no common reset here
@@ -961,13 +1008,15 @@ static BOOL Setup_Dlg_OnInitDialog(HWND hwnd, HWND hwndFocus, LPARAM lParam)
  setup_combobox(hwnd, IDL_NOISE_SHAPING, sound_render_get_nshapenames(), sr_vcfg.nshape_type);
 
  // common window state
- CheckDlgButton(hwnd, IDC_LONG_NO,   the.cfg.show_long_numbers? BST_CHECKED : BST_UNCHECKED);
- CheckDlgButton(hwnd, IDC_ADV24BITS, the.cfg.need24bits       ? BST_CHECKED : BST_UNCHECKED);
- CheckDlgButton(hwnd, IDC_SHOWPLAY,  getShowPlay()            ? BST_CHECKED : BST_UNCHECKED);
- CheckDlgButton(hwnd, IDC_SEXCP,     the.cfg.is_fp_check      ? BST_CHECKED : BST_UNCHECKED);
+ CheckDlgButton(hwnd, IDC_BYPASS_LIST, amod_get_bypass_list_flag()? BST_CHECKED : BST_UNCHECKED);
+ updtxt_bypass_list_flag(hwnd);
+ CheckDlgButton(hwnd, IDC_LONG_NO,     the.cfg.show_long_numbers  ? BST_CHECKED : BST_UNCHECKED);
+ CheckDlgButton(hwnd, IDC_ADV24BITS,   the.cfg.need24bits         ? BST_CHECKED : BST_UNCHECKED);
+ CheckDlgButton(hwnd, IDC_SHOWPLAY,    getShowPlay()              ? BST_CHECKED : BST_UNCHECKED);
+ CheckDlgButton(hwnd, IDC_SEXCP,       the.cfg.is_fp_check        ? BST_CHECKED : BST_UNCHECKED);
 
  ShowCounters(hwnd, FALSE, FALSE, TRUE, agc);
- ShowClips(hwnd, FALSE, TRUE, agc);
+ ShowClipsPeaks(hwnd, FALSE, TRUE, agc);
 
  ShowHideExceptions(hwnd, the.cfg.is_fp_check, agc);
  ShowFPExceptions(hwnd, the.cfg.is_fp_check, TRUE, agc);
@@ -1040,7 +1089,13 @@ static void Setup_Dlg_OnCommand(HWND hwnd, int id, HWND hwndCtl, UINT codeNotify
    UpdateControls(hwnd, agc);
    break;
 
-  // bypasses (here and latter we don't check lCur.mode -- we should trust the dialog logic)
+  // global DSP-list option(s)
+  case IDC_BYPASS_LIST:                 // DSP-list global bypass
+   amod_set_bypass_list_flag(!(BST_UNCHECKED == IsDlgButtonChecked(hwnd, IDC_BYPASS_LIST)));
+   updtxt_bypass_list_flag(hwnd);
+   break;
+
+  // "local" bypasses (here and latter we don't check lCur.mode -- we should trust the dialog logic)
   case IDC_FSHIFTL_BYPASS:              // bypass shift - left
    agc -> lCur -> dsp.mk_shift.le.is_shift =
         !(BST_CHECKED == IsDlgButtonChecked(hwnd, IDC_FSHIFTL_BYPASS));
@@ -1087,7 +1142,8 @@ static void Setup_Dlg_OnCommand(HWND hwnd, int id, HWND hwndCtl, UINT codeNotify
    EnDis(hwnd, IDB_GAINR, !agc -> lCur -> lock_gain);
    if(agc -> lCur -> lock_gain)
    {
-    updbar_gain(hwnd, agc -> lCur -> r_gain = agc -> lCur -> l_gain, IDC_GAINR);
+    adbl_copy(&(agc -> lCur -> r_gain), agc -> lCur -> l_gain);
+    updbar_gain(hwnd, agc -> lCur -> r_gain, IDC_GAINR);
     updtxt_gain(hwnd, agc -> lCur -> l_gain, agc -> lCur -> r_gain);
     updtxt_xiq (hwnd,
         agc -> lCur -> l_iq_invert,
@@ -1104,12 +1160,12 @@ static void Setup_Dlg_OnCommand(HWND hwnd, int id, HWND hwndCtl, UINT codeNotify
 
    if(agc -> lCur -> dsp.mk_shift.lock_shift)
    {
-    updbar_fshift(hwnd,
-        agc -> lCur -> dsp.mk_shift.ri.fr_shift = agc -> lCur -> dsp.mk_shift.sign_lock_shift?
+    adbl_copy(&(agc -> lCur -> dsp.mk_shift.ri.fr_shift),
+        agc -> lCur -> dsp.mk_shift.sign_lock_shift?
                 -agc -> lCur -> dsp.mk_shift.le.fr_shift
                 :
-                agc -> lCur -> dsp.mk_shift.le.fr_shift,
-        IDC_FSHIFTR);
+                agc -> lCur -> dsp.mk_shift.le.fr_shift);
+    updbar_fshift(hwnd, agc -> lCur -> dsp.mk_shift.ri.fr_shift, IDC_FSHIFTR);
     updtxt_fshift(hwnd, agc -> lCur -> dsp.mk_shift.le.fr_shift,
         agc -> lCur -> dsp.mk_shift.ri.fr_shift);
 
@@ -1138,8 +1194,8 @@ static void Setup_Dlg_OnCommand(HWND hwnd, int id, HWND hwndCtl, UINT codeNotify
 
    if(agc -> lCur -> dsp.mk_pm.lock_freq)
    {
-    updbar_pmfreq(hwnd,
-        agc -> lCur -> dsp.mk_pm.ri.freq = agc -> lCur -> dsp.mk_pm.le.freq, IDC_PMFRR);
+    adbl_copy(&(agc -> lCur -> dsp.mk_pm.ri.freq), agc -> lCur -> dsp.mk_pm.le.freq);
+    updbar_pmfreq(hwnd, agc -> lCur -> dsp.mk_pm.ri.freq, IDC_PMFRR);
     updtxt_pmfreq(hwnd, agc -> lCur -> dsp.mk_pm.le.freq, agc -> lCur -> dsp.mk_pm.ri.freq);
 
     CheckDlgButton(hwnd,                // also lock PM bypass
@@ -1158,8 +1214,8 @@ static void Setup_Dlg_OnCommand(HWND hwnd, int id, HWND hwndCtl, UINT codeNotify
    EnDis(hwnd, IDB_PMIPHR, !agc -> lCur -> dsp.mk_pm.lock_phase);
    if(agc -> lCur -> dsp.mk_pm.lock_phase)
    {
-    updbar_pmphase(hwnd,
-        agc -> lCur -> dsp.mk_pm.ri.phase = agc -> lCur -> dsp.mk_pm.le.phase, IDC_PMIPHR);
+    adbl_copy(&(agc -> lCur -> dsp.mk_pm.ri.phase), agc -> lCur -> dsp.mk_pm.le.phase);
+    updbar_pmphase(hwnd, agc -> lCur -> dsp.mk_pm.ri.phase, IDC_PMIPHR);
     updtxt_pmphase(hwnd, agc -> lCur -> dsp.mk_pm.le.phase, agc -> lCur -> dsp.mk_pm.ri.phase);
    }
    break;
@@ -1171,8 +1227,8 @@ static void Setup_Dlg_OnCommand(HWND hwnd, int id, HWND hwndCtl, UINT codeNotify
    EnDis(hwnd, IDB_PMLEVR, !agc -> lCur -> dsp.mk_pm.lock_level);
    if(agc -> lCur -> dsp.mk_pm.lock_level)
    {
-    updbar_pmlevel(hwnd,
-        agc -> lCur -> dsp.mk_pm.ri.level = agc -> lCur -> dsp.mk_pm.le.level, IDC_PMLEVR);
+    adbl_copy(&(agc -> lCur -> dsp.mk_pm.ri.level), agc -> lCur -> dsp.mk_pm.le.level);
+    updbar_pmlevel(hwnd, agc -> lCur -> dsp.mk_pm.ri.level, IDC_PMLEVR);
     updtxt_pmlevel(hwnd, agc -> lCur -> dsp.mk_pm.le.level, agc -> lCur -> dsp.mk_pm.ri.level);
    }
    break;
@@ -1184,8 +1240,8 @@ static void Setup_Dlg_OnCommand(HWND hwnd, int id, HWND hwndCtl, UINT codeNotify
    EnDis(hwnd, IDB_PMANGR, !agc -> lCur -> dsp.mk_pm.lock_angle);
    if(agc -> lCur -> dsp.mk_pm.lock_angle)
    {
-    updbar_pmangle(hwnd,
-        agc -> lCur -> dsp.mk_pm.ri.angle = agc -> lCur -> dsp.mk_pm.le.angle, IDC_PMANGR);
+    adbl_copy(&(agc -> lCur -> dsp.mk_pm.ri.angle), agc -> lCur -> dsp.mk_pm.le.angle);
+    updbar_pmangle(hwnd, agc -> lCur -> dsp.mk_pm.ri.angle, IDC_PMANGR);
     updtxt_pmangle(hwnd, agc -> lCur -> dsp.mk_pm.le.angle, agc -> lCur -> dsp.mk_pm.ri.angle);
    }
    break;
@@ -1345,7 +1401,7 @@ static void Setup_Dlg_OnCommand(HWND hwnd, int id, HWND hwndCtl, UINT codeNotify
 
   // clear clips counters
   case IDB_RESET_CLIPS:
-   ShowClips(hwnd, TRUE, TRUE, agc);
+   ShowClipsPeaks(hwnd, TRUE, TRUE, agc);
    break;
 
   // the inputs (so many...^)
@@ -1567,7 +1623,7 @@ static void Setup_Dlg_OnTimer(HWND hwnd, UINT id)
  // here we check (and, if need, update GUI state) if the module state
  // was changed asynchronously
  // clipping statistics:
- ShowClips(hwnd, FALSE, FALSE, agc);
+ ShowClipsPeaks(hwnd, FALSE, FALSE, agc);
  // frame statistics:
  ShowCounters(hwnd, FALSE, FALSE, FALSE, agc);
  // FP exception statistics:
@@ -1609,7 +1665,8 @@ void amgui_setup_dialog(HINSTANCE hi, HWND hwndParent)
  aguic.newnode_def_id = newnode_def_id;
  aguic.timer_id = 0;
  aguic.snfr_play = aguic.snfr_trans = 0;
- aguic.sl_cnt = aguic.sr_cnt = 0;
+ aguic.sl_cnt  = aguic.sr_cnt  = 0;
+ aguic.sl_peak = aguic.sr_peak = 0.0;               // value on form
 
  // aguic.fec_hilb_left, .fec_hilb_right, .fec_sr_left, .fec_sr_right are already zeroed here!!
 

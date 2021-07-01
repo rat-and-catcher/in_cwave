@@ -17,8 +17,7 @@ and mixing, as well as some stereo channels and signal component operations.
 setup the plugin completely controls all data path from the file data samples
 (complex- or real-valued) to selected in player system audio-interface.
 
-For effective use, please read documentation carefully. _Note, that while you
-not make basic setup of the DSP-list, you don't hear any sound. At all._
+_For effective use, please read documentation carefully._
 
 The project has started in 2010 as "2-hour-to-complete" experimental code.
 But the experiments needs had grown, and we got what we got. Here is
@@ -32,3 +31,9 @@ Code::Blocks V20.03 due to some conflicts with our Win32 SDK patches,
 which we have made for older versions. At the time we don't plan to fix
 this - for some reason we still have use old version, which need our
 compatibility patches.
+
+**NOTE** From V02.02.03 we provide different build configurations for
+current Windows (Vista+) and Windows XP for both supported development
+tools -- Visual Studio 2013(+) and Code::Blocks. Due to some limitation
+of Unicode support in system C-runtime in Windows XP, please avoid using
+MinGW / Code::Blocks XP build.

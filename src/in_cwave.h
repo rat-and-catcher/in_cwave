@@ -3,7 +3,7 @@
  *
  *      in_cwave.h -- input / quad modulation plug-in -- common declarations
  *
- * Copyright (c) 2010-2020, Rat and Catcher Technologies
+ * Copyright (c) 2010-2021, Rat and Catcher Technologies
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -52,7 +52,11 @@
 #define UNICODE_INPUT_PLUGIN
 #endif
 
+#if !defined(FOPEN_XP)
 #define FOPEN_FLG       L"t,ccs=UNICODE"
+#else
+#define FOPEN_FLG       L"t"            /* for gcc / msvcrt.dll @ XP - w/o support UNICODE stdio */
+#endif
 
 #else
 
@@ -75,6 +79,7 @@
 
 #include "compatibility/compat_win32_gcc.h"
 
+#include "atomic.h"
 #include "cmalloc.h"
 #include "fp_check.h"
 #include "cwave.h"
@@ -94,7 +99,7 @@
  */
 
 // see OLD_NEWS and CHANGELOG about versioning
-#define VERSION_IN_CWAVE        "V2.2.2"
+#define VERSION_IN_CWAVE        "V2.2.3"
 
 #if !defined(MAX_FILE_PATH)
 #if defined(UNICODE)
@@ -142,7 +147,8 @@
 #define DEF_FSHIFT      (2.0)                   /* default shift, Hz */
 
 #define MAX_GAIN        (2.0)                   /* max replay gain */
-#define DEF_GAIN        (0.8)                   /* default gain */
+#define DEF_GAIN_MOD    (1.0)                   /* default gain for all excl. Master */
+#define DEF_GAIN_MASTER (0.8)                   /* default gain for Master */
 
 #define MAX_PMFREQ      (40.0)                  /* max. PM frequence, Hz */
 #define DEF_PMFREQ      (4.0)                   /* default PM frequence, Hz */
@@ -192,7 +198,7 @@ typedef struct tagMAKE_MASTER                   // full "master" type
 // "Shift" output
 typedef struct tagCMAKE_SHIFT                   // one channel specific for shift
 {
- volatile double fr_shift;                      // shift for left with sign [-MAX_FSHIFT..MAX_FSHIFT]
+ DBL_VOLATILE double fr_shift;                  // shift for left with sign [-MAX_FSHIFT..MAX_FSHIFT]
  volatile int is_shift;                         // 0 - channel unchanged (bypass)
 } CMAKE_SHIFT;
 
@@ -208,10 +214,10 @@ typedef struct tagMAKE_SHIFT                    // full "shift" type
 // "PM" output
 typedef struct tagCMAKE_PM                      // one channel specific for PM
 {
- volatile double freq;                          // PM frequency [0..MAX_PMFREQ]
- volatile double phase;                         // PM "internal" phase [MIN_PMPHASE..MAX_PMPHASE]
- volatile double level;                         // PM level [0..MAX_PMLEVEL]
- volatile double angle;                         // initial phase [MIN_PMANGLE..MAX_PMANGLE]
+ DBL_VOLATILE double freq;                      // PM frequency [0..MAX_PMFREQ]
+ DBL_VOLATILE double phase;                     // PM "internal" phase [MIN_PMPHASE..MAX_PMPHASE]
+ DBL_VOLATILE double level;                     // PM level [0..MAX_PMLEVEL]
+ DBL_VOLATILE double angle;                     // initial phase [MIN_PMANGLE..MAX_PMANGLE]
  volatile int is_pm;                            // 0 - channel unchanged (bypass)
 } CMAKE_PM;
 
@@ -248,8 +254,8 @@ typedef struct tagNODE_DSP
 {
  struct tagNODE_DSP *prev;                      // link to previous node
  struct tagNODE_DSP *next;                      // link to next node
- volatile double l_gain;                        // left gain [0..MAX_GAIN]
- volatile double r_gain;                        // right gain [0..MAX_GAIN]
+ DBL_VOLATILE double l_gain;                    // left gain [0..MAX_GAIN]
+ DBL_VOLATILE double r_gain;                    // right gain [0..MAX_GAIN]
  char inputs[N_INPUTS];                         // inputs to mix (bool)
  int xch_mode;                                  // channels exchange mode XCH_xxx
  int l_iq_invert;                               // left ch. inversion of spectrum (I/Q swap), bool
@@ -435,6 +441,7 @@ typedef struct tagIN_CWAVE
  MOD_CONTEXT mc_transcode;                      // modulator context for transcode
 } IN_CWAVE;
 
+
 /* The general stuff/config (in_cwave.c)
  * --- ------- ------------ ------------
  */
@@ -552,15 +559,27 @@ void amod_del_lastdsp(void);
 /* add the last element to the DSP list
 */
 NODE_DSP *amod_add_lastdsp(const TCHAR *name, int mode);
+/* get the state of bypass list flag
+*/
+BOOL amod_get_bypass_list_flag(void);
+/* set the state of bypass list flag
+*/
+void amod_set_bypass_list_flag(BOOL bypass);
 /* get DSP list head for keep-the-structure operation
 */
 NODE_DSP *amod_get_headdsp(void);
 /* set DSP node outplug -- thread safe
 */
 void amod_set_output_plug(NODE_DSP *ndEd, int n);               // n == -1 -> remove only
-/* get channel's clips counters
+/* get channel's clips counters and peak values
 */
-void amod_get_clips(unsigned *lc, unsigned *rc, BOOL isReset);
+void amod_get_clips_peaks
+    ( unsigned *lc
+    , unsigned *rc
+    , double *lpv
+    , double *rpv
+    , BOOL isReset
+    );
 /* convert a frequency to it's "true" value
 */
 double amod_true_freq(double raw_freq);

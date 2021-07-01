@@ -43,6 +43,47 @@
 					<Add library="ole32" />
 				</Linker>
 			</Target>
+			<Target title="Debug XP">
+				<Option output="Debug XP/in_cwave" prefix_auto="1" extension_auto="1" />
+				<Option object_output="in_cwave/Debug XP/obj/" />
+				<Option type="3" />
+				<Option compiler="gcc" />
+				<Option createDefFile="1" />
+				<Option createStaticLib="1" />
+				<Compiler>
+					<Add option="-Wall" />
+					<Add option="-g" />
+					<Add option="-DBUILD_DLL" />
+					<Add option="-DDBL_COPY_FAST" />
+					<Add option="-DFOPEN_XP" />
+				</Compiler>
+				<Linker>
+					<Add library="user32" />
+					<Add library="comctl32" />
+					<Add library="ole32" />
+				</Linker>
+			</Target>
+			<Target title="Release XP">
+				<Option output="Release XP/in_cwave" prefix_auto="1" extension_auto="1" />
+				<Option object_output="in_cwave/Release XP/obj/" />
+				<Option type="3" />
+				<Option compiler="gcc" />
+				<Option createDefFile="1" />
+				<Option createStaticLib="1" />
+				<Compiler>
+					<Add option="-O3" />
+					<Add option="-Wall" />
+					<Add option="-DBUILD_DLL" />
+					<Add option="-DDBL_COPY_FAST" />
+					<Add option="-DFOPEN_XP" />
+				</Compiler>
+				<Linker>
+					<Add option="-s" />
+					<Add library="user32" />
+					<Add library="comctl32" />
+					<Add library="ole32" />
+				</Linker>
+			</Target>
 		</Build>
 		<Unit filename="../src/adv_modulator.c">
 			<Option compilerVar="CC" />
@@ -50,6 +91,7 @@
 		<Unit filename="../src/amod_gui_control.c">
 			<Option compilerVar="CC" />
 		</Unit>
+		<Unit filename="../src/atomic.h" />
 		<Unit filename="../src/cmalloc.c">
 			<Option compilerVar="CC" />
 		</Unit>

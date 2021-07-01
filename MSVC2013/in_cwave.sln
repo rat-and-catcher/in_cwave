@@ -9,16 +9,26 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "test_mt_jrnd", "test_mt_jrn
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug XP|Win32 = Debug XP|Win32
 		Debug|Win32 = Debug|Win32
+		Release XP|Win32 = Release XP|Win32
 		Release|Win32 = Release|Win32
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{0B9570C7-FDFA-44E7-9AD2-1ED2CF3A2A4F}.Debug XP|Win32.ActiveCfg = Debug XP|Win32
+		{0B9570C7-FDFA-44E7-9AD2-1ED2CF3A2A4F}.Debug XP|Win32.Build.0 = Debug XP|Win32
 		{0B9570C7-FDFA-44E7-9AD2-1ED2CF3A2A4F}.Debug|Win32.ActiveCfg = Debug|Win32
 		{0B9570C7-FDFA-44E7-9AD2-1ED2CF3A2A4F}.Debug|Win32.Build.0 = Debug|Win32
+		{0B9570C7-FDFA-44E7-9AD2-1ED2CF3A2A4F}.Release XP|Win32.ActiveCfg = Release XP|Win32
+		{0B9570C7-FDFA-44E7-9AD2-1ED2CF3A2A4F}.Release XP|Win32.Build.0 = Release XP|Win32
 		{0B9570C7-FDFA-44E7-9AD2-1ED2CF3A2A4F}.Release|Win32.ActiveCfg = Release|Win32
 		{0B9570C7-FDFA-44E7-9AD2-1ED2CF3A2A4F}.Release|Win32.Build.0 = Release|Win32
+		{652BF2C9-A1A2-4DBB-A151-28A8DF8F0EE9}.Debug XP|Win32.ActiveCfg = Debug|Win32
+		{652BF2C9-A1A2-4DBB-A151-28A8DF8F0EE9}.Debug XP|Win32.Build.0 = Debug|Win32
 		{652BF2C9-A1A2-4DBB-A151-28A8DF8F0EE9}.Debug|Win32.ActiveCfg = Debug|Win32
 		{652BF2C9-A1A2-4DBB-A151-28A8DF8F0EE9}.Debug|Win32.Build.0 = Debug|Win32
+		{652BF2C9-A1A2-4DBB-A151-28A8DF8F0EE9}.Release XP|Win32.ActiveCfg = Release|Win32
+		{652BF2C9-A1A2-4DBB-A151-28A8DF8F0EE9}.Release XP|Win32.Build.0 = Release|Win32
 		{652BF2C9-A1A2-4DBB-A151-28A8DF8F0EE9}.Release|Win32.ActiveCfg = Release|Win32
 		{652BF2C9-A1A2-4DBB-A151-28A8DF8F0EE9}.Release|Win32.Build.0 = Release|Win32
 	EndGlobalSection

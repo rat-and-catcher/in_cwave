@@ -10,6 +10,8 @@
 *.exp
 **/Release/
 **/Debug/
+**/Release XP/
+**/Debug XP/
 *.log
 *.tlog
 **/*.log/

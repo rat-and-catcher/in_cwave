@@ -3,7 +3,7 @@
  *
  *      sound_render.c -- all about convertig double to the integer sound samples
  *
- * Copyright (c) 2010-2020, Rat and Catcher Technologies
+ * Copyright (c) 2010-2021, Rat and Catcher Technologies
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -31,6 +31,7 @@
 
 #include "sound_render.h"
 
+#include "atomic.h"
 #include "cmalloc.h"
 
 /* NOTE::We work with doubles, which normalized (or must to be normalized)
@@ -676,7 +677,14 @@ unsigned sound_render_size(SOUND_RENDER *sr)
 
 /* render a sample value to buffer (**buf not unsigned due to WinAmp conventions)
 */
-void sound_render_value(char **buf, double input, unsigned *clip_cnt, SOUND_RENDER *sr, FP_EXCEPT_STATS *fes)
+void sound_render_value
+    ( char **buf
+    , double input
+    , unsigned *clip_cnt
+    , double *peak_val
+    , SOUND_RENDER *sr
+    , FP_EXCEPT_STATS *fes
+    )
 {
 #define FES         (fes)
  // D[TPDF(-1..1) = 1/6 == this maen SIGMA = 1/SQRT(6) / +- LSBit. We take it as
@@ -747,18 +755,33 @@ void sound_render_value(char **buf, double input, unsigned *clip_cnt, SOUND_REND
    delta = 0;
   }
 
+  // update peak level (dB, 0.0 == -150 dB)
+  if(peak_val)
+  {
+   double pv = *peak_val;
+   double cv = fabs(qinput) / sr -> hi_bound;
+   
+   cv = cv? 20.0 * log10(cv) : ZERO_SIGNAL_DB;
+
+   if(cv > pv)
+    adbl_copy(peak_val, cv);
+//  *peak_val = cv;
+  }
+
   // check for clips / saturation
   if(qinput >= sr -> hi_bound)
   {
    qinput =  sr -> hi_bound - 1.0;
    // ++(*clip_cnt)
-   InterlockedIncrement((volatile LONG *)clip_cnt);
+   if(clip_cnt)
+    InterlockedIncrement((volatile LONG *)clip_cnt);
   }
   if(qinput <= sr -> lo_bound)
   {
    qinput = sr -> lo_bound + 1.0;
    // ++(*clip_cnt);
-   InterlockedIncrement((volatile LONG *)clip_cnt);
+   if(clip_cnt)
+    InterlockedIncrement((volatile LONG *)clip_cnt);
   }
 
   val = ((int)qinput) + delta;
@@ -833,18 +856,33 @@ void sound_render_value(char **buf, double input, unsigned *clip_cnt, SOUND_REND
    delta = 0;
   }
 
+  // update peak level (dB, 0.0 == -150 dB)
+  if(peak_val)
+  {
+   double pv = *peak_val;
+   double cv = fabs(qinput) / sr -> hi_bound;
+   
+   cv = cv? 20.0 * log10(cv) : ZERO_SIGNAL_DB;
+
+   if(cv > pv)
+    adbl_copy(peak_val, cv);
+//  *peak_val = cv;
+  }
+
   // check for clips / saturation
   if(qinput >= sr -> hi_bound)
   {
    qinput =  sr -> hi_bound - 1.0;              // FC() don't need -- it's precictable constant
    // ++(*clip_cnt)
-   InterlockedIncrement((volatile LONG *)clip_cnt);
+   if(clip_cnt)
+    InterlockedIncrement((volatile LONG *)clip_cnt);
   }
   if(qinput <= sr -> lo_bound)
   {
    qinput = sr -> lo_bound + 1.0;               // FC() don't need -- it's precictable constant
    // ++(*clip_cnt);
-   InterlockedIncrement((volatile LONG *)clip_cnt);
+   if(clip_cnt)
+    InterlockedIncrement((volatile LONG *)clip_cnt);
   }
 
   val = ((int)qinput) + delta;
@@ -860,6 +898,14 @@ void sound_render_value(char **buf, double input, unsigned *clip_cnt, SOUND_REND
  }
 #undef FES
 }
+
+/* return level in dB for zero-valued signal
+*/
+double sound_render_get_zero_db(void)
+{
+ return ZERO_SIGNAL_DB;
+}
+
 
 /* the end...
 */
