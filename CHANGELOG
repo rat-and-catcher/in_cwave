@@ -28,3 +28,10 @@ in_cwave V1.*.* (Unpublic!) Versions History -- see OLD_NEWS
         metadata between 'fmt ' and 'data'.
 27-Jun-2020 -- V2.2.2 - more clean reading audiodata samples; some small fixes;
         attempt to cleanup the comments (generally unsuccessful). Update doc.
+01-Jul-2021 -- V2.2.3 - add peak levels in dB along with clip counters;
+        add DSP-list global bypass;
+        take more care to volatile double copying;
+        by defining DBL_COPY_FAST project preprocessor definition;
+        Default gain for mod/mix nodes now 1.0 (Master stay 0.8);
+        Different configurations for "plain build" (Windows VIsta+) ans Windows XP;
+        MinGW/Code::Blocks XP build don't support UTF-16LE configs.

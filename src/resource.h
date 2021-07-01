@@ -191,6 +191,7 @@
 #define IDS_LS_TOT                      1186
 #define IDS_RH_TOT                      1187
 #define IDS_RS_TOT                      1188
+#define IDC_BYPASS_LIST                 1189
 
 // Next default values for new objects
 // 
@@ -198,7 +199,7 @@
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        107
 #define _APS_NEXT_COMMAND_VALUE         40001
-#define _APS_NEXT_CONTROL_VALUE         1189
+#define _APS_NEXT_CONTROL_VALUE         1190
 #define _APS_NEXT_SYMED_VALUE           101
 #endif
 #endif

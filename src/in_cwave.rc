@@ -25,8 +25,8 @@ LANGUAGE LANG_NEUTRAL, SUBLANG_NEUTRAL
 //
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION 2,2,2,0
- PRODUCTVERSION 2,2,2,0
+ FILEVERSION 2,2,3,0
+ PRODUCTVERSION 2,2,3,0
  FILEFLAGSMASK 0x3fL
 #ifdef _DEBUG
  FILEFLAGS 0x29L
@@ -44,13 +44,13 @@ BEGIN
             VALUE "Comments", "This software licensed according BSD-like license"
             VALUE "CompanyName", "Rat and Catcher Technologies"
             VALUE "FileDescription", "CWAVE/RWAVE(WAV) universal quad modulator for Winamp (XMP)"
-            VALUE "FileVersion", "2.2.2.0"
+            VALUE "FileVersion", "2.2.3.0"
             VALUE "InternalName", "CWAVE Winamp quad modulator"
-            VALUE "LegalCopyright", "Copyright (C) 2010-2020 Rat and Catcher Technologies"
+            VALUE "LegalCopyright", "Copyright (C) 2010-2021 Rat and Catcher Technologies"
             VALUE "OriginalFilename", "in_cwave.dll"
             VALUE "PrivateBuild", "experimental 'total' quad modulator"
             VALUE "ProductName", "Quad Audio Wave Morphing Tools Set"
-            VALUE "ProductVersion", "2.2.2.0"
+            VALUE "ProductVersion", "2.2.3.0"
         END
     END
     BLOCK "VarFileInfo"
@@ -82,10 +82,11 @@ STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | DS_CENTER | WS_CAPTION | WS_SYS
 CAPTION "Advanced CWAVE Quad Modulator"
 FONT 8, "MS Shell Dlg", 400, 0, 0x1
 BEGIN
-    LISTBOX         IDL_DSP,7,7,129,173,LBS_NOINTEGRALHEIGHT | WS_VSCROLL | WS_HSCROLL | WS_TABSTOP
-    PUSHBUTTON      "Add...",IDB_ADD,7,182,39,14
-    PUSHBUTTON      "Delete",IDB_DEL,51,182,41,14
-    PUSHBUTTON      "Del All",IDB_DELALL,97,182,39,14
+    LISTBOX         IDL_DSP,7,7,129,155,LBS_NOINTEGRALHEIGHT | WS_VSCROLL | WS_HSCROLL | WS_TABSTOP
+    PUSHBUTTON      "Add...",IDB_ADD,7,164,39,14
+    PUSHBUTTON      "Delete",IDB_DEL,51,164,41,14
+    PUSHBUTTON      "Del All",IDB_DELALL,97,164,39,14
+    CONTROL         "Bypass DSP-list",IDC_BYPASS_LIST,"Button",BS_AUTOCHECKBOX | BS_PUSHLIKE | WS_TABSTOP,7,180,129,14
     GROUPBOX        "Inputs",IDC_STATIC,141,7,387,22
     CONTROL         "in",IDC_IN0,"Button",BS_AUTOCHECKBOX | BS_PUSHLIKE | WS_TABSTOP,146,16,12,10
     CONTROL         "A",IDC_INA,"Button",BS_AUTOCHECKBOX | BS_PUSHLIKE | WS_TABSTOP,161,16,12,10
@@ -189,7 +190,7 @@ BEGIN
     CONTROL         "",IDC_PMANGR,"msctls_trackbar32",TBS_AUTOTICKS | WS_TABSTOP,328,223,156,10
     PUSHBUTTON      "",IDB_PMANGR,483,225,12,6
     CONTROL         "=",IDC_PMANG_LOCK,"Button",BS_AUTOCHECKBOX | BS_PUSHLIKE | WS_TABSTOP,511,225,12,10
-    CONTROL         "Long numbers",IDC_LONG_NO,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,199,80,10
+    CONTROL         "Long numbers",IDC_LONG_NO,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,198,128,10
     LTEXT           "Embedded Hilbert's transformer type",IDC_STATIC,7,211,129,8
     COMBOBOX        IDL_EHILBERT,7,223,129,30,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
     GROUPBOX        "Sample counters",IDC_STATIC,7,239,129,54
@@ -216,11 +217,11 @@ BEGIN
     GROUPBOX        "Master Right",IDC_STATIC,208,268,65,26
     CONTROL         "I(Re)",IDC_MR_RE,"Button",BS_AUTORADIOBUTTON | BS_PUSHLIKE | WS_GROUP | WS_TABSTOP,212,279,27,12
     CONTROL         "Q(Im)",IDC_MR_IM,"Button",BS_AUTORADIOBUTTON | BS_PUSHLIKE | WS_TABSTOP,242,279,27,12
-    GROUPBOX        "Clips",IDC_STATIC,276,268,168,26
-    RTEXT           "0",IDS_CLIPSL,279,279,48,10,0,WS_EX_STATICEDGE
-    RTEXT           "0",IDS_CLIPSR,338,279,48,10,0,WS_EX_STATICEDGE
-    PUSHBUTTON      "X",IDB_RESET_CLIPS,388,279,12,12
-    CONTROL         "Excepts",IDC_SEXCP,"Button",BS_AUTOCHECKBOX | BS_PUSHLIKE | WS_TABSTOP,403,279,37,12
+    GROUPBOX        "Clips : Peaks, dB",IDC_STATIC,276,268,170,26
+    RTEXT           "0:-Inf",IDS_CLIPSL,279,279,58,11,0,WS_EX_STATICEDGE
+    RTEXT           "0:-Inf",IDS_CLIPSR,339,279,58,11,0,WS_EX_STATICEDGE
+    PUSHBUTTON      "X",IDB_RESET_CLIPS,399,279,12,12
+    CONTROL         "Excepts",IDC_SEXCP,"Button",BS_AUTOCHECKBOX | BS_PUSHLIKE | WS_TABSTOP,412,279,31,12
     PUSHBUTTON      "Bugs control...",IDB_SYSETUP,448,252,80,14
     CONTROL         "24 bits decoding",IDC_ADV24BITS,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,448,271,80,10
     CONTROL         "Show this by ALT+3",IDC_SHOWPLAY,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,448,283,80,10

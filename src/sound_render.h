@@ -3,7 +3,7 @@
  *
  *      sound_render.h -- all about convertig double to the integer sound samples
  *
- * Copyright (c) 2010-2020, Rat and Catcher Technologies
+ * Copyright (c) 2010-2021, Rat and Catcher Technologies
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -96,6 +96,10 @@ extern "C" {
 #define DEF_DITHER_BITS         (1.0)                   /* +-LSBit(s) */
 #define MAX_DITHER_BITS         (23.0)                  /* max for 24bits sample; ugly for 16 bits */
 
+/* misc
+*/
+#define ZERO_SIGNAL_DB          (-220.0)                /* zero signal value in dB */
+
 /* the noise shaping dithering type
  * --- ----- ------- --------- ----
  */
@@ -183,7 +187,18 @@ const TCHAR **sound_render_get_nshapenames(void);
 unsigned sound_render_size(SOUND_RENDER *sr);
 /* render a sample value to buffer (**buf not unsigned due to WinAmp conventions)
 */
-void sound_render_value(char **buf, double input, unsigned *clip_cnt, SOUND_RENDER *sr, FP_EXCEPT_STATS *fes);
+void sound_render_value
+    ( char **buf
+    , double input
+    , unsigned *clip_cnt
+    , double *peak_val
+    , SOUND_RENDER *sr
+    , FP_EXCEPT_STATS *fes
+    );
+/* return level in dB for zero-valued signal
+*/
+double sound_render_get_zero_db(void);
+
 
 #if defined(__cplusplus)
 }

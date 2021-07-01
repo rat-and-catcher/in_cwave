@@ -44,6 +44,12 @@
 // @winbase.h::
 WINBASEAPI BOOL WINAPI GetFileSizeEx(HANDLE hFile, PLARGE_INTEGER lpFileSize);
 
+WINBASEAPI LONGLONG WINAPI InterlockedCompareExchange64(
+    LONGLONG volatile *Destination,
+    LONGLONG Exchange,
+    LONGLONG Comperand
+    );
+
 // @tchar.h::
 typedef wint_t _TINT;
 #if defined(UNICODE)

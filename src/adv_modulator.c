@@ -4,7 +4,7 @@
  *      adv_modulator.c -- advanced analitic signal modulator
  *      (there is no any "simple" renders / mods from in_cwave V1.5.0)
  *
- * Copyright (c) 2010-2020, Rat and Catcher Technologies
+ * Copyright (c) 2010-2021, Rat and Catcher Technologies
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -49,6 +49,8 @@ typedef struct tagADVANCED_MODULATOR
  NODE_DSP *tail;                                // pointer of the tail of DSP list
  CRITICAL_SECTION cs_dsp_list;                  // DSP-list protector
  unsigned l_clips, r_clips;                     // clips per channel
+ double l_peak, r_peak;                         // peak values per chaannel, dB
+ BOOL is_bypass_list;                           // DSP list bypass flag
  BOOL is_frmod_scaled;                          // copyed from config at one-time init
 } ADVANCED_MODULATOR;
 
@@ -80,7 +82,7 @@ static NODE_DSP *create_node_dsp(const TCHAR *name, int mode, int force_master)
  // from here we fill ALL the fields of new node with
  // adequate values; this don't mean, that the caller will not
  // redefine them to it's own defaults.
- temp -> l_gain = temp -> r_gain = DEF_GAIN;
+ temp -> l_gain = temp -> r_gain = DEF_GAIN_MOD;
  for(i = 0; i < N_INPUTS; ++i)
   temp -> inputs[i] = 0;
 
@@ -91,6 +93,7 @@ static NODE_DSP *create_node_dsp(const TCHAR *name, int mode, int force_master)
  {
   default:
   case MODE_MASTER:                     // only if force_master != 0
+   temp -> l_gain = temp -> r_gain = DEF_GAIN_MASTER;
    if(force_master)
    {
     temp -> dsp.mk_master.le.tout = temp -> dsp.mk_master.ri.tout = S_RE;
@@ -301,8 +304,10 @@ int amod_init(NODE_DSP *cfg_list, BOOL is_frmod_scaled)         // !0, if list a
  }
 
  // the rest of modulator's object
- am.l_clips = am.r_clips = 0;
  InitializeCriticalSection(&am.cs_dsp_list);
+ am.l_clips = am.r_clips = 0;
+ am.l_peak  = am.r_peak  = sound_render_get_zero_db();
+ am.is_bypass_list = FALSE;
  am.is_frmod_scaled = is_frmod_scaled;                          // need restart to change
 
  return res;
@@ -382,6 +387,20 @@ NODE_DSP *amod_add_lastdsp(const TCHAR *name, int mode)
  return am.tail;
 }
 
+/* get the state of bypass list flag
+*/
+BOOL amod_get_bypass_list_flag(void)
+{
+ return am.is_bypass_list;
+}
+
+/* set the state of bypass list flag
+*/
+void amod_set_bypass_list_flag(BOOL bypass)
+{
+ am.is_bypass_list = bypass;
+}
+
 /* get DSP list head for keep-the-structure operation
 */
 NODE_DSP *amod_get_headdsp(void)
@@ -398,16 +417,28 @@ void amod_set_output_plug(NODE_DSP *ndEd, int n)        // n == -1 -> remove onl
  LeaveCriticalSection(&am.cs_dsp_list);
 }
 
-/* get channel's clips counters
+/* get channel's clips counters and peak values
 */
-void amod_get_clips(unsigned *lc, unsigned *rc, BOOL isReset)
+void amod_get_clips_peaks
+    ( unsigned *lc
+    , unsigned *rc
+    , double *lpv
+    , double *rpv
+    , BOOL isReset
+    )
 {
  if(isReset)
+ {
   am.l_clips = am.r_clips = 0;
+  am.l_peak  = am.r_peak  = sound_render_get_zero_db();
+ }
 
  // asynchronious changes of X_clips uncritical
  *lc = am.l_clips;
  *rc = am.r_clips;
+ // asynchronious changes of X_peak uncritical
+ adbl_copy(lpv, am.l_peak);
+ adbl_copy(rpv, am.r_peak);
 }
 
 /* convert a frequency to it's "true" value
@@ -424,7 +455,8 @@ double amod_true_freq(double raw_freq)
  * --- -------
  */
 /* NOTE:: We trying to use volatile variables only once and don't
- * include them to complicated expressions
+ * include them to complicated expressions...
+ * And while now we try to use adbl_copy() and all shared doubles became non-volatile
  */
 /* make one channel for CMAKE_MASTER
 */
@@ -462,7 +494,7 @@ static __inline void dsp_shift(CMAKE_SHIFT *shift, CCOMPLEX *output,
   double sh_freq, phase, cos_v, sin_v;
   BOOL sh_sign = FALSE;
 
-  sh_freq = shift -> fr_shift;
+  adbl_copy(&sh_freq, shift -> fr_shift);
   if(sh_freq < 0.0)
   {
    sh_freq = -sh_freq;
@@ -496,10 +528,10 @@ static __inline void dsp_pm(CMAKE_PM *pm, CCOMPLEX *output,
  {
   double freq, fphase, flevel, fangle, phase;
 
-  freq = pm -> freq;
-  fphase = pm -> phase;
-  flevel = pm -> level;
-  fangle = pm -> angle;
+  adbl_copy(&freq,    pm -> freq);
+  adbl_copy(&fphase,  pm -> phase);
+  adbl_copy(&flevel,  pm -> level);
+  adbl_copy(&fangle,  pm -> angle);
   if(am.is_frmod_scaled)
   {
    freq = DGET_SCALED_FR(freq);
@@ -570,22 +602,34 @@ int amod_process_samples(char *buf, MOD_CONTEXT *mc)
 
   // loop by the DSP list from TAIL to HEAD
   EnterCriticalSection(&am.cs_dsp_list);
-  for(cur = am.tail; cur; cur = cur -> prev)
+  for(cur = am.is_bypass_list? am.head : am.tail; cur; cur = cur -> prev)
   {
    LRCOMPLEX data, *pout;
-   double lg = cur -> l_gain, rg = cur -> r_gain;
+   double lg, rg;
    double xt;
 
    // make mix
-   data.le.re = data.le.im = data.ri.re = data.ri.im = 0.0;
-   for(ix_mix = 0; ix_mix < N_INPUTS; ++ix_mix)
+   if(am.is_bypass_list)
    {
-    if(cur -> inputs[ix_mix])
+    // take raw "in" only
+    data.le.re = mc -> inout[0].le.re;
+    data.le.im = mc -> inout[0].le.im;
+    data.ri.re = mc -> inout[0].ri.re;
+    data.ri.im = mc -> inout[0].ri.im;
+   }
+   else
+   {
+    // the true mix
+    data.le.re = data.le.im = data.ri.re = data.ri.im = 0.0;
+    for(ix_mix = 0; ix_mix < N_INPUTS; ++ix_mix)
     {
-     data.le.re += mc -> inout[ix_mix].le.re;
-     data.le.im += mc -> inout[ix_mix].le.im;
-     data.ri.re += mc -> inout[ix_mix].ri.re;
-     data.ri.im += mc -> inout[ix_mix].ri.im;
+     if(cur -> inputs[ix_mix])
+     {
+      data.le.re += mc -> inout[ix_mix].le.re;
+      data.le.im += mc -> inout[ix_mix].le.im;
+      data.ri.re += mc -> inout[ix_mix].ri.re;
+      data.ri.im += mc -> inout[ix_mix].ri.im;
+     }
     }
    }
 
@@ -638,6 +682,8 @@ int amod_process_samples(char *buf, MOD_CONTEXT *mc)
    }
 
    // adjust levels (make _after_ channels exchange)
+   adbl_copy(&lg, cur -> l_gain);
+   adbl_copy(&rg, cur -> r_gain);
    data.le.re *= lg;
    data.le.im *= lg;
    data.ri.re *= rg;
@@ -675,8 +721,8 @@ int amod_process_samples(char *buf, MOD_CONTEXT *mc)
 
   // place into out buffer
   all_srenders_lock();
-  sound_render_value(&buf, lOut, &am.l_clips,  &mc -> sr_left,  &mc -> fes_sr_left);
-  sound_render_value(&buf, rOut, &am.r_clips,  &mc -> sr_right, &mc -> fes_sr_right);
+  sound_render_value(&buf, lOut, &am.l_clips, &am.l_peak,  &mc -> sr_left,  &mc -> fes_sr_left);
+  sound_render_value(&buf, rOut, &am.r_clips, &am.r_peak,  &mc -> sr_right, &mc -> fes_sr_right);
   all_srenders_unlock();
  }
 
