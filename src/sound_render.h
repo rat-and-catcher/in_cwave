@@ -98,7 +98,7 @@ extern "C" {
 
 /* misc
 */
-#define ZERO_SIGNAL_DB          (-220.0)                /* zero signal value in dB */
+#define SR_ZERO_SIGNAL_DB       (-220.0)                /* zero signal value in dB */
 
 /* the noise shaping dithering type
  * --- ----- ------- --------- ----
@@ -195,9 +195,6 @@ void sound_render_value
     , SOUND_RENDER *sr
     , FP_EXCEPT_STATS *fes
     );
-/* return level in dB for zero-valued signal
-*/
-double sound_render_get_zero_db(void);
 
 
 #if defined(__cplusplus)

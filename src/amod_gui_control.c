@@ -809,7 +809,7 @@ static void ShowClipsPeaks(HWND hwnd, BOOL isReset, BOOL isRedraw, AMOD_GUI_CONT
 
  if((agc -> sl_cnt != lc) || (agc -> sl_peak != lpv) || isRedraw)
  {
-  if(sound_render_get_zero_db() == lpv)             // peak == -Inf?
+     if(SR_ZERO_SIGNAL_DB == lpv)               // peak == -Inf?
   {
    TXT_PrintTxt(hwnd, IDS_CLIPSL, _T("%lu:-Inf"), lc);
   }
@@ -829,7 +829,7 @@ static void ShowClipsPeaks(HWND hwnd, BOOL isReset, BOOL isRedraw, AMOD_GUI_CONT
 
  if((agc -> sr_cnt != rc) || (agc -> sr_peak != rpv) || isRedraw)
  {
-  if(sound_render_get_zero_db() == rpv)             // peak == -Inf?
+     if(SR_ZERO_SIGNAL_DB == rpv)               // peak == -Inf?
   {
    TXT_PrintTxt(hwnd, IDS_CLIPSR, _T("%lu:-Inf"), rc);
   }
