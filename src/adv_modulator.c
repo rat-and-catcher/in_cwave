@@ -306,7 +306,7 @@ int amod_init(NODE_DSP *cfg_list, BOOL is_frmod_scaled)         // !0, if list a
  // the rest of modulator's object
  InitializeCriticalSection(&am.cs_dsp_list);
  am.l_clips = am.r_clips = 0;
- am.l_peak  = am.r_peak  = sound_render_get_zero_db();
+ am.l_peak = am.r_peak = SR_ZERO_SIGNAL_DB;
  am.is_bypass_list = FALSE;
  am.is_frmod_scaled = is_frmod_scaled;                          // need restart to change
 
@@ -430,7 +430,7 @@ void amod_get_clips_peaks
  if(isReset)
  {
   am.l_clips = am.r_clips = 0;
-  am.l_peak  = am.r_peak  = sound_render_get_zero_db();
+  am.l_peak = am.r_peak = SR_ZERO_SIGNAL_DB;
  }
 
  // asynchronious changes of X_clips uncritical

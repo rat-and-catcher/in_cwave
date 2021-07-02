@@ -761,7 +761,7 @@ void sound_render_value
    double pv = *peak_val;
    double cv = fabs(qinput) / sr -> hi_bound;
    
-   cv = cv? 20.0 * log10(cv) : ZERO_SIGNAL_DB;
+   cv = cv? 20.0 * log10(cv) : SR_ZERO_SIGNAL_DB;
 
    if(cv > pv)
     adbl_copy(peak_val, cv);
@@ -862,7 +862,7 @@ void sound_render_value
    double pv = *peak_val;
    double cv = fabs(qinput) / sr -> hi_bound;
    
-   cv = cv? 20.0 * log10(cv) : ZERO_SIGNAL_DB;
+   cv = cv? 20.0 * log10(cv) : SR_ZERO_SIGNAL_DB;
 
    if(cv > pv)
     adbl_copy(peak_val, cv);
@@ -897,13 +897,6 @@ void sound_render_value
    *(*buf)++ = (char)(val >> 16);
  }
 #undef FES
-}
-
-/* return level in dB for zero-valued signal
-*/
-double sound_render_get_zero_db(void)
-{
- return ZERO_SIGNAL_DB;
 }
 
 
