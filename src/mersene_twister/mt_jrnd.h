@@ -5,7 +5,7 @@
  * Copyright (C) 1997 - 2002, Makoto Matsumoto and Takuji Nishimura,
  * All rights reserved.
  *
- * One of implementations of the algorithm now (2016) is a part of C++ SLT library.
+ * One of implementations of the algorithm now (2016) is a part of C++ STL library.
  *
  * Adaptation for internal needs and minor fixes by Rat and Catcher Technologies.
  * (c) 2016 Rat and Catcher Technologies. All Rights Reserved. We don't
