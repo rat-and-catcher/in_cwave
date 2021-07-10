@@ -293,7 +293,7 @@ static void stop(void)
 */
 static int getlength(void)
 {
- __int64 t;
+ int64_t t;
  MOD_CONTEXT *mc = &(the.mc_playback);
 
  mp_playback_lock();
@@ -302,7 +302,7 @@ static int getlength(void)
         // (Are you sure about sample_rate? Today it checked for zero in XWAVE_READER;
         // tomorow may be not...)
         && mc -> xr -> sample_rate?
-        (((__int64)(mc -> xr -> n_samples)) * 1000LL) / mc -> xr -> sample_rate
+        (((int64_t)(mc -> xr -> n_samples)) * 1000LL) / mc -> xr -> sample_rate
         :
         -1000;                          // default unknown file len
  mp_playback_unlock();
@@ -430,7 +430,7 @@ static void getfileinfo(const TCHAR *filename, TCHAR *title, int *length_in_ms)
   mp_playback_lock();
   if(length_in_ms)                      // code from getlength() -- need common lock
    *length_in_ms = mc -> xr && mc -> xr -> sample_rate?
-        (int)((((__int64)mc -> xr -> n_samples) * 1000LL) / mc -> xr -> sample_rate)
+        (int)((((int64_t)mc -> xr -> n_samples) * 1000LL) / mc -> xr -> sample_rate)
         :
         -1000;                          // default unknown file len
 
@@ -449,7 +449,7 @@ static void getfileinfo(const TCHAR *filename, TCHAR *title, int *length_in_ms)
   {
    if(length_in_ms)
    {
-    __int64 t = (((__int64)xr -> n_samples) * 1000LL) / xr -> sample_rate;
+    int64_t t = (((int64_t)xr -> n_samples) * 1000LL) / xr -> sample_rate;
     *length_in_ms = (int)t;
    }
    if(title)

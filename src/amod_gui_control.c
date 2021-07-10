@@ -60,8 +60,8 @@ typedef struct tagAMOD_GUI_CONTEXT
  // GUI internals
  int timer_id;                          // timer identifier
  // the shown values of the counters
- unsigned snfr_play;                    // playback sample counter
- unsigned snfr_trans;                   // transcode sample counter
+ FRAME_CNT snfr_play;                   // playback sample counter
+ FRAME_CNT snfr_trans;                  // transcode sample counter
  unsigned sl_cnt;                       // clips counter -- left channel
  unsigned sr_cnt;                       // clips counter -- left channel
  double sl_peak;                        // peak value -- left channel
@@ -793,9 +793,9 @@ static void ShowCounters(HWND hwnd,
   the.mc_transcode.n_frame = 0;
 
  if((agc -> snfr_play != the.mc_playback.n_frame) || isRedraw)
-  TXT_PrintTxt(hwnd, IDS_NFR_PLAY, _T("%u"), agc -> snfr_play = the.mc_playback.n_frame);
+  TXT_PrintTxt(hwnd, IDS_NFR_PLAY, _T("%I64u"), (uint64_t)(agc -> snfr_play = the.mc_playback.n_frame));
  if((agc -> snfr_trans != the.mc_transcode.n_frame) || isRedraw)
-  TXT_PrintTxt(hwnd, IDS_NFR_TRANS, _T("%u"), agc -> snfr_trans = the.mc_transcode.n_frame);
+  TXT_PrintTxt(hwnd, IDS_NFR_TRANS, _T("%I64u"), (uint64_t)(agc -> snfr_trans = the.mc_transcode.n_frame));
 }
 
 /* show/reset clips / peaks indicators
@@ -809,7 +809,7 @@ static void ShowClipsPeaks(HWND hwnd, BOOL isReset, BOOL isRedraw, AMOD_GUI_CONT
 
  if((agc -> sl_cnt != lc) || (agc -> sl_peak != lpv) || isRedraw)
  {
-     if(SR_ZERO_SIGNAL_DB == lpv)               // peak == -Inf?
+  if(SR_ZERO_SIGNAL_DB == lpv)              // peak == -Inf?
   {
    TXT_PrintTxt(hwnd, IDS_CLIPSL, _T("%lu:-Inf"), lc);
   }
@@ -829,7 +829,7 @@ static void ShowClipsPeaks(HWND hwnd, BOOL isReset, BOOL isRedraw, AMOD_GUI_CONT
 
  if((agc -> sr_cnt != rc) || (agc -> sr_peak != rpv) || isRedraw)
  {
-     if(SR_ZERO_SIGNAL_DB == rpv)               // peak == -Inf?
+  if(SR_ZERO_SIGNAL_DB == rpv)              // peak == -Inf?
   {
    TXT_PrintTxt(hwnd, IDS_CLIPSR, _T("%lu:-Inf"), rc);
   }

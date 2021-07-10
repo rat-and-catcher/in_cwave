@@ -572,8 +572,6 @@ int amod_process_samples(char *buf, MOD_CONTEXT *mc)
 
  while(mc -> xr -> unpacked < mc -> xr -> really_readed)
  {
-  // don't need 'InterlockedIncrement(&(mc -> n_frame))' -- sure.
-
   // In V02.00.00 this was:
   // norm_omega = (2.0 * PI) * (double)(mc -> n_frame) / mc -> xr -> sample_rate;
   // mc -> n_frame = (mc -> n_frame + 1) % mc -> xr -> sample_rate;
@@ -584,7 +582,7 @@ int amod_process_samples(char *buf, MOD_CONTEXT *mc)
    unsigned scale_sr = mc -> xr -> sample_rate * HZ_SCALE;
 
    norm_omega = (2.0 * PI) * ((double)(mc -> n_frame)) / ((double)scale_sr);
-   mc -> n_frame = (mc -> n_frame + 1) % scale_sr;
+   mc -> n_frame = (mc -> n_frame + 1) % (FRAME_CNT)scale_sr;
   }
   else
   {

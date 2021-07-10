@@ -98,7 +98,7 @@ extern "C" {
 
 /* misc
 */
-#define SR_ZERO_SIGNAL_DB       (-220.0)                /* zero signal value in dB */
+#define SR_ZERO_SIGNAL_DB       (-555.0)                /* zero signal value in dB */
 
 /* the noise shaping dithering type
  * --- ----- ------- --------- ----

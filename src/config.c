@@ -459,7 +459,7 @@ BOOL handle_double(TCHAR **buf, volatile double *pval, BOOL toWrite)
   handle_string(buf, val_buf, MAX_CONFIG_ARGS, toWrite);
   if(_T('0') == val_buf[0] && (_T('x') == val_buf[1] || _T('X') == val_buf[1]))
   {
-   return (_stscanf(val_buf + 2, _T("%I64x"), (unsigned __int64 *)&val) != 1)?
+   return (_stscanf(val_buf + 2, _T("%I64x"), (uint64_t *)&val) != 1)?
         FALSE
         :
         ((*pval = val), TRUE);
@@ -480,7 +480,7 @@ BOOL handle_double_bin(TCHAR **buf, volatile double *pval, BOOL toWrite)
 {
  if(toWrite)
  {
-  *buf += _stprintf(*buf, _T(" 0x%08I64X"), *(unsigned __int64 *)pval);
+  *buf += _stprintf(*buf, _T(" 0x%08I64X"), *(uint64_t *)pval);
   return TRUE;
  }
  else

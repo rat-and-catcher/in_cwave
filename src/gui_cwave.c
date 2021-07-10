@@ -80,7 +80,7 @@ void make_events(void)
 static void check_cwave(HWND hwnd, int lb_id, XWAVE_READER *xr)
 {
  static const TCHAR sz_errm[] = _T("** Read error or file corrupted, aborted...");
- __int64 tot_readed = 0;
+ int64_t tot_readed = 0;
  unsigned crc;
 
  LB_Printf(hwnd, lb_id, _T("-- CWAVE CRC Check, please wait..."));

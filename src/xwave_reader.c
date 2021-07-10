@@ -29,7 +29,7 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-/* NOTE: we assume that there is only 1 or 2 channels; >2 channels not supported
+/* NOTE: we assume that there is/are only 1 or 2 channel(s); >2 channels not supported
 */
 
 #include "in_cwave.h"
@@ -62,7 +62,7 @@
 //  DWORD nAvgBytesPerSec;              // +8
 //  WORD  nBlockAlign;                  // +12
 // } WAVEFORMAT;                        // sizeof() == 14
-// here interesting wformatTag, it can be WAVE_FORMAT_PCM only for THIS header type
+// here is interesting wformatTag, it can be WAVE_FORMAT_PCM only for THIS header type
 // (see below WAV_FMT_TAG). Usually, if WAVE_FORMAT_PCM set, the header is:
 // typedef struct {
 //  WAVEFORMAT wf;                      // +0
@@ -73,8 +73,8 @@
 // MOREOVER::lots of software, wich work with float WAVs misunderstood GUID'ed formats for
 // floats; only PCMWAVEFORMAT with wBitsPerSample=32.
 // !!!!!!!!
-// some people say, that it's a bad practics to describe 24/32 bits files wusing PCMWAVEFORMAT,
-// for this cases serve WAVEFORMATEX / WAVEFORMATEXTENSIBLE format descriptors:
+// some people say, that it's a bad practics to describe 24/32 bits files using PCMWAVEFORMAT
+// header, for this cases serve WAVEFORMATEX / WAVEFORMATEXTENSIBLE format descriptors:
 // typedef struct {
 //  WORD  wFormatTag;                   // +0
 //  WORD  nChannels;                    // +2
@@ -127,7 +127,7 @@ static __inline unsigned check_file_ext(const TCHAR *pext)
 
 /* get file size
 */
-static __int64 get_file_size(XWAVE_READER *xr)
+static int64_t get_file_size(XWAVE_READER *xr)
 {
  LARGE_INTEGER li;
  BOOL res = GetFileSizeEx(xr -> file_hanle, &li);
@@ -147,7 +147,7 @@ static __inline size_t read_data(void *buf, size_t size, XWAVE_READER *xr)
 
 /* internal "lite" seek for file header reading
 */
-static __inline BOOL seek_bytes(__int64 offset, DWORD method, XWAVE_READER *xr)
+static __inline BOOL seek_bytes(int64_t offset, DWORD method, XWAVE_READER *xr)
 {
  LARGE_INTEGER dist;
 
@@ -170,17 +170,17 @@ static void unpack_cwave_dbl(double *vI, double *vQ, const BYTE **buf)
 // -- HCW_FMT_PCM_INT16 (1)
 static void unpack_cwave_sht(double *vI, double *vQ, const BYTE **buf)
 {
- *vI = (double)unpack_short(*buf);
- *vQ = (double)unpack_short(*buf + sizeof(short));
- *buf += sizeof(short) * 2;
+ *vI = (double)unpack_int16(*buf);
+ *vQ = (double)unpack_int16(*buf + sizeof(int16_t));
+ *buf += sizeof(int16_t) * 2;
 }
 
 // -- HCW_FMT_PCM_INT16_FLT32 (2)
 static void unpack_cwave_sht_flt(double *vI, double *vQ, const BYTE **buf)
 {
- *vI = (double)unpack_short(*buf);
- *vQ = (double)unpack_float(*buf + sizeof(short));
- *buf += sizeof(short) + sizeof(float);
+ *vI = (double)unpack_int16(*buf);
+ *vQ = (double)unpack_float(*buf + sizeof(int16_t));
+ *buf += sizeof(int16_t) + sizeof(float);
 }
 
 // -- HCW_FMT_PCM_FLT32 (3)
@@ -205,8 +205,8 @@ static void unpack_rwave_uch(double *vR, const BYTE **buf)
 // -- HRW_FMT_INT16 (1)
 static void unpack_rwave_sht(double *vR, const BYTE **buf)
 {
- *vR = (double)unpack_short(*buf);
- *buf += sizeof(short);
+ *vR = (double)unpack_int16(*buf);
+ *buf += sizeof(int16_t);
 }
 
 // -- HRW_FMT_INT24 (2)
@@ -238,8 +238,8 @@ static BOOL cwave_reader_create(XWAVE_READER *xr)       // FALSE == BAD
  static const unsigned cw_slen[] =
  {
   sizeof(double) * 2,                                   // HCW_FMT_PCM_DBL64 (0)
-  sizeof(short) * 2,                                    // HCW_FMT_PCM_INT16 (1)
-  sizeof(short) + sizeof(float),                        // HCW_FMT_PCM_INT16_FLT32 (2)
+  sizeof(int16_t) * 2,                                  // HCW_FMT_PCM_INT16 (1)
+  sizeof(int16_t) + sizeof(float),                      // HCW_FMT_PCM_INT16_FLT32 (2)
   sizeof(float) * 2                                     // HCW_FMT_PCM_FLT32 (3)
  };
  // known part of the header
@@ -247,7 +247,7 @@ static BOOL cwave_reader_create(XWAVE_READER *xr)       // FALSE == BAD
  const size_t hsize = 8 + sizeof(unsigned) * 7 + sizeof(int) + sizeof(double);
  int i = 0;
 
- __int64 fsize = get_file_size(xr);
+ int64_t fsize = get_file_size(xr);
 
  if(fsize < hsize
         || read_data(hbuf, hsize, xr) != hsize
@@ -352,8 +352,8 @@ static BOOL rwave_reader_create(XWAVE_READER *xr)       // FALSE == BAD
  // and correspondig buffer with max possible size -- size, wich we can eat
  unsigned char fmtbuf[sizeof(WORD) * 6 + sizeof(DWORD) * 3 + sizeof(GUID)];
 
- __int64 fsize = get_file_size(xr);                     // don't check here
- __int64 fpos = 0;
+ int64_t fsize = get_file_size(xr);                     // don't check here
+ int64_t fpos = 0;
  unsigned fmt_ch_len, data_ch_len;
 
  unsigned char hchunk[8];                               // chunk header FOURCC(4)<body_len>(4)
@@ -688,7 +688,7 @@ void xwave_reader_destroy(XWAVE_READER *xr)
 
 /* abs seek in samples terms in the file (non-unpacked data will be lost)
 */
-BOOL xwave_seek_samples(__int64 sample_pos, XWAVE_READER *xr)   // FALSE == bad
+BOOL xwave_seek_samples(int64_t sample_pos, XWAVE_READER *xr)   // FALSE == bad
 {
  LARGE_INTEGER to_set, returned;
  BOOL res;
@@ -709,9 +709,9 @@ BOOL xwave_seek_samples(__int64 sample_pos, XWAVE_READER *xr)   // FALSE == bad
 
 /* abs seek in miliseconds terms in the file (non-unpacked data will be lost)
 */
-BOOL xwave_seek_ms(__int64 ms_pos, XWAVE_READER *xr)    // FALSE == bad
+BOOL xwave_seek_ms(int64_t ms_pos, XWAVE_READER *xr)    // FALSE == bad
 {
- __int64 s_pos = ms_pos * (__int64)xr -> sample_rate;
+ int64_t s_pos = ms_pos * (int64_t)xr -> sample_rate;
  return xwave_seek_samples(s_pos / 1000LL, xr);
 }
 

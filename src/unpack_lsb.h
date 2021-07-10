@@ -36,11 +36,13 @@
 extern "C" {
 #endif
 
-// this projec don't use <stdint.h> due to historical reasons
-typedef unsigned char    U8;
-typedef unsigned short   U16;
-typedef unsigned int     U32;
-typedef unsigned __int64 U64;
+#include <stdint.h>
+
+// the code used own integer types due to historical reasons
+typedef uint8_t     U8;
+typedef uint16_t    U16;
+typedef uint32_t    U32;
+typedef uint64_t    U64;
 
 // make the pointer to unsigned byte
 #define U8P(aptr)  ((U8 *)(aptr))
@@ -48,12 +50,12 @@ typedef unsigned __int64 U64;
 
 /* unpack signed short -- 16 bits
 */
-static __inline short unpack_short(const void *p)
+static __inline int16_t unpack_int16(const void *p)
 {
  U16 u0 = U8P(p)[0];
  U16 u1 = U8P(p)[1];
 
- return (short)(u0 | (u1 << 8));
+ return (int16_t)(u0 | (u1 << 8));
 }
 
 /* unpack int -- 24 bits

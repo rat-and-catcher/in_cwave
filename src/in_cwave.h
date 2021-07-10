@@ -76,6 +76,7 @@
 #include <process.h>
 #include <math.h>
 #include <string.h>
+#include <stdint.h>
 
 #include "compatibility/compat_win32_gcc.h"
 
@@ -99,7 +100,7 @@
  */
 
 // see OLD_NEWS and CHANGELOG about versioning
-#define VERSION_IN_CWAVE        "V2.2.3"
+#define VERSION_IN_CWAVE        "V2.2.4"
 
 #if !defined(MAX_FILE_PATH)
 #if defined(UNICODE)
@@ -292,27 +293,27 @@ typedef struct tagLRCOMPLEX
 /* xwave-reader related stuff
  * ----- ------ ------- -----
  */
-#define MIN_FILE_SAMPLES        (2)                     /* minimum samples in a file */
+#define MIN_FILE_SAMPLES        (2)             /* minimum samples in a file */
 
 /* definitions for RWAVE-WAV stuff
 */
 // file types
-#define XW_TYPE_UNKNOWN         (~0)                    /* input file type unknown */
-#define XW_TYPE_CWAVE           (0)                     /* input file type CWAVE */
-#define XW_TYPE_RWAVE           (1)                     /* input file type RWAVE (WAV) */
+#define XW_TYPE_UNKNOWN         (~0)            /* input file type unknown */
+#define XW_TYPE_CWAVE           (0)             /* input file type CWAVE */
+#define XW_TYPE_RWAVE           (1)             /* input file type RWAVE (WAV) */
 
 // supported WAV sample formats
-#define HRW_FMT_UNKNOWN         (~0)                    /* unknown format */
-#define HRW_FMT_UINT8           (0)                     /* unsigned 8 bits */
-#define HRW_FMT_INT16           (1)                     /* signed 16 bits */
-#define HRW_FMT_INT24           (2)                     /* signed 24 bits */
-#define HRW_FMT_INT32           (3)                     /* signed 32 bits */
-#define HRW_FMT_FLOAT32         (4)                     /* IEEE754 folat, (-1.0..1.0) */
+#define HRW_FMT_UNKNOWN         (~0)            /* unknown format */
+#define HRW_FMT_UINT8           (0)             /* unsigned 8 bits */
+#define HRW_FMT_INT16           (1)             /* signed 16 bits */
+#define HRW_FMT_INT24           (2)             /* signed 24 bits */
+#define HRW_FMT_INT32           (3)             /* signed 32 bits */
+#define HRW_FMT_FLOAT32         (4)             /* IEEE754 folat, (-1.0..1.0) */
 
 // supported WAV header types
-#define HRW_HTYPE_WFONLY        (0)                     /* WAVFORMAT ONLY (bad!) */
-#define HRW_HTYPE_PCMW          (1)                     /* PCMWAVEFORMAT, incl. float */
-#define HRW_HTYPE_EXT           (2)                     /* WAVEFORMATEXTENSIBLE, incl. float */
+#define HRW_HTYPE_WFONLY        (0)             /* WAVFORMAT ONLY (bad!) */
+#define HRW_HTYPE_PCMW          (1)             /* PCMWAVEFORMAT, incl. float */
+#define HRW_HTYPE_EXT           (2)             /* WAVEFORMATEXTENSIBLE, incl. float */
 
 /* the internal types
 */
@@ -331,16 +332,16 @@ typedef union tagUNPACK_SAMPLE
 // CWAVE-only specifics
 typedef struct tagXCWAVE
 {
- HCWAVE header;                                         // the heder as is
- TMP_CRC32 cur_crc;                                     // CRC32 of the current file (if need)
+ HCWAVE header;                                 // the heder as is
+ TMP_CRC32 cur_crc;                             // CRC32 of the current file (if need)
 } XCWAVE;
 
 // RWAVE (WAV) only specifics
 typedef struct tagXRWAVE
 {
- unsigned format;                                       // sample format, HRW_FMT_xxx
- unsigned htype;                                        // the header type HRW_HTYPE_xxx
- WAVEFORMATEXTENSIBLE header;                           // the header, according htype
+ unsigned format;                               // sample format, HRW_FMT_xxx
+ unsigned htype;                                // the header type HRW_HTYPE_xxx
+ WAVEFORMATEXTENSIBLE header;                   // the header, according htype
 } XRWAVE;
 
 // CWAVE+RWAVE=XWAVE descriptor
@@ -354,36 +355,38 @@ typedef union tagXWAVE
 */
 typedef struct tagXWAVE_READER
 {
- TCHAR *file_full_name;                                 // full name of the file
- TCHAR *file_path;                                      // the path to file with '\\' at the end
- TCHAR *file_pure_name;                                 // name of the file w/o path
- HANDLE file_hanle;                                     // the WIN32 file handle
+ TCHAR *file_full_name;                         // full name of the file
+ TCHAR *file_path;                              // the path to file with '\\' at the end
+ TCHAR *file_pure_name;                         // name of the file w/o path
+ HANDLE file_hanle;                             // the WIN32 file handle
 
- unsigned type;                                         // type as XW_TYPE_xxx
- XWAVE spec;                                            // type specific
- BOOL is_sample_complex;                                // FALSE == pure real samples
- UNPACK_SAMPLE unpack_handler;                          // sample unpacker @ .is_sample_complex
+ unsigned type;                                 // type as XW_TYPE_xxx
+ XWAVE spec;                                    // type specific
+ BOOL is_sample_complex;                        // FALSE == pure real samples
+ UNPACK_SAMPLE unpack_handler;                  // sample unpacker @ .is_sample_complex
 
- unsigned n_channels;                                   // number of channels
- __int64 n_samples;                                     // number of samples
- unsigned sample_rate;                                  // sample rate of the source
- unsigned sample_size;                                  // size of n_channel frame of samples
- __int64 offset_data;                                   // offset of audio data in the file
- __int64 pos_samples;                                   // current position in file in samples
+ unsigned n_channels;                           // number of channels
+ int64_t n_samples;                             // number of samples
+ unsigned sample_rate;                          // sample rate of the source
+ unsigned sample_size;                          // size of n_channel frame of samples
+ int64_t offset_data;                           // offset of audio data in the file
+ int64_t pos_samples;                           // current position in file in samples
 
- BYTE *tbuff;                                           // the data buffer for read quant
- BYTE *ptr_tbuff;                                       // pointer to sample-based reader
- unsigned read_quant;                                   // quant of the data to read, samples
- unsigned really_readed;                                // really readed after last read, samples
- unsigned unpacked;                                     // already unpacked (in mean "unpacked to double")
+ BYTE *tbuff;                                   // the data buffer for read quant
+ BYTE *ptr_tbuff;                               // pointer to sample-based reader
+ unsigned read_quant;                           // quant of the data to read, samples
+ unsigned really_readed;                        // really readed after last read, samples
+ unsigned unpacked;                             // already unpacked (in mean "unpacked to double")
 } XWAVE_READER;
 
 /* the modulator context for the conversion thread / interface (playback and transcode)
  * --- --------- ------- --- --- ---------- ------ - --------- --------- --- ----------
  */
+typedef int64_t FRAME_CNT;                      // the helper type -- samples counter
+
 typedef struct tagMOD_CONTEXT
 {
- volatile unsigned n_frame;                     // sample counter
+ volatile FRAME_CNT n_frame;                    // sample counter
  LRCOMPLEX inout[N_INPUTS];                     // in/out bus
  LPF_HILBERT_QUAD *h_left;                      // Analitic transformer-left channel
  LPF_HILBERT_QUAD *h_right;                     // Analitic transformer-right channel
@@ -598,10 +601,10 @@ XWAVE_READER *xwave_reader_create(const TCHAR *name, unsigned read_quant);
 void xwave_reader_destroy(XWAVE_READER *xr);
 /* abs seek in samples terms in the file (non-unpacked data will be lost)
 */
-BOOL xwave_seek_samples(__int64 sample_pos, XWAVE_READER *xr);  // FALSE == bad
+BOOL xwave_seek_samples(int64_t sample_pos, XWAVE_READER *xr);  // FALSE == bad
 /* abs seek in miliseconds terms in the file (non-unpacked data will be lost)
 */
-BOOL xwave_seek_ms(__int64 ms_pos, XWAVE_READER *xr);   // FALSE == bad
+BOOL xwave_seek_ms(int64_t ms_pos, XWAVE_READER *xr);   // FALSE == bad
 /* change read quant (non-unpacked data will be lost)
 */
 void xwave_change_read_quant(unsigned new_rq, XWAVE_READER *xr);

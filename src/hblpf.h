@@ -111,7 +111,7 @@ typedef struct tagIIR_RAT_POLY
  double *pc;            // "loop-back" coefficients of canonical form [1..max(n_a,n_b)]
  double *pd;            // "direct" coefficients of canonical form [1..max(n_a,n_b)]
  double *pz;            // "delay line" of canonical form
- double d0;             // 0-st "direct" coefficients of canonical form
+ double d0;             // 0-st "direct" coefficient of canonical form
  int nord;              // the order of filter
  int ix;                // insert index for "delay line"
 } IIR_RAT_POLY;

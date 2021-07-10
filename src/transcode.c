@@ -45,7 +45,7 @@ __declspec(dllexport) intptr_t
 #endif
         (const TCHAR *filename, int *size, int *bps, int *nch, int *srate)
 {
- __int64 sz;
+ int64_t sz;
  MOD_CONTEXT *mc = &(the.mc_transcode);
  int out_size;
 
@@ -53,7 +53,7 @@ __declspec(dllexport) intptr_t
   return 0;
 
  out_size = sound_render_size(&mc -> sr_left) + sound_render_size(&mc -> sr_right);
- sz = (__int64)mc -> xr -> n_samples * (__int64)(out_size);
+ sz = (int64_t)mc -> xr -> n_samples * (int64_t)(out_size);
 
  // ..significantly unsure..
  if(sz > (0x7FFFFFFFLL
