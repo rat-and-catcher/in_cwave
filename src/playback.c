@@ -98,7 +98,8 @@ static void config(HWND hwndParent)
 static void about(HWND hwndParent)
 {
  const TCHAR fmsg[] =
-        _T("CWAVE / WAV ('RWAVE') universal reader / quad modulator ")
+        _T("CWAVE / WAV ('RWAVE') universal reader / quad modulator\n")
+        _T("Version ")
         _T(VERSION_IN_CWAVE)
         _T("\n")
         _T("Config version ID is %u\n")
@@ -302,7 +303,7 @@ static int getlength(void)
         // (Are you sure about sample_rate? Today it checked for zero in XWAVE_READER;
         // tomorow may be not...)
         && mc -> xr -> sample_rate?
-        (((int64_t)(mc -> xr -> n_samples)) * 1000LL) / mc -> xr -> sample_rate
+        (xwave_get_nsamples(mc -> xr) * 1000LL) / mc -> xr -> sample_rate
         :
         -1000;                          // default unknown file len
  mp_playback_unlock();
@@ -389,7 +390,8 @@ static int infoBox(const TCHAR *filename, HWND hwnd)
   }
   else
   {
-   XWAVE_READER *xr = xwave_reader_create(filename, NS_CHECKPT);
+   // create w/o any aligment or fading for info/CRC check
+   XWAVE_READER *xr = xwave_reader_create(filename, NS_CHECKPT, 0, 0, 0);
 
    if(xr)
    {
@@ -430,7 +432,7 @@ static void getfileinfo(const TCHAR *filename, TCHAR *title, int *length_in_ms)
   mp_playback_lock();
   if(length_in_ms)                      // code from getlength() -- need common lock
    *length_in_ms = mc -> xr && mc -> xr -> sample_rate?
-        (int)((((int64_t)mc -> xr -> n_samples) * 1000LL) / mc -> xr -> sample_rate)
+        (int)((xwave_get_nsamples(mc -> xr) * 1000LL) / mc -> xr -> sample_rate)
         :
         -1000;                          // default unknown file len
 
@@ -443,13 +445,19 @@ static void getfileinfo(const TCHAR *filename, TCHAR *title, int *length_in_ms)
  }
  else                                   // some other file
  {
-  XWAVE_READER *xr = xwave_reader_create(filename, 0);
+  XWAVE_READER *xr = xwave_reader_create(
+      filename
+    , 0
+    , the.cfg.sec_align
+    , the.cfg.fade_in
+    , the.cfg.fade_out
+    );
 
   if(xr)
   {
    if(length_in_ms)
    {
-    int64_t t = (((int64_t)xr -> n_samples) * 1000LL) / xr -> sample_rate;
+    int64_t t = (xwave_get_nsamples(xr) * 1000LL) / xr -> sample_rate;
     *length_in_ms = (int)t;
    }
    if(title)

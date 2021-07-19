@@ -192,6 +192,12 @@
 #define IDS_RH_TOT                      1187
 #define IDS_RS_TOT                      1188
 #define IDC_BYPASS_LIST                 1189
+#define IDC_RESET_NFR                   1190
+#define IDC_RESET_HILB                  1191
+#define IDC_ALIGN                       1192
+#define IDC_FADE_IN                     1193
+#define IDC_FADE_OUT                    1194
+#define IDB_TRACCEPT                    1195
 
 // Next default values for new objects
 // 
@@ -199,7 +205,7 @@
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        107
 #define _APS_NEXT_COMMAND_VALUE         40001
-#define _APS_NEXT_CONTROL_VALUE         1190
+#define _APS_NEXT_CONTROL_VALUE         1196
 #define _APS_NEXT_SYMED_VALUE           101
 #endif
 #endif

@@ -437,8 +437,8 @@ void amod_get_clips_peaks
  *lc = am.l_clips;
  *rc = am.r_clips;
  // asynchronious changes of X_peak uncritical
- adbl_copy(lpv, am.l_peak);
- adbl_copy(rpv, am.r_peak);
+ adbl_write(lpv, am.l_peak);
+ adbl_write(rpv, am.r_peak);
 }
 
 /* convert a frequency to it's "true" value
@@ -456,7 +456,6 @@ double amod_true_freq(double raw_freq)
  */
 /* NOTE:: We trying to use volatile variables only once and don't
  * include them to complicated expressions...
- * And while now we try to use adbl_copy() and all shared doubles became non-volatile
  */
 /* make one channel for CMAKE_MASTER
 */
@@ -494,7 +493,7 @@ static __inline void dsp_shift(CMAKE_SHIFT *shift, CCOMPLEX *output,
   double sh_freq, phase, cos_v, sin_v;
   BOOL sh_sign = FALSE;
 
-  adbl_copy(&sh_freq, shift -> fr_shift);
+  adbl_read(&sh_freq, &(shift -> fr_shift));
   if(sh_freq < 0.0)
   {
    sh_freq = -sh_freq;
@@ -528,10 +527,10 @@ static __inline void dsp_pm(CMAKE_PM *pm, CCOMPLEX *output,
  {
   double freq, fphase, flevel, fangle, phase;
 
-  adbl_copy(&freq,    pm -> freq);
-  adbl_copy(&fphase,  pm -> phase);
-  adbl_copy(&flevel,  pm -> level);
-  adbl_copy(&fangle,  pm -> angle);
+  adbl_read(&freq,    &(pm -> freq));
+  adbl_read(&fphase,  &(pm -> phase));
+  adbl_read(&flevel,  &(pm -> level));
+  adbl_read(&fangle,  &(pm -> angle));
   if(am.is_frmod_scaled)
   {
    freq = DGET_SCALED_FR(freq);
@@ -577,19 +576,21 @@ int amod_process_samples(char *buf, MOD_CONTEXT *mc)
   // mc -> n_frame = (mc -> n_frame + 1) % mc -> xr -> sample_rate;
   // Its sound proudly, but worked correctly only for integer modulation freqs.
 
+  mod_context_lock_framecnt(mc);
   if(am.is_frmod_scaled)
   {
    unsigned scale_sr = mc -> xr -> sample_rate * HZ_SCALE;
 
    norm_omega = (2.0 * PI) * ((double)(mc -> n_frame)) / ((double)scale_sr);
-   mc -> n_frame = (mc -> n_frame + 1) % (FRAME_CNT)scale_sr;
+   mc -> n_frame = (mc -> n_frame + 1) % (uint64_t)scale_sr;
   }
   else
   {
    // directly and literally
-   norm_omega = (2.0 * PI) * (double)(mc -> n_frame) / (double)(mc -> xr -> sample_rate);
-   ++(mc -> n_frame);                                   // ..unlimitly.. ..to hell..
+   norm_omega = (2.0 * PI) * ((double)(mc -> n_frame)) / (double)(mc -> xr -> sample_rate);
+   ++(mc -> n_frame);                               // ..unlimitly.. ..to hell..
   }
+  mod_context_unlock_framecnt(mc);
 
   all_hilberts_lock();
   xwave_unpack_csample(
@@ -680,8 +681,8 @@ int amod_process_samples(char *buf, MOD_CONTEXT *mc)
    }
 
    // adjust levels (make _after_ channels exchange)
-   adbl_copy(&lg, cur -> l_gain);
-   adbl_copy(&rg, cur -> r_gain);
+   adbl_read(&lg, &(cur -> l_gain));
+   adbl_read(&rg, &(cur -> r_gain));
    data.le.re *= lg;
    data.le.im *= lg;
    data.ri.re *= rg;

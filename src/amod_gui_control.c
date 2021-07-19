@@ -60,8 +60,8 @@ typedef struct tagAMOD_GUI_CONTEXT
  // GUI internals
  int timer_id;                          // timer identifier
  // the shown values of the counters
- FRAME_CNT snfr_play;                   // playback sample counter
- FRAME_CNT snfr_trans;                  // transcode sample counter
+ uint64_t snfr_play;                    // playback sample counter
+ uint64_t snfr_trans;                   // transcode sample counter
  unsigned sl_cnt;                       // clips counter -- left channel
  unsigned sr_cnt;                       // clips counter -- left channel
  double sl_peak;                        // peak value -- left channel
@@ -260,10 +260,10 @@ static __inline int hdlbar_gain(HWND hwnd, HWND hwctl, AMOD_GUI_CONTEXT *agc)
  // left channel
  if(GetDlgItem(hwnd, IDC_GAINL) == hwctl)
  {
-  adbl_copy(&(agc -> lCur -> l_gain), ((double)TB_GetTrack(hwnd, IDC_GAINL)) / 100.0);
+  adbl_write(&(agc -> lCur -> l_gain), ((double)TB_GetTrack(hwnd, IDC_GAINL)) / 100.0);
   if(agc -> lCur -> lock_gain)
   {
-   adbl_copy(&(agc -> lCur -> r_gain), agc -> lCur -> l_gain);
+   adbl_write(&(agc -> lCur -> r_gain), agc -> lCur -> l_gain);
    updbar_gain(hwnd, agc -> lCur -> r_gain, IDC_GAINR);
   }
   updtxt_gain(hwnd, agc -> lCur -> l_gain, agc -> lCur -> r_gain);
@@ -272,7 +272,7 @@ static __inline int hdlbar_gain(HWND hwnd, HWND hwctl, AMOD_GUI_CONTEXT *agc)
  // right channel
  if(!agc -> lCur -> lock_gain && GetDlgItem(hwnd, IDC_GAINR) == hwctl)
  {
-  adbl_copy(&(agc -> lCur -> r_gain), ((double)TB_GetTrack(hwnd, IDC_GAINR)) / 100.0);
+  adbl_write(&(agc -> lCur -> r_gain), ((double)TB_GetTrack(hwnd, IDC_GAINR)) / 100.0);
   updtxt_gain(hwnd, agc -> lCur -> l_gain, agc -> lCur -> r_gain);
   return 1;                                     // handled
  }
@@ -283,11 +283,11 @@ static __inline int hdlbar_fshift(HWND hwnd, HWND hwctl, AMOD_GUI_CONTEXT *agc)
  // left channel
  if(GetDlgItem(hwnd, IDC_FSHIFTL) == hwctl)
  {
-  adbl_copy(&(agc -> lCur -> dsp.mk_shift.le.fr_shift),
+  adbl_write(&(agc -> lCur -> dsp.mk_shift.le.fr_shift),
         ((double)TB_GetTrack(hwnd, IDC_FSHIFTL)) / 10.0 - MAX_FSHIFT);
   if(agc -> lCur -> dsp.mk_shift.lock_shift)
   {
-   adbl_copy(&(agc -> lCur -> dsp.mk_shift.ri.fr_shift),
+   adbl_write(&(agc -> lCur -> dsp.mk_shift.ri.fr_shift),
         agc -> lCur -> dsp.mk_shift.sign_lock_shift?
                 -agc -> lCur -> dsp.mk_shift.le.fr_shift
                 :
@@ -301,7 +301,7 @@ static __inline int hdlbar_fshift(HWND hwnd, HWND hwctl, AMOD_GUI_CONTEXT *agc)
  // right channel
  if(!agc -> lCur -> dsp.mk_shift.lock_shift && GetDlgItem(hwnd, IDC_FSHIFTR) == hwctl)
  {
-  adbl_copy(&(agc -> lCur -> dsp.mk_shift.ri.fr_shift),
+  adbl_write(&(agc -> lCur -> dsp.mk_shift.ri.fr_shift),
         ((double)TB_GetTrack(hwnd, IDC_FSHIFTR)) / 10.0 - MAX_FSHIFT);
   updtxt_fshift(hwnd,
         agc -> lCur -> dsp.mk_shift.le.fr_shift, agc -> lCur -> dsp.mk_shift.ri.fr_shift);
@@ -314,11 +314,11 @@ static __inline int hdlbar_pmfreq(HWND hwnd, HWND hwctl, AMOD_GUI_CONTEXT *agc)
  // left channel
  if(GetDlgItem(hwnd, IDC_PMFRL) == hwctl)
  {
-  adbl_copy(&(agc -> lCur -> dsp.mk_pm.le.freq),
+  adbl_write(&(agc -> lCur -> dsp.mk_pm.le.freq),
         ((double)TB_GetTrack(hwnd, IDC_PMFRL)) / 10.0);
  if(agc -> lCur -> dsp.mk_pm.lock_freq)
  {
-  adbl_copy(&(agc -> lCur -> dsp.mk_pm.ri.freq), agc -> lCur -> dsp.mk_pm.le.freq);
+  adbl_write(&(agc -> lCur -> dsp.mk_pm.ri.freq), agc -> lCur -> dsp.mk_pm.le.freq);
   updbar_pmfreq(hwnd, agc -> lCur -> dsp.mk_pm.ri.freq, IDC_PMFRR);
  }
  updtxt_pmfreq(hwnd,
@@ -328,7 +328,7 @@ static __inline int hdlbar_pmfreq(HWND hwnd, HWND hwctl, AMOD_GUI_CONTEXT *agc)
  // right channel
  if(!agc -> lCur -> dsp.mk_pm.lock_freq && GetDlgItem(hwnd, IDC_PMFRR) == hwctl)
  {
-  adbl_copy(&(agc -> lCur -> dsp.mk_pm.ri.freq),
+  adbl_write(&(agc -> lCur -> dsp.mk_pm.ri.freq),
         ((double)TB_GetTrack(hwnd, IDC_PMFRR)) / 10.0);
   updtxt_pmfreq(hwnd,
         agc -> lCur -> dsp.mk_pm.le.freq, agc -> lCur -> dsp.mk_pm.ri.freq);
@@ -341,11 +341,11 @@ static __inline int hdlbar_pmphase(HWND hwnd, HWND hwctl, AMOD_GUI_CONTEXT *agc)
  // left channel
  if(GetDlgItem(hwnd, IDC_PMIPHL) == hwctl)
  {
-  adbl_copy(&(agc -> lCur -> dsp.mk_pm.le.phase),
+  adbl_write(&(agc -> lCur -> dsp.mk_pm.le.phase),
         ((double)TB_GetTrack(hwnd, IDC_PMIPHL)) / 100.0 - MAX_PMPHASE);
   if(agc -> lCur -> dsp.mk_pm.lock_phase)
   {
-   adbl_copy(&(agc -> lCur -> dsp.mk_pm.ri.phase), agc -> lCur -> dsp.mk_pm.le.phase);
+   adbl_write(&(agc -> lCur -> dsp.mk_pm.ri.phase), agc -> lCur -> dsp.mk_pm.le.phase);
    updbar_pmphase(hwnd, agc -> lCur -> dsp.mk_pm.ri.phase, IDC_PMIPHR);
   }
   updtxt_pmphase(hwnd,
@@ -355,7 +355,7 @@ static __inline int hdlbar_pmphase(HWND hwnd, HWND hwctl, AMOD_GUI_CONTEXT *agc)
  // right channel
  if(!agc -> lCur -> dsp.mk_pm.lock_phase && GetDlgItem(hwnd, IDC_PMIPHR) == hwctl)
  {
-  adbl_copy(&(agc ->  lCur -> dsp.mk_pm.ri.phase),
+  adbl_write(&(agc ->  lCur -> dsp.mk_pm.ri.phase),
         ((double)TB_GetTrack(hwnd, IDC_PMIPHR)) / 100.0 - MAX_PMPHASE);
   updtxt_pmphase(hwnd,
         agc -> lCur -> dsp.mk_pm.le.phase, agc -> lCur -> dsp.mk_pm.ri.phase);
@@ -368,11 +368,11 @@ static __inline int hdlbar_pmlevel(HWND hwnd, HWND hwctl, AMOD_GUI_CONTEXT *agc)
  // left channel
  if(GetDlgItem(hwnd, IDC_PMLEVL) == hwctl)
  {
-  adbl_copy(&(agc -> lCur -> dsp.mk_pm.le.level),
+  adbl_write(&(agc -> lCur -> dsp.mk_pm.le.level),
         ((double)TB_GetTrack(hwnd, IDC_PMLEVL)) / 100.0);
   if(agc -> lCur -> dsp.mk_pm.lock_level)
   {
-   adbl_copy(&(agc -> lCur -> dsp.mk_pm.ri.level), agc -> lCur -> dsp.mk_pm.le.level);
+   adbl_write(&(agc -> lCur -> dsp.mk_pm.ri.level), agc -> lCur -> dsp.mk_pm.le.level);
    updbar_pmlevel(hwnd, agc -> lCur -> dsp.mk_pm.ri.level, IDC_PMLEVR);
   }
   updtxt_pmlevel(hwnd,
@@ -382,7 +382,7 @@ static __inline int hdlbar_pmlevel(HWND hwnd, HWND hwctl, AMOD_GUI_CONTEXT *agc)
  // right channel
  if(!agc -> lCur -> dsp.mk_pm.lock_level && GetDlgItem(hwnd, IDC_PMLEVR) == hwctl)
  {
-  adbl_copy(&(agc -> lCur -> dsp.mk_pm.ri.level),
+  adbl_write(&(agc -> lCur -> dsp.mk_pm.ri.level),
         ((double)TB_GetTrack(hwnd, IDC_PMLEVR)) / 100.0);
   updtxt_pmlevel(hwnd,
         agc -> lCur -> dsp.mk_pm.le.level, agc -> lCur -> dsp.mk_pm.ri.level);
@@ -395,11 +395,11 @@ static __inline int hdlbar_pmangle(HWND hwnd, HWND hwctl, AMOD_GUI_CONTEXT *agc)
  // left channel
  if(GetDlgItem(hwnd, IDC_PMANGL) == hwctl)
  {
-  adbl_copy(&(agc -> lCur -> dsp.mk_pm.le.angle),
+  adbl_write(&(agc -> lCur -> dsp.mk_pm.le.angle),
         ((double)TB_GetTrack(hwnd, IDC_PMANGL)) / 100.0 - MAX_PMANGLE);
   if(agc -> lCur -> dsp.mk_pm.lock_angle)
   {
-   adbl_copy(&(agc -> lCur -> dsp.mk_pm.ri.angle), agc -> lCur -> dsp.mk_pm.le.angle);
+   adbl_write(&(agc -> lCur -> dsp.mk_pm.ri.angle), agc -> lCur -> dsp.mk_pm.le.angle);
    updbar_pmangle(hwnd, agc -> lCur -> dsp.mk_pm.ri.angle, IDC_PMANGR);
   }
   updtxt_pmangle(hwnd,
@@ -409,7 +409,7 @@ static __inline int hdlbar_pmangle(HWND hwnd, HWND hwctl, AMOD_GUI_CONTEXT *agc)
  // right channel
  if(!agc -> lCur -> dsp.mk_pm.lock_angle && GetDlgItem(hwnd, IDC_PMANGR) == hwctl)
  {
-  adbl_copy(&(agc -> lCur -> dsp.mk_pm.ri.angle),
+  adbl_write(&(agc -> lCur -> dsp.mk_pm.ri.angle),
         ((double)TB_GetTrack(hwnd, IDC_PMANGR)) / 100.0 - MAX_PMANGLE);
   updtxt_pmangle(hwnd,
         agc -> lCur -> dsp.mk_pm.le.angle, agc -> lCur -> dsp.mk_pm.ri.angle);
@@ -423,7 +423,7 @@ static __inline int hdlbar_pmangle(HWND hwnd, HWND hwctl, AMOD_GUI_CONTEXT *agc)
 static void set_exact_value(HWND hwnd,
         int id_par_slider, int id_mirror_slider, int is_mirror_lock,
         int mirror_mirror, // 0==parameter; 1==mirror only; -1==neg. mirror
-        const TCHAR *title, DBL_VOLATILE double *par_val, DBL_VOLATILE double *mirror_val,
+        const TCHAR *title, volatile double *par_val, volatile double *mirror_val,
         double min_val, double max_val,
         UPDBAR_VAL updbar_val, UPDTXT_VAL updtxt_val, AMOD_GUI_CONTEXT *agc)
 {
@@ -445,12 +445,12 @@ static void set_exact_value(HWND hwnd,
         && neval >= min_val
         && neval <= max_val)
  {
-  adbl_copy(mirror_mirror > 0? mirror_val : par_val, neval);
+  adbl_write(mirror_mirror > 0? mirror_val : par_val, neval);
   (*updbar_val)(hwnd, neval, id_val);
 
   if(is_mirror_lock)
   {
-   adbl_copy(mirror_val, mirror_mirror < 0? -(*par_val) : *par_val);
+   adbl_write(mirror_val, mirror_mirror < 0? -(*par_val) : *par_val);
    (*updbar_val)(hwnd, *mirror_val, id_mirror_slider);
   }
 
@@ -787,15 +787,24 @@ static void ShowCounters(HWND hwnd,
         BOOL isRedraw,
         AMOD_GUI_CONTEXT *agc)
 {
- if(isResetPlay)
-  the.mc_playback.n_frame = 0;
- if(isResetTrans)
-  the.mc_transcode.n_frame = 0;
+ uint64_t n_frame;
 
- if((agc -> snfr_play != the.mc_playback.n_frame) || isRedraw)
-  TXT_PrintTxt(hwnd, IDS_NFR_PLAY, _T("%I64u"), (uint64_t)(agc -> snfr_play = the.mc_playback.n_frame));
- if((agc -> snfr_trans != the.mc_transcode.n_frame) || isRedraw)
-  TXT_PrintTxt(hwnd, IDS_NFR_TRANS, _T("%I64u"), (uint64_t)(agc -> snfr_trans = the.mc_transcode.n_frame));
+ if(isResetPlay)
+  mod_context_reset_framecnt(&(the.mc_playback));
+ if(isResetTrans)
+  mod_context_reset_framecnt(&(the.mc_transcode));
+
+ n_frame = mod_context_get_framecnt(&(the.mc_playback));
+ if((agc -> snfr_play != n_frame) || isRedraw)
+ {
+  TXT_PrintTxt(hwnd, IDS_NFR_PLAY, _T("%I64u"), agc -> snfr_play = n_frame);
+ }
+
+ n_frame = mod_context_get_framecnt(&(the.mc_transcode));
+ if((agc -> snfr_trans != n_frame) || isRedraw)
+ {
+  TXT_PrintTxt(hwnd, IDS_NFR_TRANS, _T("%I64u"), agc -> snfr_trans = n_frame);
+ }
 }
 
 /* show/reset clips / peaks indicators
@@ -1011,9 +1020,12 @@ static BOOL Setup_Dlg_OnInitDialog(HWND hwnd, HWND hwndFocus, LPARAM lParam)
  CheckDlgButton(hwnd, IDC_BYPASS_LIST, amod_get_bypass_list_flag()? BST_CHECKED : BST_UNCHECKED);
  updtxt_bypass_list_flag(hwnd);
  CheckDlgButton(hwnd, IDC_LONG_NO,     the.cfg.show_long_numbers  ? BST_CHECKED : BST_UNCHECKED);
+ CheckDlgButton(hwnd, IDC_RESET_NFR,   the.cfg.is_clr_nframe_trk  ? BST_CHECKED : BST_UNCHECKED);
+ CheckDlgButton(hwnd, IDC_RESET_HILB,  the.cfg.is_clr_hilb_trk    ? BST_CHECKED : BST_UNCHECKED);
  CheckDlgButton(hwnd, IDC_ADV24BITS,   the.cfg.need24bits         ? BST_CHECKED : BST_UNCHECKED);
  CheckDlgButton(hwnd, IDC_SHOWPLAY,    getShowPlay()              ? BST_CHECKED : BST_UNCHECKED);
  CheckDlgButton(hwnd, IDC_SEXCP,       the.cfg.is_fp_check        ? BST_CHECKED : BST_UNCHECKED);
+
 
  ShowCounters(hwnd, FALSE, FALSE, TRUE, agc);
  ShowClipsPeaks(hwnd, FALSE, TRUE, agc);
@@ -1022,7 +1034,7 @@ static BOOL Setup_Dlg_OnInitDialog(HWND hwnd, HWND hwndFocus, LPARAM lParam)
  ShowFPExceptions(hwnd, the.cfg.is_fp_check, TRUE, agc);
 
  // create the timer 200 ms
- agc -> timer_id = SetTimer(hwnd, 308, 200, (TIMERPROC)NULL);
+ agc -> timer_id = SetTimer(hwnd, 308 /* ID */, 200 /* ms */, (TIMERPROC)NULL);
  return TRUE;                   // default focus
 }
 
@@ -1142,7 +1154,7 @@ static void Setup_Dlg_OnCommand(HWND hwnd, int id, HWND hwndCtl, UINT codeNotify
    EnDis(hwnd, IDB_GAINR, !agc -> lCur -> lock_gain);
    if(agc -> lCur -> lock_gain)
    {
-    adbl_copy(&(agc -> lCur -> r_gain), agc -> lCur -> l_gain);
+    adbl_write(&(agc -> lCur -> r_gain), agc -> lCur -> l_gain);
     updbar_gain(hwnd, agc -> lCur -> r_gain, IDC_GAINR);
     updtxt_gain(hwnd, agc -> lCur -> l_gain, agc -> lCur -> r_gain);
     updtxt_xiq (hwnd,
@@ -1160,7 +1172,7 @@ static void Setup_Dlg_OnCommand(HWND hwnd, int id, HWND hwndCtl, UINT codeNotify
 
    if(agc -> lCur -> dsp.mk_shift.lock_shift)
    {
-    adbl_copy(&(agc -> lCur -> dsp.mk_shift.ri.fr_shift),
+    adbl_write(&(agc -> lCur -> dsp.mk_shift.ri.fr_shift),
         agc -> lCur -> dsp.mk_shift.sign_lock_shift?
                 -agc -> lCur -> dsp.mk_shift.le.fr_shift
                 :
@@ -1194,7 +1206,7 @@ static void Setup_Dlg_OnCommand(HWND hwnd, int id, HWND hwndCtl, UINT codeNotify
 
    if(agc -> lCur -> dsp.mk_pm.lock_freq)
    {
-    adbl_copy(&(agc -> lCur -> dsp.mk_pm.ri.freq), agc -> lCur -> dsp.mk_pm.le.freq);
+    adbl_write(&(agc -> lCur -> dsp.mk_pm.ri.freq), agc -> lCur -> dsp.mk_pm.le.freq);
     updbar_pmfreq(hwnd, agc -> lCur -> dsp.mk_pm.ri.freq, IDC_PMFRR);
     updtxt_pmfreq(hwnd, agc -> lCur -> dsp.mk_pm.le.freq, agc -> lCur -> dsp.mk_pm.ri.freq);
 
@@ -1214,7 +1226,7 @@ static void Setup_Dlg_OnCommand(HWND hwnd, int id, HWND hwndCtl, UINT codeNotify
    EnDis(hwnd, IDB_PMIPHR, !agc -> lCur -> dsp.mk_pm.lock_phase);
    if(agc -> lCur -> dsp.mk_pm.lock_phase)
    {
-    adbl_copy(&(agc -> lCur -> dsp.mk_pm.ri.phase), agc -> lCur -> dsp.mk_pm.le.phase);
+    adbl_write(&(agc -> lCur -> dsp.mk_pm.ri.phase), agc -> lCur -> dsp.mk_pm.le.phase);
     updbar_pmphase(hwnd, agc -> lCur -> dsp.mk_pm.ri.phase, IDC_PMIPHR);
     updtxt_pmphase(hwnd, agc -> lCur -> dsp.mk_pm.le.phase, agc -> lCur -> dsp.mk_pm.ri.phase);
    }
@@ -1227,7 +1239,7 @@ static void Setup_Dlg_OnCommand(HWND hwnd, int id, HWND hwndCtl, UINT codeNotify
    EnDis(hwnd, IDB_PMLEVR, !agc -> lCur -> dsp.mk_pm.lock_level);
    if(agc -> lCur -> dsp.mk_pm.lock_level)
    {
-    adbl_copy(&(agc -> lCur -> dsp.mk_pm.ri.level), agc -> lCur -> dsp.mk_pm.le.level);
+    adbl_write(&(agc -> lCur -> dsp.mk_pm.ri.level), agc -> lCur -> dsp.mk_pm.le.level);
     updbar_pmlevel(hwnd, agc -> lCur -> dsp.mk_pm.ri.level, IDC_PMLEVR);
     updtxt_pmlevel(hwnd, agc -> lCur -> dsp.mk_pm.le.level, agc -> lCur -> dsp.mk_pm.ri.level);
    }
@@ -1240,7 +1252,7 @@ static void Setup_Dlg_OnCommand(HWND hwnd, int id, HWND hwndCtl, UINT codeNotify
    EnDis(hwnd, IDB_PMANGR, !agc -> lCur -> dsp.mk_pm.lock_angle);
    if(agc -> lCur -> dsp.mk_pm.lock_angle)
    {
-    adbl_copy(&(agc -> lCur -> dsp.mk_pm.ri.angle), agc -> lCur -> dsp.mk_pm.le.angle);
+    adbl_write(&(agc -> lCur -> dsp.mk_pm.ri.angle), agc -> lCur -> dsp.mk_pm.le.angle);
     updbar_pmangle(hwnd, agc -> lCur -> dsp.mk_pm.ri.angle, IDC_PMANGR);
     updtxt_pmangle(hwnd, agc -> lCur -> dsp.mk_pm.le.angle, agc -> lCur -> dsp.mk_pm.ri.angle);
    }
@@ -1402,6 +1414,15 @@ static void Setup_Dlg_OnCommand(HWND hwnd, int id, HWND hwndCtl, UINT codeNotify
   // clear clips counters
   case IDB_RESET_CLIPS:
    ShowClipsPeaks(hwnd, TRUE, TRUE, agc);
+   break;
+
+  // setup clear frame counter / analitic transformers per each track
+  case IDC_RESET_NFR:                   // clear frame counter per each track
+   the.cfg.is_clr_nframe_trk = !!(BST_CHECKED == IsDlgButtonChecked(hwnd, IDC_RESET_NFR));
+   break;
+
+  case IDC_RESET_HILB:                  // clear Hilbert's converter per each track
+   the.cfg.is_clr_hilb_trk = !!(BST_CHECKED == IsDlgButtonChecked(hwnd, IDC_RESET_HILB));
    break;
 
   // the inputs (so many...^)
@@ -1887,6 +1908,9 @@ typedef struct tagSYSETUP_CONTEXT
  BOOL enable_unload_cleanup;                    // enable cleanup on unload plugin
  unsigned play_sleep;                           // sleep while playback, ms
  BOOL disable_play_sleep;                       // disable sleep on plyback
+ unsigned sec_align;                            // time in seconds to align file length
+ unsigned fade_in;                              // track fade in, ms
+ unsigned fade_out;                             // track fade out, ms
  BOOL is_frmod_scaled;                          // true, if unsigned scaled modulation freqencies in use
 } SYSETUP_CONTEXT;
 
@@ -1918,6 +1942,10 @@ static BOOL SySetup_Dlg_OnInitDialog(HWND hwnd, HWND hwndFocus, LPARAM lParam)
  EnDis(hwnd, IDC_SLEEPTIME, !ssc -> disable_play_sleep);
  EnDis(hwnd, IDB_SLEEPTIME, !ssc -> disable_play_sleep);
  CheckDlgButton(hwnd, IDC_NOSLEEP, ssc -> disable_play_sleep);
+
+ TXT_PrintTxt(hwnd, IDC_ALIGN,    _T("%u"), ssc -> sec_align);
+ TXT_PrintTxt(hwnd, IDC_FADE_IN,  _T("%u"), ssc -> fade_in);
+ TXT_PrintTxt(hwnd, IDC_FADE_OUT, _T("%u"), ssc -> fade_out);
 
  CheckRadioButton(hwnd, IDC_MODFR_SCALED, IDC_MODFR_NATIVE,
         ssc -> is_frmod_scaled? IDC_MODFR_SCALED : IDC_MODFR_NATIVE);
@@ -1972,6 +2000,13 @@ static void SySetup_Dlg_OnCommand(HWND hwnd, int id, HWND hwndCtl, UINT codeNoti
    EnDis(hwnd, IDB_SLEEPTIME, !ssc -> disable_play_sleep);
    break;
 
+  // -- track framing setup
+  case IDB_TRACCEPT:                    // set align time, fade in and fade out
+   ssc -> sec_align = TXT_GetUlng(hwnd, IDC_ALIGN,    0, 0, MAX_ALIGN_SEC);
+   ssc -> fade_in   = TXT_GetUlng(hwnd, IDC_FADE_IN,  0, 0, MAX_FADE_INOUT);
+   ssc -> fade_out  = TXT_GetUlng(hwnd, IDC_FADE_OUT, 0, 0, MAX_FADE_INOUT);
+   break;
+
   // -- setup modulation freqency scaling
   case IDC_MODFR_SCALED:                // switch to scaled mode
    ssc -> is_frmod_scaled = TRUE;
@@ -2024,6 +2059,9 @@ static void plugin_systetup_dialog(HWND hwndParent,
  ssc.enable_unload_cleanup  = ic_conf -> enable_unload_cleanup;
  ssc.play_sleep             = ic_conf -> play_sleep;
  ssc.disable_play_sleep     = ic_conf -> disable_play_sleep;
+ ssc.sec_align              = ic_conf -> sec_align;
+ ssc.fade_in                = ic_conf -> fade_in;
+ ssc.fade_out               = ic_conf -> fade_out;
  ssc.is_frmod_scaled        = ic_conf -> is_frmod_scaled;
 
  res = DialogBoxParam(agc -> loc_hi, MAKEINTRESOURCE(IDD_SYSETUP),
@@ -2068,6 +2106,10 @@ static void plugin_systetup_dialog(HWND hwndParent,
    ic_conf -> play_sleep = ssc.play_sleep;
   if(!ssc.disable_play_sleep)
    ic_conf -> disable_play_sleep = ssc.disable_play_sleep;
+
+  ic_conf -> sec_align = ssc.sec_align;
+  ic_conf -> fade_in   = ssc.fade_in;
+  ic_conf -> fade_out  = ssc.fade_out;
 
   // milihertz or hertz
   if(ic_conf -> is_frmod_scaled != ssc.is_frmod_scaled)

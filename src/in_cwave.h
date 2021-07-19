@@ -100,7 +100,7 @@
  */
 
 // see OLD_NEWS and CHANGELOG about versioning
-#define VERSION_IN_CWAVE        "V2.2.4"
+#define VERSION_IN_CWAVE        "V2.3.0"
 
 #if !defined(MAX_FILE_PATH)
 #if defined(UNICODE)
@@ -115,7 +115,6 @@
 #define MAX_CONFIG_KEYW (80)
 #define MAX_CONFIG_ARGS (MAX_CONFIG_LINE - MAX_CONFIG_KEYW)
 
-
 // post this to the main window at end of file (after playback as stopped)
 #define WM_WA_MPEG_EOF  (WM_USER + 2)
 
@@ -125,6 +124,10 @@
 
 #define DEF_PLAY_SLEEP  (20)                    /* default sleep time in playback loop */
 #define MAX_PLAY_SLEEP  (100)                   /* max. sleep time in playback loop */
+
+#define MAX_ALIGN_SEC   (20)                    /* max. align time in seconds */
+
+#define MAX_FADE_INOUT  (10000)                 /* max. track fade in / fade out, ms */
 
 // ** we *MISTRUST* for M_PI **
 #ifdef  PI
@@ -199,7 +202,7 @@ typedef struct tagMAKE_MASTER                   // full "master" type
 // "Shift" output
 typedef struct tagCMAKE_SHIFT                   // one channel specific for shift
 {
- DBL_VOLATILE double fr_shift;                  // shift for left with sign [-MAX_FSHIFT..MAX_FSHIFT]
+ volatile double fr_shift;                      // shift for left with sign [-MAX_FSHIFT..MAX_FSHIFT]
  volatile int is_shift;                         // 0 - channel unchanged (bypass)
 } CMAKE_SHIFT;
 
@@ -215,10 +218,10 @@ typedef struct tagMAKE_SHIFT                    // full "shift" type
 // "PM" output
 typedef struct tagCMAKE_PM                      // one channel specific for PM
 {
- DBL_VOLATILE double freq;                      // PM frequency [0..MAX_PMFREQ]
- DBL_VOLATILE double phase;                     // PM "internal" phase [MIN_PMPHASE..MAX_PMPHASE]
- DBL_VOLATILE double level;                     // PM level [0..MAX_PMLEVEL]
- DBL_VOLATILE double angle;                     // initial phase [MIN_PMANGLE..MAX_PMANGLE]
+ volatile double freq;                          // PM frequency [0..MAX_PMFREQ]
+ volatile double phase;                         // PM "internal" phase [MIN_PMPHASE..MAX_PMPHASE]
+ volatile double level;                         // PM level [0..MAX_PMLEVEL]
+ volatile double angle;                         // initial phase [MIN_PMANGLE..MAX_PMANGLE]
  volatile int is_pm;                            // 0 - channel unchanged (bypass)
 } CMAKE_PM;
 
@@ -255,8 +258,8 @@ typedef struct tagNODE_DSP
 {
  struct tagNODE_DSP *prev;                      // link to previous node
  struct tagNODE_DSP *next;                      // link to next node
- DBL_VOLATILE double l_gain;                    // left gain [0..MAX_GAIN]
- DBL_VOLATILE double r_gain;                    // right gain [0..MAX_GAIN]
+ volatile double l_gain;                        // left gain [0..MAX_GAIN]
+ volatile double r_gain;                        // right gain [0..MAX_GAIN]
  char inputs[N_INPUTS];                         // inputs to mix (bool)
  int xch_mode;                                  // channels exchange mode XCH_xxx
  int l_iq_invert;                               // left ch. inversion of spectrum (I/Q swap), bool
@@ -366,14 +369,20 @@ typedef struct tagXWAVE_READER
  UNPACK_SAMPLE unpack_handler;                  // sample unpacker @ .is_sample_complex
 
  unsigned n_channels;                           // number of channels
- int64_t n_samples;                             // number of samples
+ int64_t n_samples;                             // number of samples in file
+ int64_t n_tail;                                // number of samples in virtual silence tail
  unsigned sample_rate;                          // sample rate of the source
+ unsigned ch_sample_size;                       // single channel sample size
  unsigned sample_size;                          // size of n_channel frame of samples
  int64_t offset_data;                           // offset of audio data in the file
  int64_t pos_samples;                           // current position in file in samples
+ int64_t pos_tail;                              // position in virtual silence tail
+ unsigned n_fade_in;                            // fade in, samples
+ unsigned n_fade_out;                           // fade_out, samples
 
  BYTE *tbuff;                                   // the data buffer for read quant
  BYTE *ptr_tbuff;                               // pointer to sample-based reader
+ BYTE *zero_sample;                             // pointer to zero (silence) sample
  unsigned read_quant;                           // quant of the data to read, samples
  unsigned really_readed;                        // really readed after last read, samples
  unsigned unpacked;                             // already unpacked (in mean "unpacked to double")
@@ -382,11 +391,10 @@ typedef struct tagXWAVE_READER
 /* the modulator context for the conversion thread / interface (playback and transcode)
  * --- --------- ------- --- --- ---------- ------ - --------- --------- --- ----------
  */
-typedef int64_t FRAME_CNT;                      // the helper type -- samples counter
-
 typedef struct tagMOD_CONTEXT
 {
- volatile FRAME_CNT n_frame;                    // sample counter
+ CRITICAL_SECTION cs_n_frame;                   // sample counter protector
+ volatile uint64_t n_frame;                     // sample counter
  LRCOMPLEX inout[N_INPUTS];                     // in/out bus
  LPF_HILBERT_QUAD *h_left;                      // Analitic transformer-left channel
  LPF_HILBERT_QUAD *h_right;                     // Analitic transformer-right channel
@@ -417,8 +425,13 @@ typedef struct tagIN_CWAVE_CFG
  BOOL enable_unload_cleanup;                    // enable cleanup on unload plugin
  unsigned play_sleep;                           // sleep while playback, ms
  BOOL disable_play_sleep;                       // disable sleep on plyback
+ unsigned sec_align;                            // time in seconds to align file length
+ unsigned fade_in;                              // track fade in, ms
+ unsigned fade_out;                             // track fade out, ms
  BOOL is_frmod_scaled;                          // true, if unsigned scaled modulation frequencies in use
  unsigned iir_filter_no;                        // number of current HB LPF for quad Hilbert conv.
+ BOOL is_clr_nframe_trk;                        // clear sample counter per each track
+ BOOL is_clr_hilb_trk;                          // clear analitic transformers per track
  BOOL show_long_numbers;                        // show reasonable many digits in operating parameters
  BOOL is_fp_check;                              // true, if floating point check set
  // sound render part
@@ -472,6 +485,18 @@ void mod_context_fclose(MOD_CONTEXT *mc);
 /* clear (unused) in-out in the all module-contexts
 */
 void mod_context_clear_all_inouts(int nclr);
+/* lock frame counter
+*/
+void mod_context_lock_framecnt(MOD_CONTEXT *mc);
+/* unlock frame counter
+*/
+void mod_context_unlock_framecnt(MOD_CONTEXT *mc);
+/* get value of frame counter
+*/
+uint64_t mod_context_get_framecnt(MOD_CONTEXT *mc);
+/* clear frame counter
+*/
+void mod_context_reset_framecnt(MOD_CONTEXT *mc);
 /* set new mode for the all FP exception counters
 */
 void fecs_set_endis_all(BOOL new_endis);
@@ -595,10 +620,19 @@ int amod_process_samples(char *buf, MOD_CONTEXT *mc);
  */
 /* create reader -- one reader per file; return NULL if error
 */
-XWAVE_READER *xwave_reader_create(const TCHAR *name, unsigned read_quant);
+XWAVE_READER *xwave_reader_create(
+      const TCHAR *name
+    , unsigned read_quant
+    , unsigned sec_align
+    , unsigned fade_in
+    , unsigned fade_out
+    );
 /* destroy the reader
 */
 void xwave_reader_destroy(XWAVE_READER *xr);
+/* get total number of samples in xwave_reader object (real + virtual)
+*/
+int64_t xwave_get_nsamples(XWAVE_READER *xr);
 /* abs seek in samples terms in the file (non-unpacked data will be lost)
 */
 BOOL xwave_seek_samples(int64_t sample_pos, XWAVE_READER *xr);  // FALSE == bad

@@ -35,6 +35,8 @@ in_cwave V1.*.* (Unpublic!) Versions History -- see OLD_NEWS
         Default gain for mod/mix nodes now 1.0 (Master stay 0.8);
         Different configurations for "plain build" (Windows VIsta+) ans Windows XP;
         MinGW/Code::Blocks XP build don't support UTF-16LE configs.
-09-Jul-2021 -- V2.2.4 - Fix insufficient 32-bit resolution of frame counter
-	to 64 bit (it was a bug);
-	Cange Microsoft's __int64 and somewhere unsigned/int to <stdint.h> types;
+19-Jul-2021 -- V2.3.0 - Add per-track reseting of sample counter and analitic converter;
+        Add optional track time aligment and fade in / fade out;
+        Fix insufficient 32-bit resolution of frame counter to 64 bit (it was an 'almost bug');
+        Change Microsoft's __int64 and somewhere unsigned/int to <stdint.h> types;
+        Rename DBL_COPY_FAST to ATM_COPY_FAST.

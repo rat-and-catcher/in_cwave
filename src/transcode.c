@@ -53,7 +53,7 @@ __declspec(dllexport) intptr_t
   return 0;
 
  out_size = sound_render_size(&mc -> sr_left) + sound_render_size(&mc -> sr_right);
- sz = (int64_t)mc -> xr -> n_samples * (int64_t)(out_size);
+ sz = xwave_get_nsamples(mc -> xr) * (int64_t)(out_size);
 
  // ..significantly unsure..
  if(sz > (0x7FFFFFFFLL

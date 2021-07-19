@@ -54,7 +54,7 @@
 					<Add option="-Wall" />
 					<Add option="-g" />
 					<Add option="-DBUILD_DLL" />
-					<Add option="-DDBL_COPY_FAST" />
+					<Add option="-DATM_COPY_FAST" />
 					<Add option="-DFOPEN_XP" />
 				</Compiler>
 				<Linker>
@@ -74,7 +74,7 @@
 					<Add option="-O3" />
 					<Add option="-Wall" />
 					<Add option="-DBUILD_DLL" />
-					<Add option="-DDBL_COPY_FAST" />
+					<Add option="-DATM_COPY_FAST" />
 					<Add option="-DFOPEN_XP" />
 				</Compiler>
 				<Linker>

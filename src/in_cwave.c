@@ -47,8 +47,9 @@ static void mod_context_init(MOD_CONTEXT *mc)
 {
  int i;
 
- // frames (samples) counters
- mc -> n_frame = 0;
+ // frames (samples) counter
+ InitializeCriticalSection(&(mc -> cs_n_frame));
+ mod_context_reset_framecnt(mc);
 
  // in/out buses
  for(i = 0; i < N_INPUTS; ++i)
@@ -99,8 +100,10 @@ static void mod_context_cleanup(MOD_CONTEXT *mc)
   mc -> h_right = NULL;
  }
 
- sound_render_cleanup(&mc -> sr_left);
- sound_render_cleanup(&mc -> sr_right);
+ DeleteCriticalSection(&(mc -> cs_n_frame));
+
+ sound_render_cleanup(&(mc -> sr_left));
+ sound_render_cleanup(&(mc -> sr_right));
 }
 
 /* reset modulator's Hilbert transformer
@@ -187,8 +190,20 @@ BOOL mod_context_fopen(const TCHAR *name, unsigned read_quant,  // for XWAVE_REA
  BOOL need24bits = the.cfg.need24bits;
 
  // the reader first
- if(NULL == (mc -> xr = xwave_reader_create(name, read_quant)))
+ if(NULL == (mc -> xr = xwave_reader_create(
+      name
+    , read_quant
+    , the.cfg.sec_align
+    , the.cfg.fade_in
+    , the.cfg.fade_out
+    )))
   return FALSE;
+
+ // clear frame counter / analitic transformers if need
+ if(the.cfg.is_clr_nframe_trk)
+  mod_context_reset_framecnt(mc);
+ if(the.cfg.is_clr_hilb_trk)
+  mod_context_reset_hilbert(mc);
 
  // create the renders -- no playback -- we can/must to change bits according to
  // current config -- here and only here (other parameters can be changed in "realtime")
@@ -216,10 +231,45 @@ void mod_context_fclose(MOD_CONTEXT *mc)
 */
 void mod_context_clear_all_inouts(int nclr)
 {
-  the.mc_playback.inout[nclr].le.re  = the.mc_playback.inout[nclr].le.im =
-  the.mc_playback.inout[nclr].ri.re  = the.mc_playback.inout[nclr].ri.im =
+  the.mc_playback.inout [nclr].le.re = the.mc_playback.inout [nclr].le.im =
+  the.mc_playback.inout [nclr].ri.re = the.mc_playback.inout [nclr].ri.im =
   the.mc_transcode.inout[nclr].le.re = the.mc_transcode.inout[nclr].le.im =
   the.mc_transcode.inout[nclr].ri.re = the.mc_transcode.inout[nclr].ri.im = 0.0;
+}
+
+/* lock frame counter
+*/
+void mod_context_lock_framecnt(MOD_CONTEXT *mc)
+{
+ EnterCriticalSection(&(mc -> cs_n_frame));
+}
+
+/* unlock frame counter
+*/
+void mod_context_unlock_framecnt(MOD_CONTEXT *mc)
+{
+ LeaveCriticalSection(&(mc -> cs_n_frame));
+}
+
+/* get value of frame counter
+*/
+uint64_t mod_context_get_framecnt(MOD_CONTEXT *mc)
+{
+ uint64_t res;
+
+ mod_context_lock_framecnt(mc);
+ res = mc -> n_frame;
+ mod_context_unlock_framecnt(mc);
+ return res;
+}
+
+/* clear frame counter
+*/
+void mod_context_reset_framecnt(MOD_CONTEXT *mc)
+{
+ mod_context_lock_framecnt(mc);
+ mc -> n_frame = 0ULL;
+ mod_context_unlock_framecnt(mc);
 }
 
 /* modulators exceptions statistics -- summary

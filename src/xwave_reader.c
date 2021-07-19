@@ -109,6 +109,14 @@
 // On write, we has began from LSBit (0x1 for one channel, 0x3 for two, 0x7 for three etc).
 // NOTE::writing WAV files not supported in this version
 
+/* zero-valued samples of different types
+ * ----------- ------- -- --------- -----
+ */
+static const double zero_f64 = 0.0;             // double (64)
+static const float zero_f32 = 0.0F;             // float (32)
+static const uint32_t zero_i32 = 0;             // generic signed/unsigned int / uint for all (u)int_16/24/32
+static const uint8_t zero_u8 = 0x80U;           // WAV's zero-velued byte (0 == middle of scale)
+
 /* the heplers
  * --- -------
  */
@@ -196,10 +204,10 @@ static void unpack_cwave_flt(double *vI, double *vQ, const BYTE **buf)
 // -- HRW_FMT_UINT8 (0)
 static void unpack_rwave_uch(double *vR, const BYTE **buf)
 {
- unsigned char *bptr = (unsigned char *)(*buf);
+ uint8_t *bptr = (uint8_t *)(*buf);
 
- *vR = 256.0 * (double)((signed char)(bptr[0] - 0x80U));
- *buf += sizeof(unsigned char);
+ *vR = 256.0 * (double)((int8_t)(bptr[0] - 0x80U));
+ *buf += sizeof(uint8_t);
 }
 
 // -- HRW_FMT_INT16 (1)
@@ -213,7 +221,7 @@ static void unpack_rwave_sht(double *vR, const BYTE **buf)
 static void unpack_rwave_i24(double *vR, const BYTE **buf)
 {
  *vR = ((double)unpack_int24(*buf)) / 256.0;
- *buf += sizeof(unsigned char) * 3;
+ *buf += sizeof(uint8_t) * 3;
 }
 
 // -- HRW_FMT_INT32 (3)
@@ -243,7 +251,7 @@ static BOOL cwave_reader_create(XWAVE_READER *xr)       // FALSE == BAD
   sizeof(float) * 2                                     // HCW_FMT_PCM_FLT32 (3)
  };
  // known part of the header
- unsigned char hbuf[8 + sizeof(unsigned) * 7 + sizeof(int) + sizeof(double)];
+ uint8_t hbuf[8 + sizeof(unsigned) * 7 + sizeof(int) + sizeof(double)];
  const size_t hsize = 8 + sizeof(unsigned) * 7 + sizeof(int) + sizeof(double);
  int i = 0;
 
@@ -295,23 +303,35 @@ static BOOL cwave_reader_create(XWAVE_READER *xr)       // FALSE == BAD
  xr -> n_channels       = xr -> spec.cwave.header.n_channels;
  xr -> n_samples        = xr -> spec.cwave.header.n_samples;
  xr -> sample_rate      = xr -> spec.cwave.header.sample_rate;
- xr -> sample_size      = xr -> spec.cwave.header.n_channels
-                        * cw_slen[xr -> spec.cwave.header.format];
+ xr -> ch_sample_size   = cw_slen[xr -> spec.cwave.header.format];
+ xr -> sample_size      = xr -> ch_sample_size * xr -> spec.cwave.header.n_channels;
  xr -> offset_data      = xr -> spec.cwave.header.hsize;
+ xr -> zero_sample      = cmalloc(xr -> sample_size);
 
  switch(xr -> spec.cwave.header.format)
  {
   case HCW_FMT_PCM_DBL64:
    xr -> unpack_handler.unpack_iq = &unpack_cwave_dbl;
+   memcpy(xr -> zero_sample, &zero_f64, sizeof(zero_f64));
+   memcpy(xr -> zero_sample           + sizeof(zero_f64), &zero_f64, sizeof(zero_f64));
    break;
+
   case HCW_FMT_PCM_INT16:
    xr -> unpack_handler.unpack_iq = &unpack_cwave_sht;
+   memcpy(xr -> zero_sample, &zero_i32, sizeof(int16_t));
+   memcpy(xr -> zero_sample           + sizeof(int16_t), &zero_i32, sizeof(int16_t));
    break;
+
   case HCW_FMT_PCM_INT16_FLT32:
    xr -> unpack_handler.unpack_iq = &unpack_cwave_sht_flt;
+   memcpy(xr -> zero_sample, &zero_i32, sizeof(int16_t));
+   memcpy(xr -> zero_sample           + sizeof(int16_t), &zero_f32, sizeof(zero_f32));
    break;
+
   case HCW_FMT_PCM_FLT32:
    xr -> unpack_handler.unpack_iq = &unpack_cwave_flt;
+   memcpy(xr -> zero_sample, &zero_f32, sizeof(zero_f32));
+   memcpy(xr -> zero_sample           + sizeof(zero_f32), &zero_f32, sizeof(zero_f32));
    break;
  }
 
@@ -350,16 +370,16 @@ static BOOL rwave_reader_create(XWAVE_READER *xr)       // FALSE == BAD
  static const size_t sizPCMWAVEFORMAT = sizeof(WORD) * 4 + sizeof(DWORD) * 2;
  static const size_t sizWAVEFORMATEXTENSIBLE = sizeof(WORD) * 6 + sizeof(DWORD) * 3 + sizeof(GUID);
  // and correspondig buffer with max possible size -- size, wich we can eat
- unsigned char fmtbuf[sizeof(WORD) * 6 + sizeof(DWORD) * 3 + sizeof(GUID)];
+ uint8_t fmtbuf[sizeof(WORD) * 6 + sizeof(DWORD) * 3 + sizeof(GUID)];
 
  int64_t fsize = get_file_size(xr);                     // don't check here
  int64_t fpos = 0;
  unsigned fmt_ch_len, data_ch_len;
 
- unsigned char hchunk[8];                               // chunk header FOURCC(4)<body_len>(4)
+ uint8_t hchunk[8];                                     // chunk header FOURCC(4)<body_len>(4)
 
  {      // first of all, we read file header "RIFF(4)<filelen-8>(4)WAVE(4)". <filelen> will be ignored.
-  unsigned char hbuf[12];
+  uint8_t hbuf[12];
 
   if(read_data(hbuf, 12, xr) != 12
         || memcmp(&hbuf[0], "RIFF", 4)
@@ -523,31 +543,41 @@ static BOOL rwave_reader_create(XWAVE_READER *xr)       // FALSE == BAD
  }
 
  // fill the rest of the header
- xr -> sample_size = (xr -> spec.rwave.header.Format.wBitsPerSample >> 3) *
-        xr -> spec.rwave.header.Format.nChannels;
+ xr -> ch_sample_size = xr -> spec.rwave.header.Format.wBitsPerSample >> 3;
+ xr -> sample_size = xr -> ch_sample_size * xr -> spec.rwave.header.Format.nChannels;
  xr -> n_channels = xr -> spec.rwave.header.Format.nChannels;
  if((xr -> n_samples = data_ch_len / xr -> sample_size) < MIN_FILE_SAMPLES
         || xr -> spec.rwave.header.Format.nBlockAlign != xr -> sample_size)
   return FALSE;
  xr -> sample_rate = xr -> spec.rwave.header.Format.nSamplesPerSec;
  xr -> offset_data = fpos;
+ xr -> zero_sample      = cmalloc(xr -> sample_size);
 
  switch(xr -> spec.rwave.format)
  {
   case HRW_FMT_UINT8:
    xr -> unpack_handler.unpack_re = &unpack_rwave_uch;
+   memcpy(xr -> zero_sample, &zero_u8, sizeof(zero_u8));
    break;
+
   case HRW_FMT_INT16:
    xr -> unpack_handler.unpack_re = &unpack_rwave_sht;
+   memcpy(xr -> zero_sample, &zero_i32, sizeof(int16_t));
    break;
+
   case HRW_FMT_INT24:
    xr -> unpack_handler.unpack_re = &unpack_rwave_i24;
+   memcpy(xr -> zero_sample, &zero_i32, sizeof(uint8_t) * 3);
    break;
+
   case HRW_FMT_INT32:
    xr -> unpack_handler.unpack_re = &unpack_rwave_int;
+   memcpy(xr -> zero_sample, &zero_i32, sizeof(zero_i32));
    break;
+
   case HRW_FMT_FLOAT32:
    xr -> unpack_handler.unpack_re = &unpack_rwave_flt;
+   memcpy(xr -> zero_sample, &zero_f32, sizeof(zero_f32));
    break;
  }
 
@@ -560,10 +590,17 @@ static BOOL rwave_reader_create(XWAVE_READER *xr)       // FALSE == BAD
  */
 /* create reader -- one reader per file; return NULL if error
 */
-XWAVE_READER *xwave_reader_create(const TCHAR *name, unsigned read_quant)
+XWAVE_READER *xwave_reader_create(
+      const TCHAR *name
+    , unsigned read_quant
+    , unsigned sec_align
+    , unsigned fade_in
+    , unsigned fade_out
+    )
 {
  XWAVE_READER *xr = NULL;
  unsigned namelen, pnamelen, filetype;
+ unsigned cnt;
  const TCHAR *p;
 
  if(!name || !*name)
@@ -641,11 +678,52 @@ XWAVE_READER *xwave_reader_create(const TCHAR *name, unsigned read_quant)
  if(xr -> sample_rate > MAX_FS_SRC)
   return xwave_reader_destroy(xr), NULL;
 
- // OK
+ // OK -- the rest of initialization stuff
  xr -> tbuff =
  xr -> ptr_tbuff =
         xr -> read_quant? cmalloc(xr -> sample_size * xr -> read_quant) : NULL;
  xr -> pos_samples = 0;
+
+ // virtual zero tail to align to sec_align
+ if(sec_align)
+ {
+  int64_t max_tail = ((int64_t)xr -> sample_rate) * (int64_t)sec_align;
+  int64_t frest = xr -> n_samples % max_tail;
+
+  xr -> n_tail = frest? max_tail - frest : 0;
+ }
+ else
+ {
+  xr -> n_tail = 0;
+ }
+ xr -> pos_tail = 0;
+
+ for(cnt = 1; cnt < xr -> n_channels; ++cnt)
+ {
+  memcpy(xr -> zero_sample + xr -> ch_sample_size * cnt, xr -> zero_sample, xr -> ch_sample_size);
+ }
+
+ // fade_in / fade_out to samples (rounding down)
+ xr -> n_fade_in  = (unsigned)((((uint64_t)fade_in ) * (uint64_t)(xr -> sample_rate)) / 1000ULL);
+ xr -> n_fade_out = (unsigned)((((uint64_t)fade_out) * (uint64_t)(xr -> sample_rate)) / 1000ULL);
+
+ // correcting fading, if the track too short
+ if(xr -> n_fade_in + xr -> n_fade_out >= xr -> n_samples)
+ {
+  if(xr -> n_samples < 300 /* really short */)
+  {
+   // do not apply faders at all to really short track
+   xr -> n_fade_in = xr -> n_fade_out  = 0;
+  }
+  else
+  {
+   if(xr -> n_fade_in)
+    xr -> n_fade_in  = (unsigned)(xr -> n_samples) / 3 /* no more, than 1/3 of track or 0 */;
+   if(xr -> n_fade_out)
+    xr -> n_fade_out = (unsigned)(xr -> n_samples) / 3 /* no more, than 1/3 of track or 0 */;
+  }
+ }
+
  return xr;
 }
 
@@ -665,6 +743,11 @@ void xwave_reader_destroy(XWAVE_READER *xr)
   {
    free(xr -> tbuff);
    xr -> ptr_tbuff = xr -> tbuff = NULL;
+  }
+  if(xr -> zero_sample)
+  {
+   free(xr -> zero_sample);
+   xr -> zero_sample = NULL;
   }
   if(xr -> file_pure_name)
   {
@@ -686,22 +769,41 @@ void xwave_reader_destroy(XWAVE_READER *xr)
  }
 }
 
+/* get total number of samples in xwave_reader object (real + virtual)
+*/
+int64_t xwave_get_nsamples(XWAVE_READER *xr)
+{
+ return xr -> n_samples + xr -> n_tail;
+}
+
 /* abs seek in samples terms in the file (non-unpacked data will be lost)
 */
 BOOL xwave_seek_samples(int64_t sample_pos, XWAVE_READER *xr)   // FALSE == bad
 {
+ int64_t total = xwave_get_nsamples(xr);
  LARGE_INTEGER to_set, returned;
  BOOL res;
 
  // what the hell??
- if(sample_pos >= xr -> n_samples)
+ if(sample_pos > total)
  {
-  sample_pos = xr -> n_samples;
+  sample_pos = total;
  }
 
- to_set.QuadPart = sample_pos * xr -> sample_size + xr -> offset_data;
+ if(sample_pos <= xr -> n_samples)
+ {
+  xr -> pos_samples = sample_pos;
+  xr -> pos_tail = 0;
+ }
+ else
+ {
+  xr -> pos_samples = xr -> n_samples;
+  xr -> pos_tail = sample_pos - xr -> n_samples;
+ }
+
+ to_set.QuadPart = xr -> pos_samples * xr -> sample_size + xr -> offset_data;
  res = SetFilePointerEx(xr -> file_hanle, to_set, &returned, FILE_BEGIN);
- xr -> pos_samples = sample_pos;                        // correct or incorrect -- the question..
+
  xr -> really_readed = xr -> unpacked = 0;
  xr -> ptr_tbuff = xr -> tbuff;
  return (BOOL)(res && to_set.QuadPart == returned.QuadPart);
@@ -735,12 +837,8 @@ void xwave_change_read_quant(unsigned new_rq, XWAVE_READER *xr)
 */
 BOOL xwave_read_samples(XWAVE_READER *xr)
 {
- DWORD readed = 0;
- BOOL res = TRUE;               // EOF is not error
- unsigned to_read = xr -> pos_samples + xr -> read_quant <= xr -> n_samples?
-        xr -> read_quant
-        :
-        (unsigned)(xr -> n_samples - xr -> pos_samples);
+ unsigned to_read, to_fill, fill_cnt;
+ BYTE *buff_ptr = xr -> tbuff;
 
  if(!xr -> read_quant)
  {
@@ -748,15 +846,61 @@ BOOL xwave_read_samples(XWAVE_READER *xr)
   return FALSE;                 // can't be readed, if read_quant == 0
  }
 
- if(to_read)
-  res = ReadFile(xr -> file_hanle, xr -> tbuff, to_read * xr -> sample_size, &readed, NULL);
+ // how many saples we should read from the file an how many samples we should fill by silence
+ if(xr -> pos_samples + xr -> read_quant <= xr -> n_samples)
+ {
+  to_read = xr -> read_quant;
+  to_fill = 0;
+ }
+ else
+ {
+  to_read = xr -> n_samples > xr -> pos_samples? (unsigned)(xr -> n_samples - xr -> pos_samples) : 0;
+  if(xr -> n_tail)
+  {
+   unsigned rest_zeros = (unsigned)(xr -> n_tail - xr -> pos_tail);
 
- xr -> really_readed = res? readed / xr -> sample_size : 0;
- xr -> pos_samples += xr -> really_readed;
+   to_fill = xr -> read_quant - to_read;
+   if(to_fill > rest_zeros)
+    to_fill = rest_zeros;
+  }
+  else
+  {
+   to_fill = 0;
+  }
+ }
+
+ // read from the file, if we can
+ if(to_read)
+ {
+  DWORD readed = 0, bytes_to_read = to_read * xr -> sample_size;
+  BOOL res = ReadFile(xr -> file_hanle, buff_ptr, bytes_to_read, &readed, NULL);
+
+  buff_ptr += readed;
+
+  // here we should to get exactly (to_read * xr -> sample_size) bytes; if we get
+  // something else -- file is broken or some other error was happened
+  if((!res) || (bytes_to_read != readed))
+  {
+   xr -> really_readed = xr -> unpacked = 0;
+   return FALSE;
+  }
+ }
+
+ // fill by silence, if we should
+ for(fill_cnt = to_fill; fill_cnt; --fill_cnt)
+ {
+  memcpy(buff_ptr, xr -> zero_sample, xr -> sample_size);
+  buff_ptr += xr -> sample_size;
+ }
+
+ // success -- update state of the reader
+ xr -> really_readed = to_read + to_fill;
+ xr -> pos_samples += to_read;
+ xr -> pos_tail += to_fill;
  xr -> unpacked = 0;
  xr -> ptr_tbuff = xr -> tbuff;
- // if readed % xr -> sample_size != 0 -> we got hard unknown error
- return res && (readed % xr -> sample_size == 0);
+
+ return TRUE;
 }
 
 /* unpack one sample as complex for left and right channels (need external lock for Hilb. conv.)
@@ -792,7 +936,9 @@ void xwave_unpack_csample(double *lI, double *lQ, double *rI, double *rQ,
 
   (*(xr -> unpack_handler.unpack_re))(&val, &bptr);
   if(mc && mc -> h_left)                                // just in case
+  {
    hq_rp_process(val, lI, lQ, mc -> h_left, &(mc -> fes_hilb_left));
+  }
   else
   {
    *lI = val;
@@ -803,13 +949,43 @@ void xwave_unpack_csample(double *lI, double *lQ, double *rI, double *rQ,
    (*(xr -> unpack_handler.unpack_re))(&val, &bptr);
   // let's right channel's filters play with us (and keep their state to the next track)
   if(mc && mc -> h_right)                               // just in case
+  {
    hq_rp_process(val, rI, rQ, mc -> h_right, &(mc -> fes_hilb_right));
+  }
   else
   {
    *rI = val;
    *rQ = 0.0;
   }
  }
+
+ // make the fading, if need
+ {
+  int64_t ix_sample = (xr -> pos_samples + xr -> pos_tail) - (xr -> really_readed - xr -> unpacked);
+  double fade = -1.0;
+
+  if(ix_sample < (int64_t)(xr -> n_fade_in))            // in fade in?
+  {
+   fade = ((double)ix_sample) / ((double)(xr -> n_fade_in));
+  }
+  else
+  {
+   // not in fade in
+   if(ix_sample > xr -> n_samples - (int64_t)(xr -> n_fade_out) && ix_sample < xr -> n_samples)
+   {
+    // in fade out
+    fade = ((double)(xr -> n_samples - ix_sample)) / ((double)(xr -> n_fade_out));
+   }
+  }
+  if(fade >= 0.0)                                       // make fading?
+  {
+   *lI *= fade;
+   *lQ *= fade;
+   *rI *= fade;
+   *rQ *= fade;
+  }
+ }
+
  xr -> ptr_tbuff += xr -> sample_size;
  ++(xr -> unpacked);
 }

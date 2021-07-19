@@ -47,7 +47,7 @@
  * !CHANGE VERSION_CONFIG EVERY TIME WHEN CONFIG FILE FORMAT CHANGED!
  */
 
-#define VERSION_CONFIG                  (4U)    /* we start to count cfg versions from 1 */
+#define VERSION_CONFIG                  (5U)    /* we start to count cfg versions from 1 */
 
 /* NOTE: It's a simple config handler -- this is not a beauty language. If anybody
  * like to write / edit configs -- the way is clear, but silly -- there is no way to set
@@ -137,12 +137,30 @@ static const DB_VAUES_UNSIGNED DB_play_sleep =
 // BOOL disable_play_sleep; disable sleep on plyback
 static const BOOL DB_disable_play_sleep = FALSE;
 
+// unsigned sec_align; time in seconds to align file length
+static const DB_VAUES_UNSIGNED DB_sec_align =
+{ 0, 0, MAX_ALIGN_SEC };
+
+// unsigned fade_in; track fade in, ms
+static const DB_VAUES_UNSIGNED DB_fade_in =
+{ 0, 0, MAX_FADE_INOUT };
+
+// unsigned fade_out; track fade out, ms
+static const DB_VAUES_UNSIGNED DB_fade_out =
+{ 0, 0, MAX_FADE_INOUT };
+
 // BOOL is_frmod_scaled; true, if unsigned scaled modulation frequencies in use
 static const BOOL DB_is_frmod_scaled = TRUE;
 
 // unsigned iir_filter_no; number of current HB LPF for quad
 static const DB_VAUES_UNSIGNED DB_iir_filter_no =
 { IX_IIR_LOEL_DEF, IX_IIR_LOEL_TYPE0, IX_IIR_LOEL_TYPEMAX };
+
+// BOOL is_clr_nframe_trk; TRUE when we want to clear frame counter per each track
+static const BOOL DB_is_clr_nframe_trk = FALSE;
+
+// BOOL is_clr_hilb_trk; TRUE when we want to clear analitic transformers per each track
+static const BOOL DB_is_clr_hilb_trk = FALSE;
 
 // BOOL show_long_numbers; FALSE -- short format, TRUE -- %G or something same
 static const BOOL DB_show_long_numbers = FALSE;
@@ -198,17 +216,32 @@ static const CONFIG config_list[] =
 // BOOL disable_play_sleep; disable sleep on plyback
  { _T("DISABLE_SLEEP"), VCFG_BOOL,      &the.cfg.disable_play_sleep,    &DB_disable_play_sleep },
 
+// unsigned sec_align; time in seconds to align file length
+ { _T("SEC_ALIGN"),     VCFG_UNSIGNED,  &the.cfg.sec_align,            &DB_sec_align },
+
+// unsigned fade_in; track fade in, ms
+ { _T("FADE_IN"),       VCFG_UNSIGNED,  &the.cfg.fade_in,               &DB_fade_in },
+
+// unsigned fade_in; track fade in, ms
+ { _T("FADE_OUT"),      VCFG_UNSIGNED,  &the.cfg.fade_out,              &DB_fade_out },
+
 // BOOL is_frmod_scaled; true, if unsigned scaled modulation frequencies in use
  { _T("FRMOD_SCALED"),  VCFG_BOOL,      &the.cfg.is_frmod_scaled,       &DB_is_frmod_scaled },
 
 // unsigned iir_filter_no; number of current HB LPF for quad
  { _T("IIR_HBLPF_IX"),  VCFG_UNSIGNED,  &the.cfg.iir_filter_no,         &DB_iir_filter_no },
 
+// BOOL is_clr_nframe_trk; TRUE when we want to clear frame counter per each track
+ { _T("CLR_NFRAME_PT"), VCFG_BOOL,      &the.cfg.is_clr_nframe_trk,     &DB_is_clr_nframe_trk },
+
+// BOOL is_clr_hilb_trk; TRUE when we want to clear analitic transformers per each track
+ { _T("CLR_HILB_PT"),   VCFG_BOOL,      &the.cfg.is_clr_hilb_trk,       &DB_is_clr_hilb_trk },
+
 // BOOL show_long_numbers; FALSE -- short format, TRUE -- %G or something same
  { _T("SHOW_LONGNUMB"), VCFG_BOOL,      &the.cfg.show_long_numbers,     &DB_show_long_numbers },
 
 // BOOL is_fp_check; true, if floating point check set
- { _T("FP_CHECK"),      VCFG_BOOL,      &the.cfg.is_fp_check,            &DB_is_fp_check },
+ { _T("FP_CHECK"),      VCFG_BOOL,      &the.cfg.is_fp_check,           &DB_is_fp_check },
 
 // BOOL is24bits; FALSE -- 16 bits decoding (real output of playback/transcode)
  { _T("NEED24BITS"),    VCFG_BOOL,      &the.cfg.need24bits,            &DB_need24bits },
