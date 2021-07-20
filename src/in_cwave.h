@@ -266,7 +266,7 @@ typedef struct tagNODE_DSP
  int r_iq_invert;                               // right ch. inversion of spectrum (I/Q swap), bool
  int mode;                                      // the type of MAKE_DSP
  MAKE_DSP dsp;                                  // DSP specific data according mode
- TCHAR name[SIZE_DSP_NAME];                     // Readable name of DSP node
+ TCHAR name[SIZE_DSP_NAME];                     // readable name of DSP node
  int lock_gain;                                 // 1 == L/R control locked
 } NODE_DSP;
 // .mode can get the next values
@@ -320,9 +320,9 @@ typedef struct tagLRCOMPLEX
 
 /* the internal types
 */
-// the function - sample converter _complex_ raw data to normalized to [-32768.0..32767] complex
+// the function - sample converter of _complex_ raw data to normalized to [-32768.0..32767] complex
 typedef void (*UNPACK_IQ)(double *vI, double *vQ, const BYTE **buf);
-// the function - sample converter _pure real_ raw data to normalized to [-32768.0..32767] real
+// the function - sample converter of _pure real_ raw data to normalized to [-32768.0..32767] real
 typedef void (*UNPACK_RE)(double *vR, const BYTE **buf);
 
 // universal unpack sample converter
@@ -359,7 +359,7 @@ typedef union tagXWAVE
 typedef struct tagXWAVE_READER
 {
  TCHAR *file_full_name;                         // full name of the file
- TCHAR *file_path;                              // the path to file with '\\' at the end
+ TCHAR *file_path;                              // the path to the file with '\\' at the end
  TCHAR *file_pure_name;                         // name of the file w/o path
  HANDLE file_hanle;                             // the WIN32 file handle
 
@@ -396,8 +396,8 @@ typedef struct tagMOD_CONTEXT
  CRITICAL_SECTION cs_n_frame;                   // sample counter protector
  volatile uint64_t n_frame;                     // sample counter
  LRCOMPLEX inout[N_INPUTS];                     // in/out bus
- LPF_HILBERT_QUAD *h_left;                      // Analitic transformer-left channel
- LPF_HILBERT_QUAD *h_right;                     // Analitic transformer-right channel
+ LPF_HILBERT_QUAD *h_left;                      // analytic transformer-left channel
+ LPF_HILBERT_QUAD *h_right;                     // analytic transformer-right channel
  XWAVE_READER *xr;                              // current reader
  SOUND_RENDER sr_left;                          // sound render-left channel
  SOUND_RENDER sr_right;                         // sound render-right channel

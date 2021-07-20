@@ -310,7 +310,7 @@ static void Info_Dlg_OnCommand(HWND hwnd, int id, HWND hwndCtl, UINT codeNotify)
    break;
 
   // termination
-  case IDCANCEL:                // exit program -- free all
+  case IDCANCEL:                // exit dialog -- free all
   case IDOK:                    // -"-
    EndDialog(hwnd, 0);
    break;
