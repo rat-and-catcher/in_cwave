@@ -909,6 +909,8 @@ void xwave_unpack_csample(double *lI, double *lQ, double *rI, double *rQ,
         MOD_CONTEXT *mc, XWAVE_READER *xr)
 {
  const BYTE *bptr = xr -> ptr_tbuff;
+ double fade;
+ int64_t ix_sample;
 
  if(xr -> unpacked >= xr -> really_readed)
  {
@@ -916,6 +918,24 @@ void xwave_unpack_csample(double *lI, double *lQ, double *rI, double *rQ,
   return;
  }
 
+ // compute fading variables
+ fade = -1.0;
+ ix_sample = (xr -> pos_samples + xr -> pos_tail) - (xr -> really_readed - xr -> unpacked);
+ if(ix_sample < (int64_t)(xr -> n_fade_in))             // in fade in?
+ {
+  fade = ((double)ix_sample) / ((double)(xr -> n_fade_in));
+ }
+ else
+ {
+  // not in fade in
+  if(ix_sample > xr -> n_samples - (int64_t)(xr -> n_fade_out) && ix_sample < xr -> n_samples)
+  {
+   // in fade out
+   fade = ((double)(xr -> n_samples - ix_sample)) / ((double)(xr -> n_fade_out));
+  }
+ }
+
+ // ..unpack with fading ajust..
  if(xr -> is_sample_complex)
  {
   (*(xr -> unpack_handler.unpack_iq))(lI, lQ, &bptr);
@@ -929,12 +949,32 @@ void xwave_unpack_csample(double *lI, double *lQ, double *rI, double *rQ,
    *rI = *lI;
    *rQ = *lQ;
   }
+  // We adjust level for fading. Note, that for externally prepared analytic signal our fading
+  // (as it perform multiplication to some real-valued function) slightly DISTORT Hilbert-conj.
+  // condition. "Slightly" here mean, that the fading function change its values *very* slowly
+  // in term of target signal spectrum and we can treat it as "DC". If you doubt -- just don't
+  // use faders with .cwave's.
+  // Please note also, that for real-valued signal our fading works theoretically fine.
+  // There is possible another point of view -- to make fading at final stage of signal
+  // processing -- when the signal became pure real. But in our project after review all pro
+  // and contra we decide that fading at input looks preferred.
+  if(fade >= 0.0)                                       // make fading?
+  {
+   *lI *= fade;
+   *lQ *= fade;
+   *rI *= fade;
+   *rQ *= fade;
+  }
  }
  else
  {
   double val;
 
   (*(xr -> unpack_handler.unpack_re))(&val, &bptr);
+
+  if(fade >= 0.0)                                       // make fading?
+   val *= fade;                                         // pretty safe for real value
+
   if(mc && mc -> h_left)                                // just in case
   {
    hq_rp_process(val, lI, lQ, mc -> h_left, &(mc -> fes_hilb_left));
@@ -946,7 +986,12 @@ void xwave_unpack_csample(double *lI, double *lQ, double *rI, double *rQ,
   }
 
   if(xr -> n_channels > 1)
+  {
    (*(xr -> unpack_handler.unpack_re))(&val, &bptr);
+
+   if(fade >= 0.0)                                      // make fading?
+    val *= fade;                                        // pretty safe for real value
+  }
   // let's right channel's filters play with us (and keep their state to the next track)
   if(mc && mc -> h_right)                               // just in case
   {
@@ -956,33 +1001,6 @@ void xwave_unpack_csample(double *lI, double *lQ, double *rI, double *rQ,
   {
    *rI = val;
    *rQ = 0.0;
-  }
- }
-
- // make the fading, if need
- {
-  int64_t ix_sample = (xr -> pos_samples + xr -> pos_tail) - (xr -> really_readed - xr -> unpacked);
-  double fade = -1.0;
-
-  if(ix_sample < (int64_t)(xr -> n_fade_in))            // in fade in?
-  {
-   fade = ((double)ix_sample) / ((double)(xr -> n_fade_in));
-  }
-  else
-  {
-   // not in fade in
-   if(ix_sample > xr -> n_samples - (int64_t)(xr -> n_fade_out) && ix_sample < xr -> n_samples)
-   {
-    // in fade out
-    fade = ((double)(xr -> n_samples - ix_sample)) / ((double)(xr -> n_fade_out));
-   }
-  }
-  if(fade >= 0.0)                                       // make fading?
-  {
-   *lI *= fade;
-   *lQ *= fade;
-   *rI *= fade;
-   *rQ *= fade;
   }
  }
 
