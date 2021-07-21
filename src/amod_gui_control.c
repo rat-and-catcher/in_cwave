@@ -2022,6 +2022,13 @@ static void SySetup_Dlg_OnCommand(HWND hwnd, int id, HWND hwndCtl, UINT codeNoti
    break;
 
   case IDOK:                            // accept
+   // last chance to update numerical parameters
+   ssc -> play_sleep = TXT_GetUlng(hwnd, IDC_SLEEPTIME, DEF_PLAY_SLEEP, 0, MAX_PLAY_SLEEP);
+
+   ssc -> sec_align = TXT_GetUlng(hwnd, IDC_ALIGN,    0, 0, MAX_ALIGN_SEC);
+   ssc -> fade_in   = TXT_GetUlng(hwnd, IDC_FADE_IN,  0, 0, MAX_FADE_INOUT);
+   ssc -> fade_out  = TXT_GetUlng(hwnd, IDC_FADE_OUT, 0, 0, MAX_FADE_INOUT);
+
    EndDialog(hwnd, (INT_PTR)ssc);
    break;
  }
