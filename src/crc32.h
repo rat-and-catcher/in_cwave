@@ -43,16 +43,18 @@
 extern "C" {
 #endif
 
+#include <stdint.h>
+
 /* the polynomial
 */
-#define POLYNOMIAL      (0xEDB88320)
+#define POLYNOMIAL      (0xEDB88320U)
 
 /* the struct for temporary data
 */
 typedef struct tagTmpCrc32
 {
- unsigned xOr;                  // inversion mask
- unsigned temp;                 // temporary value for CRC
+ uint32_t xOr;                  // inversion mask
+ uint32_t temp;                 // temporary value for CRC
 } TMP_CRC32;
 
 /* initialization of computation
@@ -65,7 +67,7 @@ void crc32update(const void *data, unsigned len, TMP_CRC32 *t);
 
 /* return final CRC by the last 'temp'
 */
-unsigned crc32final(TMP_CRC32 *t);
+uint32_t crc32final(TMP_CRC32 *t);
 
 
 #if defined(__cplusplus)

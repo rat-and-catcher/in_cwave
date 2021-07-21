@@ -32,13 +32,9 @@
 #if !defined(_atomic_h_)
 #define _atomic_h_
 
-#include "compatibility/compat_gcc.h"
+// NOTE::This file, probably, need to be removed from the project
 
-#if defined(DBL_COPY_FAST)
-#define DBL_VOLATILE    volatile
-#else
-#define DBL_VOLATILE
-#endif
+#include "compatibility/compat_gcc.h"
 
 #ifndef _CRT_SECURE_NO_DEPRECATE
 #define _CRT_SECURE_NO_DEPRECATE
@@ -49,6 +45,7 @@
 #endif
 
 #include <windows.h>
+#include <stdint.h>
 
 #include "compatibility/compat_win32_gcc.h"
 
@@ -56,11 +53,11 @@
 extern "C" {
 #endif
 
-/* atomic copy double value
+/* atomic write double value
 */
-static __inline void adbl_copy(DBL_VOLATILE double *dst, double src)
+static __inline void adbl_write(volatile double *dst, double src)
 {
-#if defined(DBL_COPY_FAST)
+#if defined(ATM_COPY_FAST)
  *dst = src;
 #else
 
@@ -80,6 +77,19 @@ static __inline void adbl_copy(DBL_VOLATILE double *dst, double src)
 #pragma GCC diagnostic pop
 #endif
 
+#endif
+}
+
+/* atomic read double value
+*/
+static __inline void adbl_read(double *dst, const volatile double *src)
+{
+#if defined(ATM_COPY_FAST)
+ *dst = *src;
+#else
+ // we are sorry. The function call now only reflect the problem,
+ // that we need somewhat "atomic" here.
+ *dst = *src;
 #endif
 }
 

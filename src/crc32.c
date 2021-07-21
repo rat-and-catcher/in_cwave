@@ -33,19 +33,19 @@
 #include "crc32.h"
 
 // the  table for CRC32 computations
-static unsigned crc32table_[256] =
+static uint32_t crc32table_[256] =
 {
  0, 0                                           // not initialized
 };
 
 /* helper -- initialization of CRC32 computation
 */
-static unsigned ini_(unsigned temp)
+static uint32_t ini_(uint32_t temp)
 {
- temp = temp >> 8 ^ crc32table_[(unsigned char)temp];
- temp = temp >> 8 ^ crc32table_[(unsigned char)temp];
- temp = temp >> 8 ^ crc32table_[(unsigned char)temp];
- temp = temp >> 8 ^ crc32table_[(unsigned char)temp];
+ temp = temp >> 8 ^ crc32table_[(uint8_t)temp];
+ temp = temp >> 8 ^ crc32table_[(uint8_t)temp];
+ temp = temp >> 8 ^ crc32table_[(uint8_t)temp];
+ temp = temp >> 8 ^ crc32table_[(uint8_t)temp];
  return temp;
 }
 
@@ -57,14 +57,14 @@ void crc32init(TMP_CRC32 *t)
  if(!crc32table_[1])
  {
   int i, j;
-  unsigned temp;
+  uint32_t temp;
 
   for(i = 0; i < 256; ++i)
   {
    temp = i;
    for(j = 0; j < 8; ++j)
    {
-    temp = (temp >> 1) ^ (-(int)(temp & 1) & POLYNOMIAL);
+    temp = (temp >> 1) ^ (-(int32_t)(temp & 1) & POLYNOMIAL);
    }
    crc32table_[i] = temp;
   }
@@ -79,7 +79,7 @@ void crc32init(TMP_CRC32 *t)
 */
 void crc32update(const void *data, unsigned len, TMP_CRC32 *t)
 {
- unsigned char *pdata = (unsigned char *)data;
+ uint8_t *pdata = (uint8_t *)data;
 
 // 1-st 4 bytes take with inversion. If data portion less 4, it prolongated by zeros
  for ( ; t -> xOr && len; --len, ++pdata)
@@ -95,14 +95,14 @@ void crc32update(const void *data, unsigned len, TMP_CRC32 *t)
 // "generic" CRC32 computation
  while(len)
  {
-  t -> temp = crc32table_[(unsigned char)t -> temp ^ *pdata++] ^ (t -> temp >> 8);
+  t -> temp = crc32table_[(uint8_t)t -> temp ^ *pdata++] ^ (t -> temp >> 8);
   --len;
  }
 }
 
 /* return final CRC by the last 'temp'
 */
-unsigned crc32final(TMP_CRC32 *t)
+uint32_t crc32final(TMP_CRC32 *t)
 {
  return ~(t -> xOr? t -> xOr ^ ini_(t -> temp) : t -> temp);
 }

@@ -30,8 +30,16 @@ in_cwave V1.*.* (Unpublic!) Versions History -- see OLD_NEWS
         attempt to cleanup the comments (generally unsuccessful). Update doc.
 03-Jul-2021 -- V2.2.3 - add peak levels in dB along with clip counters;
         add DSP-list global bypass;
-        take more care to volatile double copying;
-        by defining DBL_COPY_FAST project preprocessor definition;
+        take more care to volatile double copying together with
+        defining DBL_COPY_FAST project preprocessor definition;
         Default gain for mod/mix nodes now 1.0 (Master stay 0.8);
         Different configurations for "plain build" (Windows VIsta+) ans Windows XP;
         MinGW/Code::Blocks XP build don't support UTF-16LE configs.
+21-Jul-2021 -- V2.3.0 - Add per-track reseting of sample counter and analitic converter;
+        Add optional track time aligment and fade in / fade out;
+        Fix insufficient 32-bit resolution of frame counter to 64 bit (it was an 'almost bug');
+        Fix "-EMPTY-" to last played file name (_should_ to work;
+        wery odd area in WinAmp spesc);
+        Try to update "Bugs control" numerical parameters by "OK";
+        Change Microsoft's __int64 and somewhere unsigned/int to <stdint.h> types;
+        Rename DBL_COPY_FAST to ATM_COPY_FAST.

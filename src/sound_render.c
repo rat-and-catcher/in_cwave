@@ -764,7 +764,7 @@ void sound_render_value
    cv = cv? 20.0 * log10(cv) : SR_ZERO_SIGNAL_DB;
 
    if(cv > pv)
-    adbl_copy(peak_val, cv);
+    adbl_write(peak_val, cv);
 //  *peak_val = cv;
   }
 
@@ -865,7 +865,7 @@ void sound_render_value
    cv = cv? 20.0 * log10(cv) : SR_ZERO_SIGNAL_DB;
 
    if(cv > pv)
-    adbl_copy(peak_val, cv);
+    adbl_write(peak_val, cv);
 //  *peak_val = cv;
   }
 

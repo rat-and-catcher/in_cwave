@@ -25,8 +25,8 @@ LANGUAGE LANG_NEUTRAL, SUBLANG_NEUTRAL
 //
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION 2,2,3,0
- PRODUCTVERSION 2,2,3,0
+ FILEVERSION 2,3,0,0
+ PRODUCTVERSION 2,3,0,0
  FILEFLAGSMASK 0x3fL
 #ifdef _DEBUG
  FILEFLAGS 0x29L
@@ -44,13 +44,13 @@ BEGIN
             VALUE "Comments", "This software licensed according BSD-like license"
             VALUE "CompanyName", "Rat and Catcher Technologies"
             VALUE "FileDescription", "CWAVE/RWAVE(WAV) universal quad modulator for Winamp (XMP)"
-            VALUE "FileVersion", "2.2.3.0"
+            VALUE "FileVersion", "2.3.0.0"
             VALUE "InternalName", "CWAVE Winamp quad modulator"
             VALUE "LegalCopyright", "Copyright (C) 2010-2021 Rat and Catcher Technologies"
             VALUE "OriginalFilename", "in_cwave.dll"
             VALUE "PrivateBuild", "experimental 'total' quad modulator"
             VALUE "ProductName", "Quad Audio Wave Morphing Tools Set"
-            VALUE "ProductVersion", "2.2.3.0"
+            VALUE "ProductVersion", "2.3.0.0"
         END
     END
     BLOCK "VarFileInfo"
@@ -82,11 +82,11 @@ STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | DS_CENTER | WS_CAPTION | WS_SYS
 CAPTION "Advanced CWAVE Quad Modulator"
 FONT 8, "MS Shell Dlg", 400, 0, 0x1
 BEGIN
-    LISTBOX         IDL_DSP,7,7,129,155,LBS_NOINTEGRALHEIGHT | WS_VSCROLL | WS_HSCROLL | WS_TABSTOP
-    PUSHBUTTON      "Add...",IDB_ADD,7,164,39,14
-    PUSHBUTTON      "Delete",IDB_DEL,51,164,41,14
-    PUSHBUTTON      "Del All",IDB_DELALL,97,164,39,14
-    CONTROL         "Bypass DSP-list",IDC_BYPASS_LIST,"Button",BS_AUTOCHECKBOX | BS_PUSHLIKE | WS_TABSTOP,7,180,129,14
+    LISTBOX         IDL_DSP,7,7,129,141,LBS_NOINTEGRALHEIGHT | WS_VSCROLL | WS_HSCROLL | WS_TABSTOP
+    PUSHBUTTON      "Add...",IDB_ADD,7,151,39,14
+    PUSHBUTTON      "Delete",IDB_DEL,51,151,41,14
+    PUSHBUTTON      "Del All",IDB_DELALL,97,151,39,14
+    CONTROL         "Bypass DSP-list",IDC_BYPASS_LIST,"Button",BS_AUTOCHECKBOX | BS_PUSHLIKE | WS_TABSTOP,7,167,129,14
     GROUPBOX        "Inputs",IDC_STATIC,141,7,387,22
     CONTROL         "in",IDC_IN0,"Button",BS_AUTOCHECKBOX | BS_PUSHLIKE | WS_TABSTOP,146,16,12,10
     CONTROL         "A",IDC_INA,"Button",BS_AUTOCHECKBOX | BS_PUSHLIKE | WS_TABSTOP,161,16,12,10
@@ -190,18 +190,21 @@ BEGIN
     CONTROL         "",IDC_PMANGR,"msctls_trackbar32",TBS_AUTOTICKS | WS_TABSTOP,328,223,156,10
     PUSHBUTTON      "",IDB_PMANGR,483,225,12,6
     CONTROL         "=",IDC_PMANG_LOCK,"Button",BS_AUTOCHECKBOX | BS_PUSHLIKE | WS_TABSTOP,511,225,12,10
-    CONTROL         "Long numbers",IDC_LONG_NO,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,198,128,10
-    LTEXT           "Embedded Hilbert's transformer type",IDC_STATIC,7,211,129,8
-    COMBOBOX        IDL_EHILBERT,7,223,129,30,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
-    GROUPBOX        "Sample counters",IDC_STATIC,7,239,129,54
-    LTEXT           "Playback",IDC_STATIC,16,248,99,8
-    RTEXT           "0",IDS_NFR_PLAY,16,258,51,9,0,WS_EX_STATICEDGE
-    PUSHBUTTON      "X",IDB_RESET_NFR_PLAY,73,257,12,10
-    PUSHBUTTON      "X Hilb",IDB_RESET_HILB_PLAY,95,257,33,10
-    LTEXT           "Transcode",IDC_STATIC,16,271,99,8
-    RTEXT           "0",IDS_NFR_TRANS,16,280,51,9,0,WS_EX_STATICEDGE
-    PUSHBUTTON      "X",IDB_RESET_NFR_TRANS,73,279,12,10
-    PUSHBUTTON      "X Hilb",IDB_RESET_HILB_TRANS,95,279,33,10
+    CONTROL         "Long numbers",IDC_LONG_NO,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,184,128,10
+    LTEXT           "Embedded Hilbert's transformer type",IDC_STATIC,7,198,129,8
+    COMBOBOX        IDL_EHILBERT,7,210,129,30,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+    GROUPBOX        "Sample counters",IDC_STATIC,7,226,129,68
+    LTEXT           "Playback",IDC_STATIC,16,235,99,8
+    RTEXT           "0",IDS_NFR_PLAY,16,245,51,9,0,WS_EX_STATICEDGE
+    PUSHBUTTON      "X Cnt",IDB_RESET_NFR_PLAY,70,244,26,10
+    PUSHBUTTON      "X Hilb",IDB_RESET_HILB_PLAY,99,244,33,10
+    LTEXT           "Transcode",IDC_STATIC,16,257,99,8
+    RTEXT           "0",IDS_NFR_TRANS,16,266,51,9,0,WS_EX_STATICEDGE
+    PUSHBUTTON      "X Cnt",IDB_RESET_NFR_TRANS,70,265,26,10
+    PUSHBUTTON      "X Hilb",IDB_RESET_HILB_TRANS,99,265,33,10
+    LTEXT           "Reset on track -",IDC_STATIC,16,282,51,8
+    CONTROL         "Cnt",IDC_RESET_NFR,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,72,281,25,10
+    CONTROL         "Hilb",IDC_RESET_HILB,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,102,281,27,10
     LTEXT           "Render type",IDC_STATIC,140,243,98,8
     COMBOBOX        IDL_RENDER,140,253,100,30,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
     LTEXT           "Quantize",IDC_STATIC,243,243,44,8
@@ -289,7 +292,7 @@ BEGIN
     PUSHBUTTON      "Cancel",IDCANCEL,119,77,50,14
 END
 
-IDD_SYSETUP DIALOGEX 32, 32, 265, 242
+IDD_SYSETUP DIALOGEX 32, 32, 265, 260
 STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | WS_SYSMENU
 CAPTION "Embedded Bugs Management"
 FONT 8, "MS Shell Dlg", 400, 0, 0x1
@@ -298,22 +301,30 @@ BEGIN
     GROUPBOX        "Additional Supported Formats (need player restart/setup)",IDC_STATIC,7,41,251,45
     CONTROL         " PCM/Float WAV",IDC_WAVEXT,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,21,55,224,10
     CONTROL         " RWAVE (synonim to PCM/Float WAV)",IDC_RWAVEEXT,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,21,70,224,10
-    GROUPBOX        "The InfoBox parent window is:",IDC_STATIC,7,90,251,34
-    CONTROL         "No parent",IDC_PAR_NOPARENT,"Button",BS_AUTORADIOBUTTON | WS_GROUP | WS_TABSTOP,18,105,75,10
-    CONTROL         "Playlist window",IDC_PAR_FILELIST,"Button",BS_AUTORADIOBUTTON | WS_TABSTOP,96,105,75,10
-    CONTROL         "Main window",IDC_PAR_MAINWND,"Button",BS_AUTORADIOBUTTON | WS_TABSTOP,174,105,75,10
+    GROUPBOX        "The InfoBox parent window is:",IDC_STATIC,7,90,251,29
+    CONTROL         "No parent",IDC_PAR_NOPARENT,"Button",BS_AUTORADIOBUTTON | WS_GROUP | WS_TABSTOP,18,103,75,10
+    CONTROL         "Playlist window",IDC_PAR_FILELIST,"Button",BS_AUTORADIOBUTTON | WS_TABSTOP,96,103,75,10
+    CONTROL         "Main window",IDC_PAR_MAINWND,"Button",BS_AUTORADIOBUTTON | WS_TABSTOP,174,103,75,10
     CONTROL         "Make an attempt to save config on unload the module",IDC_LAST_CHANCE,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,21,132,224,10
-    GROUPBOX        "Sleep while playback, ms (probably actual for XMPlay transcoding)",IDC_STATIC,7,153,251,32
-    EDITTEXT        IDC_SLEEPTIME,18,167,83,12,ES_AUTOHSCROLL
-    PUSHBUTTON      "<<",IDB_SLEEPTIME,104,167,15,12
-    CONTROL         "Disable Sleep (don't check!)",IDC_NOSLEEP,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,139,169,110,10
-    GROUPBOX        "Modulation Frequency",IDC_STATIC,7,189,187,46
-    CONTROL         "Scaled - not exactly, but safe",IDC_MODFR_SCALED,"Button",BS_AUTORADIOBUTTON | WS_GROUP | WS_TABSTOP,21,201,164,10
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,21,125,216,10
+    GROUPBOX        "Sleep while playback, ms",IDC_STATIC,7,138,251,31
+    EDITTEXT        IDC_SLEEPTIME,17,150,83,12,ES_AUTOHSCROLL
+    PUSHBUTTON      "<<",IDB_SLEEPTIME,103,150,15,12
+    CONTROL         "Disable Sleep (don't check!)",IDC_NOSLEEP,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,135,151,106,10
+    GROUPBOX        "Track framing",IDC_STATIC,7,170,251,40
+    LTEXT           "Audio data align, sec",IDC_STATIC,17,181,71,8
+    EDITTEXT        IDC_ALIGN,17,193,62,12,ES_AUTOHSCROLL
+    LTEXT           "Fade In, ms",IDC_STATIC,91,181,55,8
+    EDITTEXT        IDC_FADE_IN,91,193,62,12,ES_AUTOHSCROLL
+    LTEXT           "Fade Out, ms",IDC_STATIC,164,180,55,8
+    EDITTEXT        IDC_FADE_OUT,164,193,62,12,ES_AUTOHSCROLL
+    PUSHBUTTON      "<<",IDB_TRACCEPT,235,193,15,12
+    GROUPBOX        "Modulation Frequency",IDC_STATIC,7,212,195,41
+    CONTROL         "Scaled - not exactly, but safe",IDC_MODFR_SCALED,"Button",BS_AUTORADIOBUTTON | WS_GROUP | WS_TABSTOP,13,226,173,10
     CONTROL         "Exactly, dangerous for long time processing",IDC_MODFR_NATIVE,
-                    "Button",BS_AUTORADIOBUTTON | WS_TABSTOP,21,217,164,10
-    DEFPUSHBUTTON   "OK",IDOK,208,201,50,14
-    PUSHBUTTON      "Cancel",IDCANCEL,209,221,50,14
+                    "Button",BS_AUTORADIOBUTTON | WS_TABSTOP,13,239,173,10
+    DEFPUSHBUTTON   "OK",IDOK,208,217,50,14
+    PUSHBUTTON      "Cancel",IDCANCEL,208,239,50,14
 END
 
 IDD_GETVALUE DIALOGEX 0, 0, 158, 28
@@ -363,7 +374,7 @@ BEGIN
         LEFTMARGIN, 7
         RIGHTMARGIN, 258
         TOPMARGIN, 7
-        BOTTOMMARGIN, 235
+        BOTTOMMARGIN, 253
     END
 
     IDD_GETVALUE, DIALOG

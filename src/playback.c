@@ -57,6 +57,9 @@ typedef struct tagPLUGIN_CONTEXT
  BOOL show_play;                        // show setup by ALT+3
 // flag to prevent to run multiply copy of GUI
  volatile LONG is_gui_run;              // for InterlockedCompareExchange()
+
+ TCHAR *last_file_name;                 // the last file name was open for playback
+ int last_length_in_ms;                 // the last file length in ms was open for playback
 } PLUGIN_CONTEXT;
 
 /* Global Statics
@@ -98,7 +101,8 @@ static void config(HWND hwndParent)
 static void about(HWND hwndParent)
 {
  const TCHAR fmsg[] =
-        _T("CWAVE / WAV ('RWAVE') universal reader / quad modulator ")
+        _T("CWAVE / WAV ('RWAVE') universal reader / quad modulator\n")
+        _T("Version ")
         _T(VERSION_IN_CWAVE)
         _T("\n")
         _T("Config version ID is %u\n")
@@ -133,6 +137,8 @@ static void init(void)
  plg.is_gui_init = gui_init();
  plg.show_play = TRUE;
  plg.is_gui_run = 0;
+ plg.last_file_name = NULL;
+ plg.last_length_in_ms = -1000 /* default unknown */;
 }
 
 /* one-time deinitialization, such as memory freeing
@@ -141,9 +147,19 @@ static void quit()
 {
  gui_cleanup();
 
- free(plg.play_sample_buffer);
- plg.play_sample_buffer = NULL;
+ if(plg.last_file_name)
+ {
+  free(plg.last_file_name);
+  plg.last_file_name = NULL;
+ }
 
+ plg.last_length_in_ms = -1000 /* default unknown */;
+
+ if(plg.play_sample_buffer)
+ {
+  free(plg.play_sample_buffer);
+  plg.play_sample_buffer = NULL;
+ }
  module_cleanup();                                      // init in winampGetInModule2()
 }
 
@@ -175,6 +191,19 @@ static int play(const TCHAR *filename)
   // means to stop the playlist.
   return 1;
  }
+
+ // update last_file_name and last_length_in_ms for WinAmp odds
+ if(plg.last_file_name)
+ {
+  free(plg.last_file_name);
+  plg.last_file_name = NULL;
+ }
+ plg.last_file_name =
+    cmalloc((_tcslen(mc -> xr -> file_pure_name) + 1) * sizeof(TCHAR));
+ _tcscpy(plg.last_file_name, mc -> xr -> file_pure_name);
+ plg.last_length_in_ms =
+    (int)((xwave_get_nsamples(mc -> xr) * 1000LL) / mc -> xr -> sample_rate);
+
  out_size = sound_render_size(&mc -> sr_left) + sound_render_size(&mc -> sr_right);
 
  // -1 and -1 are to specify buffer and prebuffer lengths.
@@ -293,7 +322,7 @@ static void stop(void)
 */
 static int getlength(void)
 {
- __int64 t;
+ int64_t t;
  MOD_CONTEXT *mc = &(the.mc_playback);
 
  mp_playback_lock();
@@ -302,7 +331,7 @@ static int getlength(void)
         // (Are you sure about sample_rate? Today it checked for zero in XWAVE_READER;
         // tomorow may be not...)
         && mc -> xr -> sample_rate?
-        (((__int64)(mc -> xr -> n_samples)) * 1000LL) / mc -> xr -> sample_rate
+        (xwave_get_nsamples(mc -> xr) * 1000LL) / mc -> xr -> sample_rate
         :
         -1000;                          // default unknown file len
  mp_playback_unlock();
@@ -389,7 +418,8 @@ static int infoBox(const TCHAR *filename, HWND hwnd)
   }
   else
   {
-   XWAVE_READER *xr = xwave_reader_create(filename, NS_CHECKPT);
+   // create w/o any aligment or fading for info/CRC check
+   XWAVE_READER *xr = xwave_reader_create(filename, NS_CHECKPT, 0, 0, 0);
 
    if(xr)
    {
@@ -430,26 +460,38 @@ static void getfileinfo(const TCHAR *filename, TCHAR *title, int *length_in_ms)
   mp_playback_lock();
   if(length_in_ms)                      // code from getlength() -- need common lock
    *length_in_ms = mc -> xr && mc -> xr -> sample_rate?
-        (int)((((__int64)mc -> xr -> n_samples) * 1000LL) / mc -> xr -> sample_rate)
+        (int)((xwave_get_nsamples(mc -> xr) * 1000LL) / mc -> xr -> sample_rate)
         :
-        -1000;                          // default unknown file len
+        (plg.last_file_name?
+            plg.last_length_in_ms
+            :
+            -1000/* default unknown file len */);
 
   if(title)                             // get non-path portion of filename
   {
-   // ..it's look somewhat especially buggy..
-   _tcscpy(title, mc -> xr? mc -> xr -> file_pure_name : _T("-EMPTY-"));
+   _tcscpy(title
+    , mc -> xr?
+        mc -> xr -> file_pure_name
+        :
+        (plg.last_file_name? plg.last_file_name : _T("-EMPTY-")));
   }
   mp_playback_unlock();
  }
  else                                   // some other file
  {
-  XWAVE_READER *xr = xwave_reader_create(filename, 0);
+  XWAVE_READER *xr = xwave_reader_create(
+      filename
+    , 0
+    , the.cfg.sec_align
+    , the.cfg.fade_in
+    , the.cfg.fade_out
+    );
 
   if(xr)
   {
    if(length_in_ms)
    {
-    __int64 t = (((__int64)xr -> n_samples) * 1000LL) / xr -> sample_rate;
+    int64_t t = (xwave_get_nsamples(xr) * 1000LL) / xr -> sample_rate;
     *length_in_ms = (int)t;
    }
    if(title)

@@ -1,7 +1,7 @@
 /*
  * The structure of complex wave (CWAVE) file
  * (in general -- for the analitical signal representation)
- * Copyright (c) 2010 Rat and Catcher Technologies
+ * Copyright (c) 2010, 2021 Rat and Catcher Technologies
  *
  * This file provide a format information about CWAVE (Complex Audio Wave)
  * files format.
@@ -24,19 +24,21 @@
 #if !defined(_cwave_h_)
 #define _cwave_h_
 
+#include <stdint.h>
+
 // Version 1
 // -- Obsolete -- header of complex wave (cwave) file
 typedef struct tagHCWAVE_V1
 {
  char magic[8];                 // signature
- unsigned hsize;                // header size in bytes
- unsigned version;              // format version
- unsigned format;               // format of samples
- unsigned n_channels;           // number of channels
- unsigned n_samples;            // number of samples
- unsigned sample_rate;          // sample rate of initial file
- int k_M;                       // Hilbert FIR filter order
- unsigned pad0;                 // NOT USED (pad for align k_beta)
+ uint32_t hsize;                // header size in bytes
+ uint32_t version;              // format version
+ uint32_t format;               // format of samples
+ uint32_t n_channels;           // number of channels
+ uint32_t n_samples;            // number of samples
+ uint32_t sample_rate;          // sample rate of initial file
+ int32_t k_M;                   // Hilbert FIR filter order
+ uint32_t pad0;                 // NOT USED (pad for align k_beta)
  double k_beta;                 // filter parameter
 } HCWAVE_V1;
 
@@ -45,14 +47,14 @@ typedef struct tagHCWAVE_V1
 typedef struct tagHCWAVE_V2
 {
  char magic[8];                 // signature
- unsigned hsize;                // header size in bytes
- unsigned version;              // format version
- unsigned format;               // format of samples
- unsigned n_channels;           // number of channels
- unsigned n_samples;            // number of samples
- unsigned sample_rate;          // sample rate of the source
- int k_M;                       // Hilbert FIR  filter order (-1 for direct FFT)
- unsigned n_CRC32;              // CRC32 of the data part
+ uint32_t hsize;                // header size in bytes
+ uint32_t version;              // format version
+ uint32_t format;               // format of samples
+ uint32_t n_channels;           // number of channels
+ uint32_t n_samples;            // number of samples
+ uint32_t sample_rate;          // sample rate of the source
+ int32_t k_M;                   // Hilbert FIR filter order (-1 for direct FFT)
+ uint32_t n_CRC32;              // CRC32 of the data part
  double k_beta;                 // Hilbert FIR filter parameter
 } HCWAVE_V2;
 
