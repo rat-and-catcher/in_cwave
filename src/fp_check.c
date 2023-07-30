@@ -3,7 +3,7 @@
  *
  *      fp_check.c -- checking floating point operations and gather exceptions statictics
  *
- * Copyright (c) 2010-2020, Rat and Catcher Technologies
+ * Copyright (c) 2010-2023, Rat and Catcher Technologies
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without

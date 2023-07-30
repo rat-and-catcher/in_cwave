@@ -3,7 +3,7 @@
  *
  *      hcontrols.h -- generic Windows controls handling
  *
- * Copyright (c) 2010-2020, Rat and Catcher Technologies
+ * Copyright (c) 2010-2023, Rat and Catcher Technologies
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without

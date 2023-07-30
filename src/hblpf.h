@@ -3,7 +3,7 @@
  *
  *      hblpf.h -- all about Half Band Low Pass Elliptic Filters
  *
- * Copyright (c) 2010-2020, Rat and Catcher Technologies
+ * Copyright (c) 2010-2023, Rat and Catcher Technologies
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -68,7 +68,7 @@ typedef struct tag_IIR_COEFF
 typedef struct tag_IIR_DESCR
 {
  // filter design characteristics
- double irreg;                          // irregularity in pass band (dB)
+ double irreg;                          // ripple in pass band (dB)
  double atten;                          // attenuation in stop band (dB)
  double fpass_low;                      // low frequency for pass band [0..1]
  double fstop_low;                      // low frequency for stop band [0..1]
@@ -84,49 +84,70 @@ typedef struct tag_IIR_DESCR
 /* the static table of our "canonical" HB LPFs
 */
 // variants:
-// Low pass: 0.495000/0.505000; irregularity 1.500000 dB; rejection 100.000000 dB -- order 15
+// Low pass: 0.495000/0.505000; ripple 1.500000 dB; rejection 100.000000 dB -- order 15
 #define IX_IIR_LOEL_TYPE0               (0)
-// Low pass: 0.499000/0.502000; irregularity 1.800000 dB; rejection 100.000000 dB -- order 19
+// Low pass: 0.499000/0.502000; ripple 1.800000 dB; rejection 100.000000 dB -- order 19
 #define IX_IIR_LOEL_TYPE1               (1)
-// Low pass: 0.499000/0.501000; irregularity 2.000000 dB; rejection 90.000000 dB -- order 18
+// Low pass: 0.499000/0.501000; ripple 2.000000 dB; rejection 90.000000 dB -- order 18
 #define IX_IIR_LOEL_TYPE2               (2)
+// Low pass: 0.498200/0.500000; ripple 2.000000 dB; rejection 96.000000 dB -- order 19
+#define IX_IIR_LOEL_TYPE3               (3)
+// Low pass: 0.498200/0.500000; ripple 2.000000 dB; rejection 100.000000 dB -- order 20
+#define IX_IIR_LOEL_TYPE4               (4)
+// Low pass: 0.498500/0.500000; ripple 2.000000 dB; rejection 100.000000 dB -- order 20
+#define IX_IIR_LOEL_TYPE5               (5)
 // [...to be continued...]
-#define IX_IIR_LOEL_TYPEMAX             (IX_IIR_LOEL_TYPE2)
-
+#define IX_IIR_LOEL_TYPEMAX             (IX_IIR_LOEL_TYPE5)
 
 // the default filter type
 #define IX_IIR_LOEL_DEF                 (IX_IIR_LOEL_TYPE1)
 
 // the number of filters
-#define NM_IIR_LOEL                     (3)
+#define NM_IIR_LOEL                     (6)
 
 // the static table of precalculated filters
 extern const IIR_DESCR iir_hb_lpf_const_filters[];
 
 /* IIR filter implementation
 */
+// the filter internals type -- forward reference
+typedef struct tagIIR_RAT_POLY IIR_RAT_POLY;
+
+// the filter one sample process funstion
+typedef double (*IIR_RP_PROCESS)(double sample, IIR_RAT_POLY *filter, FP_EXCEPT_STATS *fes);
+
 // the filter internals type
-typedef struct tagIIR_RAT_POLY
+struct tagIIR_RAT_POLY
 {
- double *pc;            // "loop-back" coefficients of canonical form [1..max(n_a,n_b)]
- double *pd;            // "direct" coefficients of canonical form [1..max(n_a,n_b)]
- double *pz;            // "delay line" of canonical form
- double d0;             // 0-st "direct" coefficient of canonical form
- int nord;              // the order of filter
- int ix;                // insert index for "delay line"
-} IIR_RAT_POLY;
+ double *pc;                // "loop-back" coefficients of canonical form [1..max(n_a,n_b)]
+ double *pd;                // "direct" coefficients of canonical form [1..max(n_a,n_b)]
+ double *pz;                // "delay line" of canonical form
+ double d0;                 // 0-st "direct" coefficient of canonical form
+ int nord;                  // the order of filter
+ int ix;                    // insert index for "delay line"
+ IIR_RP_PROCESS process;    // one sample process function
+};
 
 /* functions
 */
 // -- create the filter by IIR_COEFF
-IIR_RAT_POLY *iir_rp_create(const IIR_COEFF *coeffs);
+IIR_RAT_POLY *iir_rp_create(const IIR_COEFF *coeffs, BOOL is_kahan);
 // -- destroy the filter
 void iir_rp_destroy(IIR_RAT_POLY *filter);
-// -- process one sample
-double iir_rp_process(double sample, IIR_RAT_POLY *filter, FP_EXCEPT_STATS *fes);
+// -- process one sample -- canonical form, min. computations, BUT NOT SO GOOD FOR ROUNDING ERRORS
+double iir_rp_process_baseline(double sample, IIR_RAT_POLY *filter, FP_EXCEPT_STATS *fes);
+// -- process one sample -- canonical form / Kahan summations
+double iir_rp_process_kahan(double sample, IIR_RAT_POLY *filter, FP_EXCEPT_STATS *fes);
 // -- reset the filter
 void iir_rp_reset(IIR_RAT_POLY *filter);
+// -- change summation algorithm
+void iir_rp_setsum(IIR_RAT_POLY *filter, BOOL is_kahan);
 
+// -- process one sample -- generic frontend
+static __inline double iir_rp_process(double sample, IIR_RAT_POLY *filter, FP_EXCEPT_STATS *fes)
+{
+ return (*(filter -> process))(sample, filter, fes);
+}
 
 #if defined(__cplusplus)
 }

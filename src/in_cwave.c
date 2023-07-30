@@ -3,7 +3,7 @@
  *
  *      in_cwave.c -- the DllMain, module-wide 'the' stuff
  *
- * Copyright (c) 2010-2020, Rat and Catcher Technologies
+ * Copyright (c) 2010-2023, Rat and Catcher Technologies
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -59,8 +59,8 @@ static void mod_context_init(MOD_CONTEXT *mc)
  }
 
  // analitic signal convertors
- mc -> h_left  = hq_rp_create_ix(the.cfg.iir_filter_no);
- mc -> h_right = hq_rp_create_ix(the.cfg.iir_filter_no);
+ mc -> h_left  = hq_rp_create_ix(the.cfg.iir_filter_no, the.cfg.iir_sum_kahan);
+ mc -> h_right = hq_rp_create_ix(the.cfg.iir_filter_no, the.cfg.iir_sum_kahan);
 
  mc -> xr = NULL;                               // now we don't have a file
 
@@ -114,6 +114,14 @@ static void mod_context_hilbert_reset(MOD_CONTEXT *mc)
  hq_rp_reset(mc -> h_right);
 }
 
+/* change summation algorithm of MOD_CONTEXT according 'the'
+*/
+static void mod_context_hilnert_iir_sum_chanage(MOD_CONTEXT *mc)
+{
+ hq_rp_setsum(mc -> h_left,  the.cfg.iir_sum_kahan);
+ hq_rp_setsum(mc -> h_right, the.cfg.iir_sum_kahan);
+}
+
 /* change Hilbert taransformer parameters in MOD_CONTEXT according 'the'
 */
 static void mod_context_hilbert_change(MOD_CONTEXT *mc)
@@ -128,39 +136,13 @@ static void mod_context_hilbert_change(MOD_CONTEXT *mc)
   hq_rp_destroy(mc -> h_right);
   mc -> h_right = NULL;
  }
- mc -> h_left  = hq_rp_create_ix(the.cfg.iir_filter_no);
- mc -> h_right = hq_rp_create_ix(the.cfg.iir_filter_no);
+ mc -> h_left  = hq_rp_create_ix(the.cfg.iir_filter_no, the.cfg.iir_sum_kahan);
+ mc -> h_right = hq_rp_create_ix(the.cfg.iir_filter_no, the.cfg.iir_sum_kahan);
 }
 
 /* Work with Hilbert's transformers
  * ---- ---- --------- ------------
  */
-/* reset the modulator-context's Hilbert's transformer
-*/
-void mod_context_reset_hilbert(MOD_CONTEXT *mc)
-{
- EnterCriticalSection(&the.cs_hilbert_change);
- mod_context_hilbert_reset(mc);
- LeaveCriticalSection(&the.cs_hilbert_change);
-}
-
-/* change the current Hilbert's transformers
-*/
-void mod_context_change_all_hilberts(unsigned new_filter_no)
-{
- if(the.cfg.iir_filter_no != new_filter_no
-        && new_filter_no <= IX_IIR_LOEL_TYPEMAX)
- {
-  EnterCriticalSection(&the.cs_hilbert_change);
-
-  the.cfg.iir_filter_no = new_filter_no;
-  mod_context_hilbert_change(&the.mc_playback);
-  mod_context_hilbert_change(&the.mc_transcode);
-
-  LeaveCriticalSection(&the.cs_hilbert_change);
- }
-}
-
 /* lock Hilberts transformers from change
 */
 void all_hilberts_lock(void)
@@ -168,11 +150,53 @@ void all_hilberts_lock(void)
  EnterCriticalSection(&the.cs_hilbert_change);
 }
 
-/* unlock Hilberts transformers for change
+/* unlock Hilberts transformers to change
 */
 void all_hilberts_unlock(void)
 {
  LeaveCriticalSection(&the.cs_hilbert_change);
+}
+
+/* reset the modulator-context's Hilbert's transformer
+*/
+void mod_context_reset_hilbert(MOD_CONTEXT *mc)
+{
+ all_hilberts_lock();
+ mod_context_hilbert_reset(mc);
+ all_hilberts_unlock();
+}
+
+/* change summation algorithm in IIR-filters in Hilbert transformer
+*/
+void mod_context_change_all_hilberts_summation(BOOL new_sum_kahan)
+{
+ if(the.cfg.iir_sum_kahan != new_sum_kahan)
+ {
+  all_hilberts_lock();
+
+  the.cfg.iir_sum_kahan = new_sum_kahan;
+  mod_context_hilnert_iir_sum_chanage(&the.mc_playback);
+  mod_context_hilnert_iir_sum_chanage(&the.mc_transcode);
+
+  all_hilberts_unlock();
+ }
+}
+
+/* change the current Hilbert's transformers
+*/
+void mod_context_change_all_hilberts_filter(unsigned new_filter_no)
+{
+ if(the.cfg.iir_filter_no != new_filter_no
+        && new_filter_no <= IX_IIR_LOEL_TYPEMAX)
+ {
+  all_hilberts_lock();
+
+  the.cfg.iir_filter_no = new_filter_no;
+  mod_context_hilbert_change(&the.mc_playback);
+  mod_context_hilbert_change(&the.mc_transcode);
+
+  all_hilberts_unlock();
+ }
 }
 
 

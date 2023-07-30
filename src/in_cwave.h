@@ -100,7 +100,7 @@
  */
 
 // see OLD_NEWS and CHANGELOG about versioning
-#define VERSION_IN_CWAVE        "V2.3.0"
+#define VERSION_IN_CWAVE        "V2.3.1"
 
 #if !defined(MAX_FILE_PATH)
 #if defined(UNICODE)
@@ -430,6 +430,7 @@ typedef struct tagIN_CWAVE_CFG
  unsigned fade_out;                             // track fade out, ms
  BOOL is_frmod_scaled;                          // true, if unsigned scaled modulation frequencies in use
  unsigned iir_filter_no;                        // number of current HB LPF for quad Hilbert conv.
+ BOOL iir_sum_kahan;                            // true, if Kahan summation used
  BOOL is_clr_nframe_trk;                        // clear sample counter per each track
  BOOL is_clr_hilb_trk;                          // clear analitic transformers per track
  BOOL show_long_numbers;                        // show reasonable many digits in operating parameters
@@ -463,12 +464,21 @@ typedef struct tagIN_CWAVE
  */
 // Globals: The Our All
 extern IN_CWAVE the;                            // The Our All
+/* lock Hilberts transformers from change
+*/
+void all_hilberts_lock(void);
+/* unlock Hilberts transformers to change
+*/
+void all_hilberts_unlock(void);
 /* reset the modulator-context's Hilbert's transformer
 */
 void mod_context_reset_hilbert(MOD_CONTEXT *mc);
+/* change summation algorithm in IIR-filters in Hilbert transformer
+*/
+void mod_context_change_all_hilberts_summation(BOOL new_sum_kahan);
 /* change the current Hilbert's transformers
 */
-void mod_context_change_all_hilberts(unsigned new_filter_no);
+void mod_context_change_all_hilberts_filter(unsigned new_filter_no);
 /* lock Hilberts transformers from change
 */
 void all_hilberts_lock(void);
