@@ -39,12 +39,12 @@
 
 /* create the converter by IIR_COEFF
 */
-LPF_HILBERT_QUAD *hq_rp_create(const IIR_COEFF *coeffs, BOOL is_kahan)
+LPF_HILBERT_QUAD *hq_rp_create(const RP_IIR_FILTER_DESCR *fdescr, BOOL is_kahan)
 {
  LPF_HILBERT_QUAD *hconv = cmalloc(sizeof(LPF_HILBERT_QUAD));
 
- hconv -> iir_I = iir_rp_create(coeffs, is_kahan);
- hconv -> iir_Q = iir_rp_create(coeffs, is_kahan);
+ hconv -> iir_I = iir_rp_create(fdescr, is_kahan);
+ hconv -> iir_Q = iir_rp_create(fdescr, is_kahan);
  hconv -> sampe_ix = 0;
  return hconv;
 }

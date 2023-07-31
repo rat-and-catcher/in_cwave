@@ -235,7 +235,7 @@ static const CONFIG config_list[] =
  { _T("IIR_HBLPF_IX"),  VCFG_UNSIGNED,  &the.cfg.iir_filter_no,         &DB_iir_filter_no },
 
 // unsigned iir_process_no; type of process IIR computation
- { _T("IIR_SUM_KAHAN"), VCFG_UNSIGNED,  &the.cfg.iir_sum_kahan,         &DB_iir_sum_kahan },
+ { _T("IIR_SUM_KAHAN"), VCFG_BOOL,      &the.cfg.iir_sum_kahan,         &DB_iir_sum_kahan },
 
 // BOOL is_clr_nframe_trk; TRUE when we want to clear frame counter per each track
  { _T("CLR_NFRAME_PT"), VCFG_BOOL,      &the.cfg.is_clr_nframe_trk,     &DB_is_clr_nframe_trk },

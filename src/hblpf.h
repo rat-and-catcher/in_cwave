@@ -36,49 +36,41 @@
 extern "C" {
 #endif
 
+#include <stdint.h>
+
 #include "fp_check.h"
 
 /* the IIR filters with predefined coefficients
 */
-// IIR filter types:
-#define IIR_FT_MASK     (0x0000000F)            /* the mask of the filter type */
-#define IIR_FT_LOWPASS  (0)                     /* low pass */
-#define IIR_FT_HIGHPASS (1)                     /* high pass */
-#define IIR_FT_BANDPASS (2)                     /* band pass */
-#define IIR_FT_NOTCH    (3)                     /* notch filter */
+// -- gen-iir (DSPL, www.dsplib.org) filter descriptor
+// filter types:
+#define RP_IIR_TYPE_SHIFT       (0)
+#define RP_IIR_TYPE_MASK        (0xFF << RP_IIR_TYPE_SHIFT)
+#define RP_IIR_LPF              (0 << RP_IIR_TYPE_SHIFT)
+#define RP_IIR_HPF              (1 << RP_IIR_TYPE_SHIFT)
+#define RP_IIR_BPF              (2 << RP_IIR_TYPE_SHIFT)
+#define RP_IIR_BSF              (3 << RP_IIR_TYPE_SHIFT)
+// approximation types:
+#define RP_IIR_APPROX_SHIFT     (8)
+#define RP_IIR_APPROX_MASK      (0xFF << RP_IIR_APPROX_SHIFT)
+#define RP_IIR_BUTTER           (0 << RP_IIR_APPROX_SHIFT)
+#define RP_IIR_CHEBY1           (1 << RP_IIR_APPROX_SHIFT)
+#define RP_IIR_CHEBY2           (2 << RP_IIR_APPROX_SHIFT)
+#define RP_IIR_ELLIP            (3 << RP_IIR_APPROX_SHIFT)
 
-// IIR filter approximation types:
-#define IIR_FA_MASK     (0xFFFFFFF0)            /* the mask of the approximation type */
-#define IIR_FA_SHIFT    (4)                     /* shift to approximation type */
-#define IIR_FA_BUTTER   (1 << IIR_FA_SHIFT)     /* Butterwort */
-#define IIR_FA_CHEB1    (2 << IIR_FA_SHIFT)     /* 1-st kind Chebyshev */
-#define IIR_FA_CHEB2    (3 << IIR_FA_SHIFT)     /* 2-nd kind Chebyshev */
-#define IIR_FA_ELLIPTIC (4 << IIR_FA_SHIFT)     /* elliptic filter */
-
-// H(Z) function descriptor
-typedef struct tag_IIR_COEFF
+// the filter (design + coefficients):
+typedef struct s_rp_iir_filter_descr
 {
- double *b;                             // numerator [n_b + 1] (polynomal of order n_b)
- double *a;                             // denominator [n_a + 1] (polynomal of order n_a)
- int n_b;                               // order of numerator / ## elements in b[] - 1
- int n_a;                               // order of denominator / ## elements in a[] - 1
-} IIR_COEFF;
-
-// the IIR filter description
-typedef struct tag_IIR_DESCR
-{
- // filter design characteristics
- double irreg;                          // ripple in pass band (dB)
- double atten;                          // attenuation in stop band (dB)
- double fpass_low;                      // low frequency for pass band [0..1]
- double fstop_low;                      // low frequency for stop band [0..1]
- double fpass_high;                     // high frequency for pass band [0..1] (band/notch only)
- double fstop_high;                     // high frequency for stop band [0..1] (band/notch only)
- unsigned type_approx;                  // filter type+approximation IIR_FT_xxx | IIR_FA_xxx
- int order;                             // filter order
- // the filter for processing
- IIR_COEFF iir_coefficients;            // IIR coefficients
-} IIR_DESCR;
+  unsigned flags;               // RP_IIR_LPF-or-so | RP_IIR_BUTTER-or-so
+  int      order;
+  double   suppression;
+  double   rillpe;
+  double   left_cutoff;
+  double   right_cutoff;
+  double   transition_width;
+  uint64_t *vec_b;              // order + 1 values
+  uint64_t *vec_a;              // order + 1 values
+} RP_IIR_FILTER_DESCR;
 
 
 /* the static table of our "canonical" HB LPFs
@@ -90,6 +82,8 @@ typedef struct tag_IIR_DESCR
 #define IX_IIR_LOEL_TYPE1               (1)
 // Low pass: 0.499000/0.501000; ripple 2.000000 dB; rejection 90.000000 dB -- order 18
 #define IX_IIR_LOEL_TYPE2               (2)
+/* not so "canonical"
+*/
 // Low pass: 0.498200/0.500000; ripple 2.000000 dB; rejection 96.000000 dB -- order 19
 #define IX_IIR_LOEL_TYPE3               (3)
 // Low pass: 0.498200/0.500000; ripple 2.000000 dB; rejection 100.000000 dB -- order 20
@@ -106,7 +100,7 @@ typedef struct tag_IIR_DESCR
 #define NM_IIR_LOEL                     (6)
 
 // the static table of precalculated filters
-extern const IIR_DESCR iir_hb_lpf_const_filters[];
+extern const RP_IIR_FILTER_DESCR iir_hb_lpf_const_filters[];
 
 /* IIR filter implementation
 */
@@ -131,7 +125,7 @@ struct tagIIR_RAT_POLY
 /* functions
 */
 // -- create the filter by IIR_COEFF
-IIR_RAT_POLY *iir_rp_create(const IIR_COEFF *coeffs, BOOL is_kahan);
+IIR_RAT_POLY *iir_rp_create(const RP_IIR_FILTER_DESCR *fdescr, BOOL is_kahan);
 // -- destroy the filter
 void iir_rp_destroy(IIR_RAT_POLY *filter);
 // -- process one sample -- canonical form, min. computations, BUT NOT SO GOOD FOR ROUNDING ERRORS

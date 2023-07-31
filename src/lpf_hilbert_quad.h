@@ -60,7 +60,7 @@ typedef struct tagLPF_HILBERT_QUAD
 /* functions
 */
 // -- create the converter by IIR_COEFF
-LPF_HILBERT_QUAD *hq_rp_create(const IIR_COEFF *coeffs, BOOL is_kahan);
+LPF_HILBERT_QUAD *hq_rp_create(const RP_IIR_FILTER_DESCR *fdescr, BOOL is_kahan);
 // -- destroy the converter
 void hq_rp_destroy(LPF_HILBERT_QUAD *hconv);
 // -- return string list ordered according hq_rp_create_ix() indexes
@@ -75,7 +75,7 @@ void hq_rp_setsum(LPF_HILBERT_QUAD *hconv, BOOL is_kahan);
 // the creation by the index (IX_IIR_LOEL_xxx)
 static __inline LPF_HILBERT_QUAD *hq_rp_create_ix(unsigned index, BOOL is_kahan)
 {
- return hq_rp_create(&iir_hb_lpf_const_filters[index].iir_coefficients, is_kahan);
+ return hq_rp_create(&iir_hb_lpf_const_filters[index], is_kahan);
 }
 
 
