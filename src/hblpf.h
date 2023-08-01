@@ -68,8 +68,8 @@ typedef struct s_rp_iir_filter_descr
   double   left_cutoff;
   double   right_cutoff;
   double   transition_width;
-  uint64_t *vec_b;              // order + 1 values
-  uint64_t *vec_a;              // order + 1 values
+  const uint64_t *vec_b;        // order + 1 values
+  const uint64_t *vec_a;        // order + 1 values
 } RP_IIR_FILTER_DESCR;
 
 

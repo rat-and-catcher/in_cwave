@@ -64,7 +64,7 @@
 // -- Cutoff frequency: 0.495 ([0..1] norm.)
 // -- Transition width 0.0099170047 (??unsure-R&C) ([0..1] norm.)
 // Numerator coefficients (B[16]):
-static uint64_t IIR_LOEL_TYPE0_B[] =              // 16 coefficients
+static const uint64_t IIR_LOEL_TYPE0_B[] =              // 16 coefficients
   {
     0x3F619AFC9A02BA05U,  // [ 0] dec:  2.14909874201585580E-003; hex:   0X1.19AFC9A02BA050P-9
     0x3F82AF1B1480D3D4U,  // [ 1] dec:  9.12305027314089940E-003; hex:   0X1.2AF1B1480D3D40P-7
@@ -84,7 +84,7 @@ static uint64_t IIR_LOEL_TYPE0_B[] =              // 16 coefficients
     0x3F619AFC9A02BA05U   // [15] dec:  2.14909874201585580E-003; hex:   0X1.19AFC9A02BA050P-9
   };
 // Denominator coefficients (A[16]):
-static uint64_t IIR_LOEL_TYPE0_A[] =              // 16 coefficients
+static const uint64_t IIR_LOEL_TYPE0_A[] =              // 16 coefficients
   {
     0x3FF0000000000000U,  // [ 0] dec:  1.00000000000000000E+000; hex:   0X1.00000000000000P+0
     0xC00BBE1E2A7C11A7U,  // [ 1] dec: -3.46783097449425130E+000; hex:  -0X1.BBE1E2A7C11A70P+1
@@ -111,7 +111,7 @@ static uint64_t IIR_LOEL_TYPE0_A[] =              // 16 coefficients
 // -- Cutoff frequency: 0.499 ([0..1] norm.)
 // -- Transition width 0.002131305 (??unsure-R&C) ([0..1] norm.)
 // Numerator coefficients (B[20]):
-static uint64_t IIR_LOEL_TYPE1_B[] =              // 20 coefficients
+static const uint64_t IIR_LOEL_TYPE1_B[] =              // 20 coefficients
   {
     0x3F61616AB173668BU,  // [ 0] dec:  2.12164724835590050E-003; hex:   0X1.1616AB173668B0P-9
     0x3F825102375E9B13U,  // [ 1] dec:  8.94357425188511100E-003; hex:   0X1.25102375E9B130P-7
@@ -135,7 +135,7 @@ static uint64_t IIR_LOEL_TYPE1_B[] =              // 20 coefficients
     0x3F61616AB173668BU   // [19] dec:  2.12164724835590050E-003; hex:   0X1.1616AB173668B0P-9
   };
 // Denominator coefficients (A[20]):
-static uint64_t IIR_LOEL_TYPE1_A[] =              // 20 coefficients
+static const uint64_t IIR_LOEL_TYPE1_A[] =              // 20 coefficients
   {
     0x3FF0000000000000U,  // [ 0] dec:  1.00000000000000000E+000; hex:   0X1.00000000000000P+0
     0xC00BE310CADB1EDCU,  // [ 1] dec: -3.48587187272265280E+000; hex:  -0X1.BE310CADB1EDC0P+1
@@ -166,7 +166,7 @@ static uint64_t IIR_LOEL_TYPE1_A[] =              // 20 coefficients
 // -- Cutoff frequency: 0.499 ([0..1] norm.)
 // -- Transition width 0.0015685821 (??unsure-R&C) ([0..1] norm.)
 // Numerator coefficients (B[19]):
-static uint64_t IIR_LOEL_TYPE2_B[] =              // 19 coefficients
+static const uint64_t IIR_LOEL_TYPE2_B[] =              // 19 coefficients
   {
     0x3F6E9A7EF6B7FF9BU,  // [ 0] dec:  3.73577878576720820E-003; hex:   0X1.E9A7EF6B7FF9B0P-9
     0x3F8D2E91CD23A859U,  // [ 1] dec:  1.42489805916349730E-002; hex:   0X1.D2E91CD23A8590P-7
@@ -189,7 +189,7 @@ static uint64_t IIR_LOEL_TYPE2_B[] =              // 19 coefficients
     0x3F6E9A7EF6B7FF9BU   // [18] dec:  3.73577878576720820E-003; hex:   0X1.E9A7EF6B7FF9B0P-9
   };
 // Denominator coefficients (A[19]):
-static uint64_t IIR_LOEL_TYPE2_A[] =              // 19 coefficients
+static const uint64_t IIR_LOEL_TYPE2_A[] =              // 19 coefficients
   {
     0x3FF0000000000000U,  // [ 0] dec:  1.00000000000000000E+000; hex:   0X1.00000000000000P+0
     0xC0092AC40137416AU,  // [ 1] dec: -3.14588166189075920E+000; hex:  -0X1.92AC40137416A0P+1
@@ -221,7 +221,7 @@ static uint64_t IIR_LOEL_TYPE2_A[] =              // 19 coefficients
 // -- Cutoff frequency: 0.4982 ([0..1] norm.)
 // -- Transition width 0.0015899102 (??unsure-R&C) ([0..1] norm.)
 // Numerator coefficients (B[20]):
-static uint64_t IIR_LOEL_TYPE3_B[] =		// 20 coefficients
+static const uint64_t IIR_LOEL_TYPE3_B[] =		// 20 coefficients
   {
     0x3F6576F5632D5F44U,  // [ 0] dec:  2.62020041683888770E-003; hex:   0X1.576F5632D5F440P-9
     0x3F856D2EC232921DU,  // [ 1] dec:  1.04621556295763590E-002; hex:   0X1.56D2EC232921D0P-7
@@ -245,7 +245,7 @@ static uint64_t IIR_LOEL_TYPE3_B[] =		// 20 coefficients
     0x3F6576F5632D5F44U   // [19] dec:  2.62020041683888770E-003; hex:   0X1.576F5632D5F440P-9
   };
 // Denominator coefficients (A[20]):
-static uint64_t IIR_LOEL_TYPE3_A[] =		// 20 coefficients
+static const uint64_t IIR_LOEL_TYPE3_A[] =		// 20 coefficients
   {
     0x3FF0000000000000U,  // [ 0] dec:  1.00000000000000000E+000; hex:   0X1.00000000000000P+0
     0xC00B41B2DE950929U,  // [ 1] dec: -3.40707944767304530E+000; hex:  -0X1.B41B2DE9509290P+1
@@ -278,7 +278,7 @@ static uint64_t IIR_LOEL_TYPE3_A[] =		// 20 coefficients
 // -- Cutoff frequency: 0.4982 ([0..1] norm.)
 // -- Transition width 0.001414773 (??unsure-R&C) ([0..1] norm.)
 // Numerator coefficients (B[21]):
-static uint64_t IIR_LOEL_TYPE4_B[] =		// 21 coefficients
+static const uint64_t IIR_LOEL_TYPE4_B[] =		// 21 coefficients
   {
     0x3F6105CC7C5CBC69U,  // [ 0] dec:  2.07796038275591790E-003; hex:   0X1.105CC7C5CBC690P-9
     0x3F81955643AB4B9DU,  // [ 1] dec:  8.58561891565106680E-003; hex:   0X1.1955643AB4B9D0P-7
@@ -303,7 +303,7 @@ static uint64_t IIR_LOEL_TYPE4_B[] =		// 21 coefficients
     0x3F6105CC7C5CBC69U   // [20] dec:  2.07796038275591790E-003; hex:   0X1.105CC7C5CBC690P-9
   };
 // Denominator coefficients (A[21]):
-static uint64_t IIR_LOEL_TYPE4_A[] =		// 21 coefficients
+static const uint64_t IIR_LOEL_TYPE4_A[] =		// 21 coefficients
   {
     0x3FF0000000000000U,  // [ 0] dec:  1.00000000000000000E+000; hex:   0X1.00000000000000P+0
     0xC00C7D82D1B03B10U,  // [ 1] dec: -3.56128467387259920E+000; hex:  -0X1.C7D82D1B03B100P+1
@@ -337,7 +337,7 @@ static uint64_t IIR_LOEL_TYPE4_A[] =		// 21 coefficients
 // -- Cutoff frequency: 0.4985 ([0..1] norm.)
 // -- Transition width 0.001414773 (??unsure-R&C) ([0..1] norm.)
 // Numerator coefficients (B[21]):
-static uint64_t IIR_LOEL_TYPE5_B[] =		// 21 coefficients
+static const uint64_t IIR_LOEL_TYPE5_B[] =		// 21 coefficients
   {
     0x3F6115A0362A0507U,  // [ 0] dec:  2.08550731014212370E-003; hex:   0X1.115A0362A05070P-9
     0x3F81B78F1BF99472U,  // [ 1] dec:  8.65089229700741550E-003; hex:   0X1.1B78F1BF994720P-7
@@ -362,7 +362,7 @@ static uint64_t IIR_LOEL_TYPE5_B[] =		// 21 coefficients
     0x3F6115A0362A0507U   // [20] dec:  2.08550731014212370E-003; hex:   0X1.115A0362A05070P-9
   };
 // Denominator coefficients (A[21]):
-static uint64_t IIR_LOEL_TYPE5_A[] =		// 21 coefficients
+static const uint64_t IIR_LOEL_TYPE5_A[] =		// 21 coefficients
   {
     0x3FF0000000000000U,  // [ 0] dec:  1.00000000000000000E+000; hex:   0X1.00000000000000P+0
     0xC00C5C130ACD4DE0U,  // [ 1] dec: -3.54495819510496800E+000; hex:  -0X1.C5C130ACD4DE00P+1
