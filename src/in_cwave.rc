@@ -25,8 +25,8 @@ LANGUAGE LANG_NEUTRAL, SUBLANG_NEUTRAL
 //
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION 2,3,0,0
- PRODUCTVERSION 2,3,0,0
+ FILEVERSION 2,3,1,0
+ PRODUCTVERSION 2,3,1,0
  FILEFLAGSMASK 0x3fL
 #ifdef _DEBUG
  FILEFLAGS 0x29L
@@ -44,13 +44,13 @@ BEGIN
             VALUE "Comments", "This software licensed according BSD-like license"
             VALUE "CompanyName", "Rat and Catcher Technologies"
             VALUE "FileDescription", "CWAVE/RWAVE(WAV) universal quad modulator for Winamp (XMP)"
-            VALUE "FileVersion", "2.3.0.0"
+            VALUE "FileVersion", "2.3.1.0"
             VALUE "InternalName", "CWAVE Winamp quad modulator"
-            VALUE "LegalCopyright", "Copyright (C) 2010-2021 Rat and Catcher Technologies"
+            VALUE "LegalCopyright", "Copyright (C) 2010-2023 Rat and Catcher Technologies"
             VALUE "OriginalFilename", "in_cwave.dll"
             VALUE "PrivateBuild", "experimental 'total' quad modulator"
             VALUE "ProductName", "Quad Audio Wave Morphing Tools Set"
-            VALUE "ProductVersion", "2.3.0.0"
+            VALUE "ProductVersion", "2.3.1.0"
         END
     END
     BLOCK "VarFileInfo"
@@ -82,12 +82,12 @@ STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | DS_CENTER | WS_CAPTION | WS_SYS
 CAPTION "Advanced CWAVE Quad Modulator"
 FONT 8, "MS Shell Dlg", 400, 0, 0x1
 BEGIN
-    LISTBOX         IDL_DSP,7,7,129,141,LBS_NOINTEGRALHEIGHT | WS_VSCROLL | WS_HSCROLL | WS_TABSTOP
-    PUSHBUTTON      "Add...",IDB_ADD,7,151,39,14
-    PUSHBUTTON      "Delete",IDB_DEL,51,151,41,14
-    PUSHBUTTON      "Del All",IDB_DELALL,97,151,39,14
-    CONTROL         "Bypass DSP-list",IDC_BYPASS_LIST,"Button",BS_AUTOCHECKBOX | BS_PUSHLIKE | WS_TABSTOP,7,167,129,14
-    GROUPBOX        "Inputs",IDC_STATIC,141,7,387,22
+    LISTBOX         IDL_DSP,7,7,129,133,LBS_NOINTEGRALHEIGHT | WS_VSCROLL | WS_HSCROLL | WS_TABSTOP
+    PUSHBUTTON      "Add...",IDB_ADD,7,142,39,12
+    PUSHBUTTON      "Delete",IDB_DEL,51,142,41,12
+    PUSHBUTTON      "Del All",IDB_DELALL,97,142,39,12
+    CONTROL         "Bypass DSP-list",IDC_BYPASS_LIST,"Button",BS_AUTOCHECKBOX | BS_PUSHLIKE | WS_TABSTOP,7,156,129,14
+    GROUPBOX        "Inputs",IDC_STATIC,141,7,387,24
     CONTROL         "in",IDC_IN0,"Button",BS_AUTOCHECKBOX | BS_PUSHLIKE | WS_TABSTOP,146,16,12,10
     CONTROL         "A",IDC_INA,"Button",BS_AUTOCHECKBOX | BS_PUSHLIKE | WS_TABSTOP,161,16,12,10
     CONTROL         "B",IDC_INB,"Button",BS_AUTOCHECKBOX | BS_PUSHLIKE | WS_TABSTOP,175,16,12,10
@@ -115,7 +115,7 @@ BEGIN
     CONTROL         "X",IDC_INX,"Button",BS_AUTOCHECKBOX | BS_PUSHLIKE | WS_TABSTOP,483,16,12,10
     CONTROL         "Y",IDC_INY,"Button",BS_AUTOCHECKBOX | BS_PUSHLIKE | WS_TABSTOP,497,16,12,10
     CONTROL         "Z",IDC_INZ,"Button",BS_AUTOCHECKBOX | BS_PUSHLIKE | WS_TABSTOP,511,16,12,10
-    GROUPBOX        "Output",IDS_OUTPUTS,141,29,387,22
+    GROUPBOX        "Output",IDS_OUTPUTS,141,30,387,23
     CONTROL         "A",IDC_OUTA,"Button",BS_AUTORADIOBUTTON | BS_PUSHLIKE | WS_GROUP | WS_TABSTOP,161,39,12,10
     CONTROL         "B",IDC_OUTB,"Button",BS_AUTORADIOBUTTON | BS_PUSHLIKE | WS_TABSTOP,175,39,12,10
     CONTROL         "C",IDC_OUTC,"Button",BS_AUTORADIOBUTTON | BS_PUSHLIKE | WS_TABSTOP,189,39,12,10
@@ -190,9 +190,10 @@ BEGIN
     CONTROL         "",IDC_PMANGR,"msctls_trackbar32",TBS_AUTOTICKS | WS_TABSTOP,328,223,156,10
     PUSHBUTTON      "",IDB_PMANGR,483,225,12,6
     CONTROL         "=",IDC_PMANG_LOCK,"Button",BS_AUTOCHECKBOX | BS_PUSHLIKE | WS_TABSTOP,511,225,12,10
-    CONTROL         "Long numbers",IDC_LONG_NO,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,184,128,10
-    LTEXT           "Embedded Hilbert's transformer type",IDC_STATIC,7,198,129,8
-    COMBOBOX        IDL_EHILBERT,7,210,129,30,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+    CONTROL         "Long numbers",IDC_LONG_NO,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,172,128,10
+    LTEXT           "Embedded Hilbert's transformer type",IDC_STATIC,7,185,129,8
+    COMBOBOX        IDL_EHILBERT,7,195,129,30,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+    CONTROL         "Kahan Summation for IIRs",IDC_KAHAN_SUM,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,211,128,10
     GROUPBOX        "Sample counters",IDC_STATIC,7,226,129,68
     LTEXT           "Playback",IDC_STATIC,16,235,99,8
     RTEXT           "0",IDS_NFR_PLAY,16,245,51,9,0,WS_EX_STATICEDGE

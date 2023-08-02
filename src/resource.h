@@ -198,6 +198,7 @@
 #define IDC_FADE_IN                     1193
 #define IDC_FADE_OUT                    1194
 #define IDB_TRACCEPT                    1195
+#define IDC_KAHAN_SUM                   1196
 
 // Next default values for new objects
 // 
@@ -205,7 +206,7 @@
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        107
 #define _APS_NEXT_COMMAND_VALUE         40001
-#define _APS_NEXT_CONTROL_VALUE         1196
+#define _APS_NEXT_CONTROL_VALUE         1197
 #define _APS_NEXT_SYMED_VALUE           101
 #endif
 #endif

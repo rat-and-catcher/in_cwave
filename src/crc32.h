@@ -4,7 +4,7 @@
  *      crc32.h -- calculations of standard CRC32
  *      This is a part of CWAVE format
  *
- * Copyright (c) 2010-2020, Rat and Catcher Technologies
+ * Copyright (c) 2010-2023, Rat and Catcher Technologies
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without

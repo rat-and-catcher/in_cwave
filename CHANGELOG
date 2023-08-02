@@ -43,3 +43,5 @@ in_cwave V1.*.* (Unpublic!) Versions History -- see OLD_NEWS
         Try to update "Bugs control" numerical parameters by "OK";
         Change Microsoft's __int64 and somewhere unsigned/int to <stdint.h> types;
         Rename DBL_COPY_FAST to ATM_COPY_FAST.
+01-Aug-2023 -- V2.3.1 -- Recalculate HB LPF IIR filters by DSPL-2, add 3 new IIR
+        designs ("Ugly filters"); add Kahan summation for the filters.

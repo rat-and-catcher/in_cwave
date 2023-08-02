@@ -4,7 +4,7 @@
  *      amod_gui_control.c -- advanced modulator GUI setup
  *      (this file is "add-in" to gui_cwave.c)
  *
- * Copyright (c) 2010-2021, Rat and Catcher Technologies
+ * Copyright (c) 2010-2023, Rat and Catcher Technologies
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -1007,7 +1007,8 @@ static BOOL Setup_Dlg_OnInitDialog(HWND hwnd, HWND hwndFocus, LPARAM lParam)
  UpdateControls(hwnd, agc);
 
  // Hilbert
- setup_combobox(hwnd, IDL_EHILBERT, hq_get_type_names(),          the.cfg.iir_filter_no);
+ setup_combobox(hwnd, IDL_EHILBERT,  hq_get_type_names(), the.cfg.iir_filter_no);
+ CheckDlgButton(hwnd, IDC_KAHAN_SUM, the.cfg.iir_sum_kahan? BST_CHECKED : BST_UNCHECKED);
 
  // sound render
  srenders_get_vcfg(&sr_vcfg);
@@ -1447,15 +1448,22 @@ static void Setup_Dlg_OnCommand(HWND hwnd, int id, HWND hwndCtl, UINT codeNotify
   HANDLE_OUTPUT(V, 22); HANDLE_OUTPUT(W, 23); HANDLE_OUTPUT(X, 24);
   HANDLE_OUTPUT(Y, 25); HANDLE_OUTPUT(Z, 26);
 
-  // Hilbert's convertor type
+  // Hilbert's converter type
   case IDL_EHILBERT:
    if(CBN_SELCHANGE == codeNotify)
    {
     LRESULT hq_ix;
 
     CB_GetIndexRec(hwnd, IDL_EHILBERT, &hq_ix);
-    mod_context_change_all_hilberts((unsigned)hq_ix);
+    mod_context_change_all_hilberts_filter((unsigned)hq_ix);
    }
+   break;
+
+  // Hilbert's converter IIR's summation
+  case IDC_KAHAN_SUM:
+   mod_context_change_all_hilberts_summation(
+        !!(BST_CHECKED == IsDlgButtonChecked(hwnd, IDC_KAHAN_SUM))
+        );
    break;
 
   // Sound render type manipulation

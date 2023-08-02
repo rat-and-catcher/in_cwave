@@ -3,7 +3,7 @@
  *
  *      config.c -- load / save module configuration; add-on to in_cwave.c
  *
- * Copyright (c) 2010-2020, Rat and Catcher Technologies
+ * Copyright (c) 2010-2023, Rat and Catcher Technologies
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -47,7 +47,7 @@
  * !CHANGE VERSION_CONFIG EVERY TIME WHEN CONFIG FILE FORMAT CHANGED!
  */
 
-#define VERSION_CONFIG                  (5U)    /* we start to count cfg versions from 1 */
+#define VERSION_CONFIG                  (6U)    /* we start to count cfg versions from 1 */
 
 /* NOTE: It's a simple config handler -- this is not a beauty language. If anybody
  * like to write / edit configs -- the way is clear, but silly -- there is no way to set
@@ -156,6 +156,9 @@ static const BOOL DB_is_frmod_scaled = TRUE;
 static const DB_VAUES_UNSIGNED DB_iir_filter_no =
 { IX_IIR_LOEL_DEF, IX_IIR_LOEL_TYPE0, IX_IIR_LOEL_TYPEMAX };
 
+// unsigned iir_process_no; type of process IIR computation
+static const BOOL DB_iir_sum_kahan = TRUE;
+
 // BOOL is_clr_nframe_trk; TRUE when we want to clear frame counter per each track
 static const BOOL DB_is_clr_nframe_trk = FALSE;
 
@@ -230,6 +233,9 @@ static const CONFIG config_list[] =
 
 // unsigned iir_filter_no; number of current HB LPF for quad
  { _T("IIR_HBLPF_IX"),  VCFG_UNSIGNED,  &the.cfg.iir_filter_no,         &DB_iir_filter_no },
+
+// unsigned iir_process_no; type of process IIR computation
+ { _T("IIR_SUM_KAHAN"), VCFG_BOOL,      &the.cfg.iir_sum_kahan,         &DB_iir_sum_kahan },
 
 // BOOL is_clr_nframe_trk; TRUE when we want to clear frame counter per each track
  { _T("CLR_NFRAME_PT"), VCFG_BOOL,      &the.cfg.is_clr_nframe_trk,     &DB_is_clr_nframe_trk },

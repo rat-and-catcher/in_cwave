@@ -6,7 +6,7 @@
  *      Serge Bahurin, dsplib.ru / dsplib.org. Lots of thanks to him from
  *      Rat and Catcher Technologies.
  *
- * Copyright (c) 2010-2020, Rat and Catcher Technologies
+ * Copyright (c) 2010-2023, Rat and Catcher Technologies
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -53,13 +53,14 @@ typedef struct tagLPF_HILBERT_QUAD
 {
  IIR_RAT_POLY *iir_I;                           // in-phase channel LPF
  IIR_RAT_POLY *iir_Q;                           // quadrature channel LPF
+ IIR_RP_PROCESS p_iir_rp_process;               // the futction to process
  unsigned sampe_ix;                             // sample counter mod 4
 } LPF_HILBERT_QUAD;
 
 /* functions
 */
 // -- create the converter by IIR_COEFF
-LPF_HILBERT_QUAD *hq_rp_create(const IIR_COEFF *coeffs);
+LPF_HILBERT_QUAD *hq_rp_create(const RP_IIR_FILTER_DESCR *fdescr, BOOL is_kahan);
 // -- destroy the converter
 void hq_rp_destroy(LPF_HILBERT_QUAD *hconv);
 // -- return string list ordered according hq_rp_create_ix() indexes
@@ -68,11 +69,13 @@ const TCHAR **hq_get_type_names(void);
 void hq_rp_process(double sample, double *outI, double *outQ, LPF_HILBERT_QUAD *hconv, FP_EXCEPT_STATS *fes);
 // -- reset the converter
 void hq_rp_reset(LPF_HILBERT_QUAD *hconv);
+// -- change summation algorithm
+void hq_rp_setsum(LPF_HILBERT_QUAD *hconv, BOOL is_kahan);
 
 // the creation by the index (IX_IIR_LOEL_xxx)
-static __inline LPF_HILBERT_QUAD *hq_rp_create_ix(unsigned index)
+static __inline LPF_HILBERT_QUAD *hq_rp_create_ix(unsigned index, BOOL is_kahan)
 {
- return hq_rp_create(&iir_hb_lpf_const_filters[index].iir_coefficients);
+ return hq_rp_create(&iir_hb_lpf_const_filters[index], is_kahan);
 }
 
 

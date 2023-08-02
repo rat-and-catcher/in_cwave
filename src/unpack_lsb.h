@@ -3,7 +3,7 @@
  *
  *      unpack_lsb.h -- unpack some data types by a pointer (LSB only)
  *
- * Copyright (c) 2010-2020, Rat and Catcher Technologies
+ * Copyright (c) 2010-2023, Rat and Catcher Technologies
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -90,7 +90,7 @@ static __inline float unpack_float(const void *p)
  U32 u2 = U8P(p)[2];
  U32 u3 = U8P(p)[3];
  union
- {
+ {                          // it's works on x86; unsure for the othe guys
   float fres;
   U32 ures;
  } res;
@@ -113,7 +113,7 @@ static __inline double unpack_double(const void *p)
  U64 u6 = U8P(p)[6];
  U64 u7 = U8P(p)[7];
  union
- {
+ {                          // it's works on x86; unsure for the othe guys
   double dres;
   U64 ures;
  } res;

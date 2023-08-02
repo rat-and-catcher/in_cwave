@@ -7,7 +7,7 @@
  *      of MinGw. Please take care about compatibility with your version by editing
  *      this file (and, probably, compat_gcc.h too). Sorry.
  *
- * Copyright (c) 2010-2020, Rat and Catcher Technologies
+ * Copyright (c) 2010-2023, Rat and Catcher Technologies
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without

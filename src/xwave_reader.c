@@ -3,7 +3,7 @@
  *
  *      xwave_reader.c -- all about reading CWAVE and WAV ('RWAVE')
  *
- * Copyright (c) 2010-2020, Rat and Catcher Technologies
+ * Copyright (c) 2010-2023, Rat and Catcher Technologies
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -112,10 +112,10 @@
 /* zero-valued samples of different types
  * ----------- ------- -- --------- -----
  */
-static const double zero_f64 = 0.0;             // double (64)
-static const float zero_f32 = 0.0F;             // float (32)
-static const uint32_t zero_i32 = 0;             // generic signed/unsigned int / uint for all (u)int_16/24/32
-static const uint8_t zero_u8 = 0x80U;           // WAV's zero-velued byte (0 == middle of scale)
+static const double     zero_f64    = 0.0;      // double (64)
+static const float      zero_f32    = 0.0F;     // float (32)
+static const uint32_t   zero_i32    = 0;        // generic signed/unsigned int / uint for all (u)int_16/24/32
+static const uint8_t    zero_u8     = 0x80U;    // WAV's zero-velued byte (0 == middle of scale)
 
 /* the heplers
  * --- -------
@@ -542,7 +542,7 @@ static BOOL rwave_reader_create(XWAVE_READER *xr)       // FALSE == BAD
   fpos += data_ch_len;
  }
 
- // fill the rest of the header
+ // fill the rest of the xr object
  xr -> ch_sample_size = xr -> spec.rwave.header.Format.wBitsPerSample >> 3;
  xr -> sample_size = xr -> ch_sample_size * xr -> spec.rwave.header.Format.nChannels;
  xr -> n_channels = xr -> spec.rwave.header.Format.nChannels;
