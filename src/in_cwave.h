@@ -100,7 +100,7 @@
  */
 
 // see OLD_NEWS and CHANGELOG about versioning
-#define VERSION_IN_CWAVE        "V2.3.1"
+#define VERSION_IN_CWAVE        "V2.3.2"
 
 #if !defined(MAX_FILE_PATH)
 #if defined(UNICODE)
@@ -141,6 +141,7 @@
 // conversions types
 #define S_RE            (0)                     /* real output */
 #define S_IM            (1)                     /* imaginary output */
+#define S_SUM_REIM      (2)                     /* sum Re(.) + Im(.) */
 
 // boundary values
 #define MAX_FS_SRC      (2000000U)              /* max source sample freqency, Hz; agree with HZ_SCALE  */
@@ -190,7 +191,7 @@
 // "Master" output
 typedef struct tagCMAKE_MASTER                  // one channel specific for master
 {
- volatile int tout;                             // type of the output [S_RE/S_IM]
+ volatile int tout;                             // type of the output [S_RE/S_IM/S_SUM_REIM]
 } CMAKE_MASTER;
 
 typedef struct tagMAKE_MASTER                   // full "master" type

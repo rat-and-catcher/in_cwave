@@ -47,7 +47,7 @@
  * !CHANGE VERSION_CONFIG EVERY TIME WHEN CONFIG FILE FORMAT CHANGED!
  */
 
-#define VERSION_CONFIG                  (6U)    /* we start to count cfg versions from 1 */
+#define VERSION_CONFIG                  (7U)    /* we start to count cfg versions from 1 */
 
 /* NOTE: It's a simple config handler -- this is not a beauty language. If anybody
  * like to write / edit configs -- the way is clear, but silly -- there is no way to set
@@ -676,8 +676,8 @@ static BOOL handle_node_dsp(FILE *fp, TCHAR **buf,
   switch(temp.mode)
   {
    case MODE_MASTER:
-    HANDLE_CHK(int, temp.dsp.mk_master.le.tout, S_RE, S_IM);
-    HANDLE_CHK(int, temp.dsp.mk_master.ri.tout, S_RE, S_IM);
+    HANDLE_CHK(int, temp.dsp.mk_master.le.tout, S_RE, S_SUM_REIM);
+    HANDLE_CHK(int, temp.dsp.mk_master.ri.tout, S_RE, S_SUM_REIM);
     break;
 
    case MODE_SHIFT:

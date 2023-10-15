@@ -645,12 +645,12 @@ static void UpdateControls(HWND hwnd, AMOD_GUI_CONTEXT *agc)
  // -- left master:
  static const int radio_lmaster[] =
  {
-  IDC_ML_RE, IDC_ML_IM
+  IDC_ML_RE, IDC_ML_IM, IDC_ML_SUM_REIM
  };
  // -- right master:
  static const int radio_rmaster[] =
  {
-  IDC_MR_RE, IDC_MR_IM
+  IDC_MR_RE, IDC_MR_IM, IDC_MR_SUM_REIM
  };
 
  // inputs
@@ -682,8 +682,10 @@ static void UpdateControls(HWND hwnd, AMOD_GUI_CONTEXT *agc)
    endis_mode(hwnd, disen_master);
 
    // here DSP-specific need only for one-time initialization, sorry ;)
-   CheckRadioButton(hwnd, IDC_ML_RE, IDC_ML_IM, radio_lmaster[agc -> lCur -> dsp.mk_master.le.tout]);
-   CheckRadioButton(hwnd, IDC_MR_RE, IDC_MR_IM, radio_rmaster[agc -> lCur -> dsp.mk_master.ri.tout]);
+   CheckRadioButton(hwnd, IDC_ML_RE, IDC_ML_SUM_REIM,
+        radio_lmaster[agc -> lCur -> dsp.mk_master.le.tout]);
+   CheckRadioButton(hwnd, IDC_MR_RE, IDC_MR_SUM_REIM,
+        radio_rmaster[agc -> lCur -> dsp.mk_master.ri.tout]);
    break;
 
   case MODE_SHIFT:
@@ -1377,7 +1379,7 @@ static void Setup_Dlg_OnCommand(HWND hwnd, int id, HWND hwndCtl, UINT codeNotify
    agc -> lCur -> xch_mode = XCH_MIXLR;
    break;
 
-  // Master Real/Imaginary
+  // Master Real/Imaginary/Middle
   case IDC_ML_RE:                       // left = real
    agc -> lHead -> dsp.mk_master.le.tout = S_RE;
    break;
@@ -1386,12 +1388,20 @@ static void Setup_Dlg_OnCommand(HWND hwnd, int id, HWND hwndCtl, UINT codeNotify
    agc -> lHead -> dsp.mk_master.le.tout = S_IM;
    break;
 
+  case IDC_ML_SUM_REIM:                 // left = (Re + Im) / 2
+   agc -> lHead -> dsp.mk_master.le.tout = S_SUM_REIM;
+   break;
+
   case IDC_MR_RE:                       // right = real
    agc -> lHead -> dsp.mk_master.ri.tout = S_RE;
    break;
 
   case IDC_MR_IM:                       // right = imaginary
    agc -> lHead -> dsp.mk_master.ri.tout = S_IM;
+   break;
+
+  case IDC_MR_SUM_REIM:                 // right = (Re + Im) / 2
+   agc -> lHead -> dsp.mk_master.ri.tout = S_SUM_REIM;
    break;
 
   // clear frame counters

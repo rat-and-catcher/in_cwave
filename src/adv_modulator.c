@@ -470,6 +470,10 @@ static __inline double dsp_master(CMAKE_MASTER *master, CCOMPLEX *input)
   case S_IM:
    return input -> im;
    break;
+
+  case S_SUM_REIM:              // here we (PROBABLY) could to compensate analitic dyn. range losses
+   return (input -> re + input -> im) / 2.0;
+   break;
  }
  // default -- some sort of 'assert'
  return 0.0;

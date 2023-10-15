@@ -25,8 +25,8 @@ LANGUAGE LANG_NEUTRAL, SUBLANG_NEUTRAL
 //
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION 2,3,1,0
- PRODUCTVERSION 2,3,1,0
+ FILEVERSION 2,3,2,0
+ PRODUCTVERSION 2,3,2,0
  FILEFLAGSMASK 0x3fL
 #ifdef _DEBUG
  FILEFLAGS 0x29L
@@ -43,14 +43,14 @@ BEGIN
         BEGIN
             VALUE "Comments", "This software licensed according BSD-like license"
             VALUE "CompanyName", "Rat and Catcher Technologies"
-            VALUE "FileDescription", "CWAVE/RWAVE(WAV) universal quad modulator for Winamp (XMP)"
-            VALUE "FileVersion", "2.3.1.0"
+            VALUE "FileDescription", "CWAVE/RWAVE(WAV) universal quad modulator for Winamp (XMPlay)"
+            VALUE "FileVersion", "2.3.2.0"
             VALUE "InternalName", "CWAVE Winamp quad modulator"
             VALUE "LegalCopyright", "Copyright (C) 2010-2023 Rat and Catcher Technologies"
             VALUE "OriginalFilename", "in_cwave.dll"
             VALUE "PrivateBuild", "experimental 'total' quad modulator"
             VALUE "ProductName", "Quad Audio Wave Morphing Tools Set"
-            VALUE "ProductVersion", "2.3.1.0"
+            VALUE "ProductVersion", "2.3.2.0"
         END
     END
     BLOCK "VarFileInfo"
@@ -216,11 +216,13 @@ BEGIN
     LTEXT           "Noise shaping",IDC_STATIC,338,243,105,8
     COMBOBOX        IDL_NOISE_SHAPING,338,253,105,30,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
     GROUPBOX        "Master Left",IDC_STATIC,140,268,65,26
-    CONTROL         "I(Re)",IDC_ML_RE,"Button",BS_AUTORADIOBUTTON | BS_PUSHLIKE | WS_GROUP | WS_TABSTOP,144,279,27,12
-    CONTROL         "Q(Im)",IDC_ML_IM,"Button",BS_AUTORADIOBUTTON | BS_PUSHLIKE | WS_TABSTOP,174,279,27,12
+    CONTROL         "I",IDC_ML_RE,"Button",BS_AUTORADIOBUTTON | BS_PUSHLIKE | WS_GROUP | WS_TABSTOP,142,279,17,12
+    CONTROL         "Q",IDC_ML_IM,"Button",BS_AUTORADIOBUTTON | BS_PUSHLIKE | WS_TABSTOP,161,279,17,12
+    CONTROL         "I+Q",IDC_ML_SUM_REIM,"Button",BS_AUTORADIOBUTTON | BS_PUSHLIKE | WS_TABSTOP,180,279,23,12
     GROUPBOX        "Master Right",IDC_STATIC,208,268,65,26
-    CONTROL         "I(Re)",IDC_MR_RE,"Button",BS_AUTORADIOBUTTON | BS_PUSHLIKE | WS_GROUP | WS_TABSTOP,212,279,27,12
-    CONTROL         "Q(Im)",IDC_MR_IM,"Button",BS_AUTORADIOBUTTON | BS_PUSHLIKE | WS_TABSTOP,242,279,27,12
+    CONTROL         "I",IDC_MR_RE,"Button",BS_AUTORADIOBUTTON | BS_PUSHLIKE | WS_GROUP | WS_TABSTOP,210,279,17,12
+    CONTROL         "Q",IDC_MR_IM,"Button",BS_AUTORADIOBUTTON | BS_PUSHLIKE | WS_TABSTOP,229,279,17,12
+    CONTROL         "I+Q",IDC_MR_SUM_REIM,"Button",BS_AUTORADIOBUTTON | BS_PUSHLIKE | WS_TABSTOP,248,279,23,12
     GROUPBOX        "Clips : Peaks, dB",IDC_STATIC,276,268,170,26
     RTEXT           "0:-Inf",IDS_CLIPSL,279,279,58,11,0,WS_EX_STATICEDGE
     RTEXT           "0:-Inf",IDS_CLIPSR,339,279,58,11,0,WS_EX_STATICEDGE
