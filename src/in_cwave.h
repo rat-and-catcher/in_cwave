@@ -431,7 +431,7 @@ typedef struct tagIN_CWAVE_CFG
  unsigned fade_out;                             // track fade out, ms
  BOOL is_frmod_scaled;                          // true, if unsigned scaled modulation frequencies in use
  unsigned iir_filter_no;                        // number of current HB LPF for quad Hilbert conv.
- BOOL iir_sum_kahan;                            // true, if Kahan summation used
+ IIR_COMP_CONFIG iir_comp_config;               // IIR HB LPF computation config
  BOOL is_clr_nframe_trk;                        // clear sample counter per each track
  BOOL is_clr_hilb_trk;                          // clear analitic transformers per track
  BOOL show_long_numbers;                        // show reasonable many digits in operating parameters
@@ -474,9 +474,9 @@ void all_hilberts_unlock(void);
 /* reset the modulator-context's Hilbert's transformer
 */
 void mod_context_reset_hilbert(MOD_CONTEXT *mc);
-/* change summation algorithm in IIR-filters in Hilbert transformer
+/* change computation rules for all IIR-filters in all Hilbert transformers
 */
-void mod_context_change_all_hilberts_summation(BOOL new_sum_kahan);
+void mod_context_change_all_hilberts_config(const IIR_COMP_CONFIG *new_comp_cfg);
 /* change the current Hilbert's transformers
 */
 void mod_context_change_all_hilberts_filter(unsigned new_filter_no);
@@ -508,6 +508,12 @@ uint64_t mod_context_get_framecnt(MOD_CONTEXT *mc);
 /* clear frame counter
 */
 void mod_context_reset_framecnt(MOD_CONTEXT *mc);
+/* get value of desubnorm protection counter
+*/
+uint64_t mod_context_get_desubnorm_counter(MOD_CONTEXT *mc);
+/* reset desubnorm protection counter
+*/
+void mod_context_reset_desubnorm_counter(MOD_CONTEXT *mc);
 /* set new mode for the all FP exception counters
 */
 void fecs_set_endis_all(BOOL new_endis);

@@ -47,7 +47,7 @@
  * !CHANGE VERSION_CONFIG EVERY TIME WHEN CONFIG FILE FORMAT CHANGED!
  */
 
-#define VERSION_CONFIG                  (7U)    /* we start to count cfg versions from 1 */
+#define VERSION_CONFIG                  (8U)    /* we start to count cfg versions from 1 */
 
 /* NOTE: It's a simple config handler -- this is not a beauty language. If anybody
  * like to write / edit configs -- the way is clear, but silly -- there is no way to set
@@ -156,8 +156,15 @@ static const BOOL DB_is_frmod_scaled = TRUE;
 static const DB_VAUES_UNSIGNED DB_iir_filter_no =
 { IX_IIR_LOEL_DEF, IX_IIR_LOEL_TYPE0, IX_IIR_LOEL_TYPEMAX };
 
-// unsigned iir_process_no; type of process IIR computation
+// BOOL iir_comp_config.is_kahan; type of process IIR computation (Kahan / baseline summation)
 static const BOOL DB_iir_sum_kahan = TRUE;
+
+// BOOL iir_comp_config.is_subnorm_reject; suppressing low values in "delay line" of IIR state
+static const BOOL DB_iir_subnorm_reject = TRUE;
+
+// double iir_comp_config.subnorm_thr; subnorm reject threshold
+static const DB_VAUES_DOUBLE DB_iir_subnorm_thr =
+{ SBN_THR_DEF, SBN_THR_MIN, SBN_THR_MAX };
 
 // BOOL is_clr_nframe_trk; TRUE when we want to clear frame counter per each track
 static const BOOL DB_is_clr_nframe_trk = FALSE;
@@ -199,76 +206,82 @@ static const CONFIG config_list[] =
 {
 // unsigned ver_config; config file version, > 0
 // ** THIS ALWAYS HAS INDEX == 0 -> NO ANY CONFIG LINES BEFORE! **
- { _T("VER_CONFIG"),    VCFG_UNSIGNED,  &the.cfg.ver_config,            &DB_ver_config },
+ { _T("VER_CONFIG"),    VCFG_UNSIGNED,  &the.cfg.ver_config,                        &DB_ver_config },
 
 // BOOL is_wav_support; true, if the module support WAV
- { _T("WAV_SUPPORT"),   VCFG_BOOL,      &the.cfg.is_wav_support,        &DB_is_wav_support },
+ { _T("WAV_SUPPORT"),   VCFG_BOOL,      &the.cfg.is_wav_support,                    &DB_is_wav_support },
 
 // BOOL is_rwave_support; true, if the module support RWAVE ext. for WAV
- { _T("RWAVE_SUPPORT"), VCFG_BOOL,      &the.cfg.is_rwave_support,      &DB_is_rwave_support },
+ { _T("RWAVE_SUPPORT"), VCFG_BOOL,      &the.cfg.is_rwave_support,                  &DB_is_rwave_support },
 
 // unsigned infobox_parenting; value INFOBOX_xxx - behaviour of "Alt-3" window
- { _T("IBOX_PARENT"),   VCFG_UNSIGNED,  &the.cfg.infobox_parenting,     &DB_infobox_parenting },
+ { _T("IBOX_PARENT"),   VCFG_UNSIGNED,  &the.cfg.infobox_parenting,                 &DB_infobox_parenting },
 
 // BOOL enable_unload_cleanup; enable cleanup on unload plugin
- { _T("LAST_CHANCE"),   VCFG_BOOL,      &the.cfg.enable_unload_cleanup, &DB_enable_unload_cleanup },
+ { _T("LAST_CHANCE"),   VCFG_BOOL,      &the.cfg.enable_unload_cleanup,             &DB_enable_unload_cleanup },
 
 // unsigned play_sleep; sleep while playback, ms
- { _T("PLAY_SLEEP"),    VCFG_UNSIGNED,  &the.cfg.play_sleep,            &DB_play_sleep },
+ { _T("PLAY_SLEEP"),    VCFG_UNSIGNED,  &the.cfg.play_sleep,                        &DB_play_sleep },
 
 // BOOL disable_play_sleep; disable sleep on plyback
- { _T("DISABLE_SLEEP"), VCFG_BOOL,      &the.cfg.disable_play_sleep,    &DB_disable_play_sleep },
+ { _T("DISABLE_SLEEP"), VCFG_BOOL,      &the.cfg.disable_play_sleep,                &DB_disable_play_sleep },
 
 // unsigned sec_align; time in seconds to align file length
- { _T("SEC_ALIGN"),     VCFG_UNSIGNED,  &the.cfg.sec_align,            &DB_sec_align },
+ { _T("SEC_ALIGN"),     VCFG_UNSIGNED,  &the.cfg.sec_align,                         &DB_sec_align },
 
 // unsigned fade_in; track fade in, ms
- { _T("FADE_IN"),       VCFG_UNSIGNED,  &the.cfg.fade_in,               &DB_fade_in },
+ { _T("FADE_IN"),       VCFG_UNSIGNED,  &the.cfg.fade_in,                           &DB_fade_in },
 
 // unsigned fade_in; track fade in, ms
- { _T("FADE_OUT"),      VCFG_UNSIGNED,  &the.cfg.fade_out,              &DB_fade_out },
+ { _T("FADE_OUT"),      VCFG_UNSIGNED,  &the.cfg.fade_out,                          &DB_fade_out },
 
 // BOOL is_frmod_scaled; true, if unsigned scaled modulation frequencies in use
- { _T("FRMOD_SCALED"),  VCFG_BOOL,      &the.cfg.is_frmod_scaled,       &DB_is_frmod_scaled },
+ { _T("FRMOD_SCALED"),  VCFG_BOOL,      &the.cfg.is_frmod_scaled,                   &DB_is_frmod_scaled },
 
 // unsigned iir_filter_no; number of current HB LPF for quad
- { _T("IIR_HBLPF_IX"),  VCFG_UNSIGNED,  &the.cfg.iir_filter_no,         &DB_iir_filter_no },
+ { _T("IIR_HBLPF_IX"),  VCFG_UNSIGNED,  &the.cfg.iir_filter_no,                     &DB_iir_filter_no },
 
-// unsigned iir_process_no; type of process IIR computation
- { _T("IIR_SUM_KAHAN"), VCFG_BOOL,      &the.cfg.iir_sum_kahan,         &DB_iir_sum_kahan },
+// BOOL iir_comp_config.is_kahan; type of process IIR computation (Kahan / baseline summation)
+ { _T("IIR_SUM_KAHAN"), VCFG_BOOL,      &the.cfg.iir_comp_config.is_kahan,          &DB_iir_sum_kahan },
+
+// BOOL iir_comp_config.is_subnorm_reject; suppressing low values in "delay line" of IIR state
+ { _T("IIR_SUBN_ZERO"), VCFG_BOOL,      &the.cfg.iir_comp_config.is_subnorm_reject, &DB_iir_subnorm_reject },
+
+// double iir_comp_config.subnorm_thr; subnorm reject threshold
+ { _T("IIR_SUBN_THR"),  VCFG_DOUBLE_BIN, &the.cfg.iir_comp_config.subnorm_thr,      &DB_iir_subnorm_thr },
 
 // BOOL is_clr_nframe_trk; TRUE when we want to clear frame counter per each track
- { _T("CLR_NFRAME_PT"), VCFG_BOOL,      &the.cfg.is_clr_nframe_trk,     &DB_is_clr_nframe_trk },
+ { _T("CLR_NFRAME_PT"), VCFG_BOOL,      &the.cfg.is_clr_nframe_trk,                 &DB_is_clr_nframe_trk },
 
 // BOOL is_clr_hilb_trk; TRUE when we want to clear analitic transformers per each track
- { _T("CLR_HILB_PT"),   VCFG_BOOL,      &the.cfg.is_clr_hilb_trk,       &DB_is_clr_hilb_trk },
+ { _T("CLR_HILB_PT"),   VCFG_BOOL,      &the.cfg.is_clr_hilb_trk,                   &DB_is_clr_hilb_trk },
 
 // BOOL show_long_numbers; FALSE -- short format, TRUE -- %G or something same
- { _T("SHOW_LONGNUMB"), VCFG_BOOL,      &the.cfg.show_long_numbers,     &DB_show_long_numbers },
+ { _T("SHOW_LONGNUMB"), VCFG_BOOL,      &the.cfg.show_long_numbers,                 &DB_show_long_numbers },
 
 // BOOL is_fp_check; true, if floating point check set
- { _T("FP_CHECK"),      VCFG_BOOL,      &the.cfg.is_fp_check,           &DB_is_fp_check },
+ { _T("FP_CHECK"),      VCFG_BOOL,      &the.cfg.is_fp_check,                       &DB_is_fp_check },
 
 // BOOL is24bits; FALSE -- 16 bits decoding (real output of playback/transcode)
- { _T("NEED24BITS"),    VCFG_BOOL,      &the.cfg.need24bits,            &DB_need24bits },
+ { _T("NEED24BITS"),    VCFG_BOOL,      &the.cfg.need24bits,                        &DB_need24bits },
 
 // double sr_config.dth_bits; bits to dither (+-LSbits; _TPDF reduced_)
- { _T("DITHER_BITS"),   VCFG_DOUBLE_BIN, &the.cfg.sr_config.dth_bits,   &DB_dth_bits },
+ { _T("DITHER_BITS"),   VCFG_DOUBLE_BIN, &the.cfg.sr_config.dth_bits,               &DB_dth_bits },
 
 // unsigned quantz_type; type of rounding while convert double to int
- { _T("QUANTIZE_TYPE"), VCFG_UNSIGNED,  &the.cfg.sr_config.quantz_type, &DB_quantz_type },
+ { _T("QUANTIZE_TYPE"), VCFG_UNSIGNED,  &the.cfg.sr_config.quantz_type,             &DB_quantz_type },
 
 // unsigned sr_config.render_type; type of dithering (rendering) while convert double to int
- { _T("RENDER_TYPE"),   VCFG_UNSIGNED,  &the.cfg.sr_config.render_type, &DB_render_type },
+ { _T("RENDER_TYPE"),   VCFG_UNSIGNED,  &the.cfg.sr_config.render_type,             &DB_render_type },
 
 // unsigned sr_config.nshape_type; noise shaping type SND_NSHAPE_xxx
- { _T("NOISE_SHAPING"), VCFG_UNSIGNED,  &the.cfg.sr_config.nshape_type, &DB_nshape_type },
+ { _T("NOISE_SHAPING"), VCFG_UNSIGNED,  &the.cfg.sr_config.nshape_type,             &DB_nshape_type },
 
 // NODE_DSP *dsp_list; the copy of last dsp-list
- { _T("NODE_DSP"),      VCFG_FUNCTION,  &the.cfg.dsp_list,              &handle_node_dsp },
+ { _T("NODE_DSP"),      VCFG_FUNCTION,  &the.cfg.dsp_list,                          &handle_node_dsp },
 
 // the end of list
- { NULL,                0,              NULL,                           NULL }
+ { NULL,                0,              NULL,                                       NULL }
 };
 
 /* read and pre-parse config line "keyword=tail", blanks around _not ignored_, but

@@ -477,7 +477,7 @@ const RP_IIR_FILTER_DESCR iir_hb_lpf_const_filters[] =
  */
 /* create the filter by IIR_COEFF
 */
-IIR_RAT_POLY *iir_rp_create(const RP_IIR_FILTER_DESCR *fdescr, BOOL is_kahan)
+IIR_RAT_POLY *iir_rp_create(const RP_IIR_FILTER_DESCR *fdescr, const IIR_COMP_CONFIG *comp_cfg)
 {
  IIR_RAT_POLY *filter = cmalloc(sizeof(IIR_RAT_POLY));
  double a0;
@@ -507,7 +507,7 @@ IIR_RAT_POLY *iir_rp_create(const RP_IIR_FILTER_DESCR *fdescr, BOOL is_kahan)
   filter -> pd[i] =  U2D(fdescr -> vec_b[j]) / a0;
  }
 
- iir_rp_setsum(filter, is_kahan);
+ iir_rp_setcfg(filter, comp_cfg);
  iir_rp_reset(filter);
  return filter;
 
@@ -564,6 +564,12 @@ double iir_rp_process_baseline(double sample, IIR_RAT_POLY *filter, FP_EXCEPT_ST
    sum_o += filter -> pz[k] * filter -> pd[i];
   }
 
+  if(filter -> is_subnorm_reject && (fabs(sum_i) < filter -> is_subnorm_reject))
+  {
+   sum_i = 0.0;
+   ++(filter -> subnorm_cnt);
+  }
+
   filter -> pz[filter -> ix] = sum_i;
   if(++(filter -> ix) >= filter -> nord)        // m_ix = (++m_ix) % m_nord; -- it's BAD for iNTEL
    filter -> ix = 0;
@@ -580,6 +586,12 @@ double iir_rp_process_baseline(double sample, IIR_RAT_POLY *filter, FP_EXCEPT_ST
 
    sum_i = FC(sum_i + FC(filter -> pz[k] * filter -> pc[i]));
    sum_o = FC(sum_o + FC(filter -> pz[k] * filter -> pd[i]));
+  }
+
+  if(filter -> is_subnorm_reject && (fabs(sum_i) < filter -> is_subnorm_reject))
+  {
+   sum_i = 0.0;
+   ++(filter -> subnorm_cnt);
   }
 
   filter -> pz[filter -> ix] = sum_i;
@@ -683,6 +695,12 @@ double iir_rp_process_kahan(double sample, IIR_RAT_POLY *filter, FP_EXCEPT_STATS
    kahan_step(ti              * filter -> d0,    &sum_o);
   }
 
+  if(filter -> is_subnorm_reject && (fabs(sum_i.S) < filter -> is_subnorm_reject))
+  {
+   sum_i.S = 0.0;
+   ++(filter -> subnorm_cnt);
+  }
+
   filter -> pz[filter -> ix] = sum_i.S;
   if(++(filter -> ix) >= filter -> nord)        // m_ix = (++m_ix) % m_nord; -- it's BAD for iNTEL
    filter -> ix = 0;
@@ -716,6 +734,12 @@ double iir_rp_process_kahan(double sample, IIR_RAT_POLY *filter, FP_EXCEPT_STATS
    kahan_step_fes(FC(ti              * filter -> d0   ), &sum_o, fes);
   }
 
+  if(filter -> is_subnorm_reject && (fabs(sum_i.S) < filter -> is_subnorm_reject))
+  {
+   sum_i.S = 0.0;
+   ++(filter -> subnorm_cnt);
+  }
+
   filter -> pz[filter -> ix] = sum_i.S;
   if(++(filter -> ix) >= filter -> nord)        // m_ix = (++m_ix) % m_nord; -- it's BAD for iNTEL
    filter -> ix = 0;
@@ -736,15 +760,37 @@ void iir_rp_reset(IIR_RAT_POLY *filter)
   filter -> pz[i] = 0.0;
 
  filter -> ix = 0;
+
+ iir_rp_reset_sncnt(filter);                    // mandatory here
 }
 
 /* change summation algorithm
 */
-void iir_rp_setsum(IIR_RAT_POLY *filter, BOOL is_kahan)
+void iir_rp_setcfg(IIR_RAT_POLY *filter, const IIR_COMP_CONFIG *comp_cfg)
 {
- filter -> process = is_kahan? &iir_rp_process_kahan : &iir_rp_process_baseline;
+ filter -> subnorm_thr          = comp_cfg -> subnorm_thr;          // in God we trust..
+ filter -> is_subnorm_reject    = comp_cfg -> is_subnorm_reject;
+ filter -> process              = comp_cfg -> is_kahan?
+    &iir_rp_process_kahan
+    :
+    &iir_rp_process_baseline;
+
+ iir_rp_reset_sncnt(filter);                                        // "new world"
 }
 
+/* reset subnorm rejecttions counter
+*/
+void iir_rp_reset_sncnt(IIR_RAT_POLY *filter)
+{
+ filter -> subnorm_cnt = 0ULL;
+}
+
+/* get current subnorm rejecttions counter
+*/
+uint64_t iir_rp_get_sncnt(IIR_RAT_POLY *filter)
+{
+ return filter -> subnorm_cnt;
+}
 
 /* the end...
 */

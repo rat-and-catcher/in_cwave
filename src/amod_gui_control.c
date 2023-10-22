@@ -62,6 +62,8 @@ typedef struct tagAMOD_GUI_CONTEXT
  // the shown values of the counters
  uint64_t snfr_play;                    // playback sample counter
  uint64_t snfr_trans;                   // transcode sample counter
+ uint64_t snrj_play;                    // playback de-subnorm counter
+ uint64_t snrj_trans;                   // transcode de-subnorm counter
  unsigned sl_cnt;                       // clips counter -- left channel
  unsigned sr_cnt;                       // clips counter -- left channel
  double sl_peak;                        // peak value -- left channel
@@ -103,9 +105,9 @@ static NODE_DSP *add_dsp_node_dialog(HWND hwndParent, AMOD_GUI_CONTEXT *agc);
 */
 static BOOL edit_value_dialog(HWND hwndParent,  int id_par_slider,
         const TCHAR *title, double *val, AMOD_GUI_CONTEXT *agc);
-/* the front-end for plugin setup gialog
+/* the front-end for plugin setup gialog, TRUE==OK, FALSE==Cancel
 */
-static void plugin_systetup_dialog(HWND hwndParent,
+static BOOL plugin_systetup_dialog(HWND hwndParent,
         IN_CWAVE_CFG *ic_conf, AMOD_GUI_CONTEXT *agc);
 
 /* front-end advanced modulator GUI setup
@@ -784,7 +786,7 @@ static void UpdateControls(HWND hwnd, AMOD_GUI_CONTEXT *agc)
 
 /* show/reset frames counters
 */
-static void ShowCounters(HWND hwnd,
+static void ShowFrameCounters(HWND hwnd,
         BOOL isResetPlay, BOOL isResetTrans,
         BOOL isRedraw,
         AMOD_GUI_CONTEXT *agc)
@@ -806,6 +808,33 @@ static void ShowCounters(HWND hwnd,
  if((agc -> snfr_trans != n_frame) || isRedraw)
  {
   TXT_PrintTxt(hwnd, IDS_NFR_TRANS, _T("%I64u"), agc -> snfr_trans = n_frame);
+ }
+}
+
+/* show/reset de-subnorm counters
+*/
+static void ShowDesubnCounters(HWND hwnd,
+        BOOL isResetPlay, BOOL isResetTrans,
+        BOOL isRedraw,
+        AMOD_GUI_CONTEXT *agc)
+{
+ uint64_t n_desub;
+
+ if(isResetPlay)
+  mod_context_reset_desubnorm_counter(&(the.mc_playback));
+ if(isResetTrans)
+  mod_context_reset_desubnorm_counter(&(the.mc_transcode));
+
+ n_desub = mod_context_get_desubnorm_counter(&(the.mc_playback));
+ if((agc -> snrj_play != n_desub) || isRedraw)
+ {
+  TXT_PrintTxt(hwnd, IDS_RJ_PLAY, _T("%I64u"), agc -> snrj_play = n_desub);
+ }
+
+ n_desub = mod_context_get_desubnorm_counter(&(the.mc_transcode));
+ if((agc -> snrj_trans != n_desub) || isRedraw)
+ {
+  TXT_PrintTxt(hwnd, IDS_RJ_TRANS, _T("%I64u"), agc -> snrj_trans = n_desub);
  }
 }
 
@@ -1010,7 +1039,6 @@ static BOOL Setup_Dlg_OnInitDialog(HWND hwnd, HWND hwndFocus, LPARAM lParam)
 
  // Hilbert
  setup_combobox(hwnd, IDL_EHILBERT,  hq_get_type_names(), the.cfg.iir_filter_no);
- CheckDlgButton(hwnd, IDC_KAHAN_SUM, the.cfg.iir_sum_kahan? BST_CHECKED : BST_UNCHECKED);
 
  // sound render
  srenders_get_vcfg(&sr_vcfg);
@@ -1030,7 +1058,8 @@ static BOOL Setup_Dlg_OnInitDialog(HWND hwnd, HWND hwndFocus, LPARAM lParam)
  CheckDlgButton(hwnd, IDC_SEXCP,       the.cfg.is_fp_check        ? BST_CHECKED : BST_UNCHECKED);
 
 
- ShowCounters(hwnd, FALSE, FALSE, TRUE, agc);
+ ShowFrameCounters(hwnd, FALSE, FALSE, TRUE, agc);
+ ShowDesubnCounters(hwnd, FALSE, FALSE, TRUE, agc);
  ShowClipsPeaks(hwnd, FALSE, TRUE, agc);
 
  ShowHideExceptions(hwnd, the.cfg.is_fp_check, agc);
@@ -1406,11 +1435,11 @@ static void Setup_Dlg_OnCommand(HWND hwnd, int id, HWND hwndCtl, UINT codeNotify
 
   // clear frame counters
   case IDB_RESET_NFR_PLAY:              // clear playback frame counter
-   ShowCounters(hwnd, TRUE, FALSE, TRUE, agc);
+   ShowFrameCounters(hwnd, TRUE, FALSE, TRUE, agc);
    break;
 
   case IDB_RESET_NFR_TRANS:             // clear transcode frame counter
-   ShowCounters(hwnd, FALSE, TRUE, TRUE, agc);
+   ShowFrameCounters(hwnd, FALSE, TRUE, TRUE, agc);
    break;
 
   // reset Hilbert transformers
@@ -1420,6 +1449,15 @@ static void Setup_Dlg_OnCommand(HWND hwnd, int id, HWND hwndCtl, UINT codeNotify
 
   case IDB_RESET_HILB_TRANS:            // clear transcode Hilbert's converter
    mod_context_reset_hilbert(&the.mc_transcode);
+   break;
+
+  // clear desubnorm counters
+  case IDB_RESET_RJ_PLAY:               // clear playback de-subnorm counters
+   ShowDesubnCounters(hwnd, TRUE, FALSE, TRUE, agc);
+   break;
+
+  case IDB_RESET_RJ_TRANS:              // clear transcode de-subnorm counters
+   ShowDesubnCounters(hwnd, FALSE, TRUE, TRUE, agc);
    break;
 
   // clear clips counters
@@ -1467,13 +1505,6 @@ static void Setup_Dlg_OnCommand(HWND hwnd, int id, HWND hwndCtl, UINT codeNotify
     CB_GetIndexRec(hwnd, IDL_EHILBERT, &hq_ix);
     mod_context_change_all_hilberts_filter((unsigned)hq_ix);
    }
-   break;
-
-  // Hilbert's converter IIR's summation
-  case IDC_KAHAN_SUM:
-   mod_context_change_all_hilberts_summation(
-        !!(BST_CHECKED == IsDlgButtonChecked(hwnd, IDC_KAHAN_SUM))
-        );
    break;
 
   // Sound render type manipulation
@@ -1525,7 +1556,11 @@ static void Setup_Dlg_OnCommand(HWND hwnd, int id, HWND hwndCtl, UINT codeNotify
 
   // player (system) setup
   case IDB_SYSETUP:
-   plugin_systetup_dialog(hwnd, &the.cfg, agc);
+   if(plugin_systetup_dialog(hwnd, &the.cfg, agc))
+   {
+    // some immediately applies:
+    mod_context_change_all_hilberts_config(&(the.cfg.iir_comp_config));
+   }
    break;
 
   // toggle long/short number
@@ -1663,8 +1698,10 @@ static void Setup_Dlg_OnTimer(HWND hwnd, UINT id)
  // was changed asynchronously
  // clipping statistics:
  ShowClipsPeaks(hwnd, FALSE, FALSE, agc);
- // frame statistics:
- ShowCounters(hwnd, FALSE, FALSE, FALSE, agc);
+ // frame counters:
+ ShowFrameCounters(hwnd, FALSE, FALSE, FALSE, agc);
+ // de-subnorn counters:
+ ShowDesubnCounters(hwnd, FALSE, FALSE, FALSE, agc);
  // FP exception statistics:
  ShowFPExceptions(hwnd, the.cfg.is_fp_check, FALSE, agc);
 }
@@ -1703,9 +1740,10 @@ void amgui_setup_dialog(HINSTANCE hi, HWND hwndParent)
  aguic.loc_hi = hi;
  aguic.newnode_def_id = newnode_def_id;
  aguic.timer_id = 0;
- aguic.snfr_play = aguic.snfr_trans = 0;
- aguic.sl_cnt  = aguic.sr_cnt  = 0;
- aguic.sl_peak = aguic.sr_peak = 0.0;               // value on form
+ aguic.snfr_play = aguic.snfr_trans = 0ULL;
+ aguic.snrj_play = aguic.snfr_trans = 0ULL;
+ aguic.sl_cnt    = aguic.sr_cnt     = 0;
+ aguic.sl_peak   = aguic.sr_peak    = 0.0;                  // zero values on form
 
  // aguic.fec_hilb_left, .fec_hilb_right, .fec_sr_left, .fec_sr_right are already zeroed here!!
 
@@ -1926,6 +1964,7 @@ typedef struct tagSYSETUP_CONTEXT
  BOOL enable_unload_cleanup;                    // enable cleanup on unload plugin
  unsigned play_sleep;                           // sleep while playback, ms
  BOOL disable_play_sleep;                       // disable sleep on plyback
+ IIR_COMP_CONFIG icc;                           // IIR comp. rules
  unsigned sec_align;                            // time in seconds to align file length
  unsigned fade_in;                              // track fade in, ms
  unsigned fade_out;                             // track fade out, ms
@@ -1960,6 +1999,10 @@ static BOOL SySetup_Dlg_OnInitDialog(HWND hwnd, HWND hwndFocus, LPARAM lParam)
  EnDis(hwnd, IDC_SLEEPTIME, !ssc -> disable_play_sleep);
  EnDis(hwnd, IDB_SLEEPTIME, !ssc -> disable_play_sleep);
  CheckDlgButton(hwnd, IDC_NOSLEEP, ssc -> disable_play_sleep);
+
+ TXT_PrintTxt(hwnd, IDC_SUB_THR, _T("%.14G"), ssc -> icc.subnorm_thr);
+ CheckDlgButton(hwnd, IDC_RJ_SUB_THR, ssc -> icc.is_subnorm_reject);
+ CheckDlgButton(hwnd, IDC_KAHAN_SUM,  ssc -> icc.is_kahan);
 
  TXT_PrintTxt(hwnd, IDC_ALIGN,    _T("%u"), ssc -> sec_align);
  TXT_PrintTxt(hwnd, IDC_FADE_IN,  _T("%u"), ssc -> fade_in);
@@ -2018,6 +2061,24 @@ static void SySetup_Dlg_OnCommand(HWND hwnd, int id, HWND hwndCtl, UINT codeNoti
    EnDis(hwnd, IDB_SLEEPTIME, !ssc -> disable_play_sleep);
    break;
 
+  // setup IIR computations rules
+  case IDB_SUB_THR:                     // accept highest value should be zeroed
+   ssc -> icc.subnorm_thr = TXT_GetDbl(hwnd
+        , IDC_SUB_THR
+        , ssc -> icc.subnorm_thr
+        , SBN_THR_MIN
+        , SBN_THR_MAX
+        , NULL);
+   break;
+
+  case IDC_RJ_SUB_THR:                  // toggle subnorm protection
+   ssc -> icc.is_subnorm_reject = !!(BST_CHECKED == IsDlgButtonChecked(hwnd, IDC_RJ_SUB_THR));
+   break;
+
+  case IDC_KAHAN_SUM:                   // toggle Kahan summation
+   ssc -> icc.is_kahan = !!(BST_CHECKED == IsDlgButtonChecked(hwnd, IDC_KAHAN_SUM));
+   break;
+
   // -- track framing setup
   case IDB_TRACCEPT:                    // set align time, fade in and fade out
    ssc -> sec_align = TXT_GetUlng(hwnd, IDC_ALIGN,    0, 0, MAX_ALIGN_SEC);
@@ -2042,6 +2103,13 @@ static void SySetup_Dlg_OnCommand(HWND hwnd, int id, HWND hwndCtl, UINT codeNoti
   case IDOK:                            // accept
    // last chance to update numerical parameters
    ssc -> play_sleep = TXT_GetUlng(hwnd, IDC_SLEEPTIME, DEF_PLAY_SLEEP, 0, MAX_PLAY_SLEEP);
+
+   ssc -> icc.subnorm_thr = TXT_GetDbl(hwnd
+        , IDC_SUB_THR
+        , ssc -> icc.subnorm_thr
+        , SBN_THR_MIN
+        , SBN_THR_MAX
+        , NULL);
 
    ssc -> sec_align = TXT_GetUlng(hwnd, IDC_ALIGN,    0, 0, MAX_ALIGN_SEC);
    ssc -> fade_in   = TXT_GetUlng(hwnd, IDC_FADE_IN,  0, 0, MAX_FADE_INOUT);
@@ -2070,9 +2138,9 @@ static BOOL CALLBACK SySetup_DlgProc(HWND hDlg, UINT uMsg,
  return fProcessed;
 }
 
-/* the front-end for plugin setup gialog
+/* the front-end for plugin setup gialog, TRUE==OK, FALSE==Cancel
 */
-static void plugin_systetup_dialog(HWND hwndParent,
+static BOOL plugin_systetup_dialog(HWND hwndParent,
         IN_CWAVE_CFG *ic_conf, AMOD_GUI_CONTEXT *agc)
 {
  SYSETUP_CONTEXT ssc;
@@ -2084,6 +2152,9 @@ static void plugin_systetup_dialog(HWND hwndParent,
  ssc.enable_unload_cleanup  = ic_conf -> enable_unload_cleanup;
  ssc.play_sleep             = ic_conf -> play_sleep;
  ssc.disable_play_sleep     = ic_conf -> disable_play_sleep;
+
+ memcpy(&(ssc.icc), &(ic_conf -> iir_comp_config), sizeof(IIR_COMP_CONFIG));
+
  ssc.sec_align              = ic_conf -> sec_align;
  ssc.fade_in                = ic_conf -> fade_in;
  ssc.fade_out               = ic_conf -> fade_out;
@@ -2132,6 +2203,8 @@ static void plugin_systetup_dialog(HWND hwndParent,
   if(!ssc.disable_play_sleep)
    ic_conf -> disable_play_sleep = ssc.disable_play_sleep;
 
+  memcpy(&(ic_conf -> iir_comp_config), &(ssc.icc), sizeof(IIR_COMP_CONFIG));
+
   ic_conf -> sec_align = ssc.sec_align;
   ic_conf -> fade_in   = ssc.fade_in;
   ic_conf -> fade_out  = ssc.fade_out;
@@ -2146,7 +2219,11 @@ static void plugin_systetup_dialog(HWND hwndParent,
         MB_OK | MB_ICONWARNING);
    ic_conf -> is_frmod_scaled = ssc.is_frmod_scaled;
   }
+
+  return TRUE;
  }                      // if(OK@Dlg)
+
+ return FALSE;          // if(Cancel@Dlg)
 }
 
 /* the end...

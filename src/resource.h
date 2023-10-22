@@ -126,8 +126,10 @@
 #define IDB_SYSETUP                     1133
 #define IDL_NOISE_SHAPING               1134
 #define IDC_WAVEXT                      1135
+#define IDS_RJ_PLAY                     1135
 #define IDB_QUANTIZE                    1136
 #define IDC_RWAVEEXT                    1137
+#define IDS_RJ_TRANS                    1137
 #define IDS_LH_SN                       1138
 #define IDC_PAR_NOPARENT                1139
 #define IDS_LH_TOT                      1140
@@ -201,6 +203,11 @@
 #define IDC_FADE_OUT                    1208
 #define IDB_TRACCEPT                    1209
 #define IDC_KAHAN_SUM                   1210
+#define IDC_SUB_THR                     1211
+#define IDB_SUB_THR                     1212
+#define IDC_RJ_SUB_THR                  1213
+#define IDB_RESET_RJ_PLAY               1215
+#define IDB_RESET_RJ_TRANS              1216
 
 // Next default values for new objects
 // 
@@ -208,7 +215,7 @@
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        107
 #define _APS_NEXT_COMMAND_VALUE         40001
-#define _APS_NEXT_CONTROL_VALUE         1211
+#define _APS_NEXT_CONTROL_VALUE         1217
 #define _APS_NEXT_SYMED_VALUE           101
 #endif
 #endif

@@ -755,7 +755,7 @@ void sound_render_value
    delta = 0;
   }
 
-  // update peak level (dB, 0.0 == -150 dB)
+  // update peak level (dB, 0.0 == SR_ZERO_SIGNAL_DB (-555.0) dB)
   if(peak_val)
   {
    double pv = *peak_val;

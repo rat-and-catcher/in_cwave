@@ -60,7 +60,7 @@ typedef struct tagLPF_HILBERT_QUAD
 /* functions
 */
 // -- create the converter by IIR_COEFF
-LPF_HILBERT_QUAD *hq_rp_create(const RP_IIR_FILTER_DESCR *fdescr, BOOL is_kahan);
+LPF_HILBERT_QUAD *hq_rp_create(const RP_IIR_FILTER_DESCR *fdescr, const IIR_COMP_CONFIG *comp_cfg);
 // -- destroy the converter
 void hq_rp_destroy(LPF_HILBERT_QUAD *hconv);
 // -- return string list ordered according hq_rp_create_ix() indexes
@@ -69,13 +69,17 @@ const TCHAR **hq_get_type_names(void);
 void hq_rp_process(double sample, double *outI, double *outQ, LPF_HILBERT_QUAD *hconv, FP_EXCEPT_STATS *fes);
 // -- reset the converter
 void hq_rp_reset(LPF_HILBERT_QUAD *hconv);
-// -- change summation algorithm
-void hq_rp_setsum(LPF_HILBERT_QUAD *hconv, BOOL is_kahan);
+// -- change IIR computation parameters
+void hq_rp_setcfg(const LPF_HILBERT_QUAD *hconv, const IIR_COMP_CONFIG *comp_cfg);
+// -- reset subnorm rejections counters
+void hq_rp_reset_sncnt(const LPF_HILBERT_QUAD *hconv);
+// -- get current summary subnorm rejecttions counter
+uint64_t hq_rp_get_sncnt(const LPF_HILBERT_QUAD *hconv);
 
 // the creation by the index (IX_IIR_LOEL_xxx)
-static __inline LPF_HILBERT_QUAD *hq_rp_create_ix(unsigned index, BOOL is_kahan)
+static __inline LPF_HILBERT_QUAD *hq_rp_create_ix(unsigned index, const IIR_COMP_CONFIG *comp_cfg)
 {
- return hq_rp_create(&iir_hb_lpf_const_filters[index], is_kahan);
+ return hq_rp_create(&iir_hb_lpf_const_filters[index], comp_cfg);
 }
 
 

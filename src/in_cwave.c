@@ -59,8 +59,8 @@ static void mod_context_init(MOD_CONTEXT *mc)
  }
 
  // analitic signal convertors
- mc -> h_left  = hq_rp_create_ix(the.cfg.iir_filter_no, the.cfg.iir_sum_kahan);
- mc -> h_right = hq_rp_create_ix(the.cfg.iir_filter_no, the.cfg.iir_sum_kahan);
+ mc -> h_left  = hq_rp_create_ix(the.cfg.iir_filter_no, &(the.cfg.iir_comp_config));
+ mc -> h_right = hq_rp_create_ix(the.cfg.iir_filter_no, &(the.cfg.iir_comp_config));
 
  mc -> xr = NULL;                               // now we don't have a file
 
@@ -114,12 +114,12 @@ static void mod_context_hilbert_reset(MOD_CONTEXT *mc)
  hq_rp_reset(mc -> h_right);
 }
 
-/* change summation algorithm of MOD_CONTEXT according 'the'
+/* change IIR computation algorithm parms. of MOD_CONTEXT according 'the'
 */
-static void mod_context_hilnert_iir_sum_chanage(MOD_CONTEXT *mc)
+static void mod_context_hilbert_iir_cfg_chanage(MOD_CONTEXT *mc)
 {
- hq_rp_setsum(mc -> h_left,  the.cfg.iir_sum_kahan);
- hq_rp_setsum(mc -> h_right, the.cfg.iir_sum_kahan);
+ hq_rp_setcfg(mc -> h_left,  &(the.cfg.iir_comp_config));
+ hq_rp_setcfg(mc -> h_right, &(the.cfg.iir_comp_config));
 }
 
 /* change Hilbert taransformer parameters in MOD_CONTEXT according 'the'
@@ -136,8 +136,8 @@ static void mod_context_hilbert_change(MOD_CONTEXT *mc)
   hq_rp_destroy(mc -> h_right);
   mc -> h_right = NULL;
  }
- mc -> h_left  = hq_rp_create_ix(the.cfg.iir_filter_no, the.cfg.iir_sum_kahan);
- mc -> h_right = hq_rp_create_ix(the.cfg.iir_filter_no, the.cfg.iir_sum_kahan);
+ mc -> h_left  = hq_rp_create_ix(the.cfg.iir_filter_no, &(the.cfg.iir_comp_config));
+ mc -> h_right = hq_rp_create_ix(the.cfg.iir_filter_no, &(the.cfg.iir_comp_config));
 }
 
 /* Work with Hilbert's transformers
@@ -166,20 +166,19 @@ void mod_context_reset_hilbert(MOD_CONTEXT *mc)
  all_hilberts_unlock();
 }
 
-/* change summation algorithm in IIR-filters in Hilbert transformer
+/* change computation rules for all IIR-filters in all Hilbert transformers
 */
-void mod_context_change_all_hilberts_summation(BOOL new_sum_kahan)
+void mod_context_change_all_hilberts_config(const IIR_COMP_CONFIG *new_comp_cfg)
 {
- if(the.cfg.iir_sum_kahan != new_sum_kahan)
- {
-  all_hilberts_lock();
+ all_hilberts_lock();
 
-  the.cfg.iir_sum_kahan = new_sum_kahan;
-  mod_context_hilnert_iir_sum_chanage(&the.mc_playback);
-  mod_context_hilnert_iir_sum_chanage(&the.mc_transcode);
+ if(new_comp_cfg != &(the.cfg.iir_comp_config))     // memcpy() shoul not to work with overlaped areas!!
+  memcpy(&(the.cfg.iir_comp_config), new_comp_cfg, sizeof(IIR_COMP_CONFIG));
 
-  all_hilberts_unlock();
- }
+ mod_context_hilbert_iir_cfg_chanage(&the.mc_playback);
+ mod_context_hilbert_iir_cfg_chanage(&the.mc_transcode);
+
+ all_hilberts_unlock();
 }
 
 /* change the current Hilbert's transformers
@@ -294,6 +293,31 @@ void mod_context_reset_framecnt(MOD_CONTEXT *mc)
  mod_context_lock_framecnt(mc);
  mc -> n_frame = 0ULL;
  mod_context_unlock_framecnt(mc);
+}
+
+/* get value of desubnorm protection counter
+*/
+uint64_t mod_context_get_desubnorm_counter(MOD_CONTEXT *mc)
+{
+ uint64_t res;
+
+ // pretty sure that the lock is not need.. bureaucracy everyvere/forever!
+ all_hilberts_lock();
+ res = hq_rp_get_sncnt(mc -> h_left) + hq_rp_get_sncnt(mc -> h_right);
+ all_hilberts_unlock();
+
+ return res;
+}
+
+/* reset desubnorm protection counter
+*/
+void mod_context_reset_desubnorm_counter(MOD_CONTEXT *mc)
+{
+ // pretty sure that the lock is not need.. bureaucracy everyvere/forever!
+ all_hilberts_lock();
+ hq_rp_reset_sncnt(mc -> h_left);
+ hq_rp_reset_sncnt(mc -> h_right);
+ all_hilberts_unlock();
 }
 
 /* modulators exceptions statistics -- summary

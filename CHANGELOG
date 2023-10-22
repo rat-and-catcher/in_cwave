@@ -45,4 +45,7 @@ in_cwave V1.*.* (Unpublic!) Versions History -- see OLD_NEWS
         Rename DBL_COPY_FAST to ATM_COPY_FAST.
 01-Aug-2023 -- V2.3.1 -- Recalculate HB LPF IIR filters by DSPL-2, add 3 new IIR
         designs ("Ugly filters"); add Kahan summation for the filters.
-15-Oct-2023 -- V2.3.2 -- Add (I+Q)/2 as Master Node output variant.
+22-Oct-2023 -- V2.3.2 -- Add (I+Q)/2 as Master Node output variant;
+        add subnorm rejection to zero in IIR LPF implementation and corresponding
+	statistics, move Kahan setup to "Bugs control", some GUI rearrange.
+

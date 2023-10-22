@@ -39,12 +39,12 @@
 
 /* create the converter by IIR_COEFF
 */
-LPF_HILBERT_QUAD *hq_rp_create(const RP_IIR_FILTER_DESCR *fdescr, BOOL is_kahan)
+LPF_HILBERT_QUAD *hq_rp_create(const RP_IIR_FILTER_DESCR *fdescr, const IIR_COMP_CONFIG *comp_cfg)
 {
  LPF_HILBERT_QUAD *hconv = cmalloc(sizeof(LPF_HILBERT_QUAD));
 
- hconv -> iir_I = iir_rp_create(fdescr, is_kahan);
- hconv -> iir_Q = iir_rp_create(fdescr, is_kahan);
+ hconv -> iir_I = iir_rp_create(fdescr, comp_cfg);
+ hconv -> iir_Q = iir_rp_create(fdescr, comp_cfg);
  hconv -> sampe_ix = 0;
  return hconv;
 }
@@ -129,12 +129,27 @@ void hq_rp_reset(LPF_HILBERT_QUAD *hconv)
  hconv -> sampe_ix = 0;
 }
 
-/* change summation algorithm
+/* change IIR computation parameters
 */
-void hq_rp_setsum(LPF_HILBERT_QUAD *hconv, BOOL is_kahan)
+void hq_rp_setcfg(const LPF_HILBERT_QUAD *hconv, const IIR_COMP_CONFIG *comp_cfg)
 {
- iir_rp_setsum(hconv -> iir_I, is_kahan);
- iir_rp_setsum(hconv -> iir_Q, is_kahan);
+ iir_rp_setcfg(hconv -> iir_I, comp_cfg);
+ iir_rp_setcfg(hconv -> iir_Q, comp_cfg);
+}
+
+/* reset subnorm rejections counters
+*/
+void hq_rp_reset_sncnt(const LPF_HILBERT_QUAD *hconv)
+{
+ iir_rp_reset_sncnt(hconv -> iir_I);
+ iir_rp_reset_sncnt(hconv -> iir_Q);
+}
+
+/*  get current summary subnorm rejecttions counter
+*/
+uint64_t hq_rp_get_sncnt(const LPF_HILBERT_QUAD *hconv)
+{
+ return iir_rp_get_sncnt(hconv -> iir_I) + iir_rp_get_sncnt(hconv -> iir_Q);
 }
 
 /* the end...

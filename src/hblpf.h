@@ -37,6 +37,7 @@ extern "C" {
 #endif
 
 #include <stdint.h>
+#include <math.h>
 
 #include "fp_check.h"
 
@@ -120,12 +121,28 @@ struct tagIIR_RAT_POLY
  int nord;                  // the order of filter
  int ix;                    // insert index for "delay line"
  IIR_RP_PROCESS process;    // one sample process function
+ BOOL is_subnorm_reject;    // should we suppress low values in "delay line" of IIR state
+ double subnorm_thr;        // subnorm threshold
+ uint64_t subnorm_cnt;      // counter of subnorm reject actions
 };
 
-/* functions
+// the additional filter configuration staff
+typedef struct tagIIR_COMP_CONFIG
+{
+ BOOL is_kahan;             // use Kahan summation algorithm
+ BOOL is_subnorm_reject;    // should we suppress low values in "delay line" of IIR state
+ double subnorm_thr;        // subnorm reject threshold
+} IIR_COMP_CONFIG;
+
+// threshold bound values
+#define SBN_THR_MAX         (1.0E-40)           /* slightly greater than PDP11 FP range */
+#define SBN_THR_MIN         (1.0E-300)          /* slightly bigger than x86 DBL_MIN */
+#define SBN_THR_DEF         (1.0E-150)          /* looks rather good (or not, sorry) */
+
+/* functions -- !!ALL ARE THREAD UNSAFE!! !!ALL DON'T CHECK CONTRACT!!
 */
 // -- create the filter by IIR_COEFF
-IIR_RAT_POLY *iir_rp_create(const RP_IIR_FILTER_DESCR *fdescr, BOOL is_kahan);
+IIR_RAT_POLY *iir_rp_create(const RP_IIR_FILTER_DESCR *fdescr, const IIR_COMP_CONFIG *comp_cfg);
 // -- destroy the filter
 void iir_rp_destroy(IIR_RAT_POLY *filter);
 // -- process one sample -- canonical form, min. computations, BUT NOT SO GOOD FOR ROUNDING ERRORS
@@ -134,8 +151,12 @@ double iir_rp_process_baseline(double sample, IIR_RAT_POLY *filter, FP_EXCEPT_ST
 double iir_rp_process_kahan(double sample, IIR_RAT_POLY *filter, FP_EXCEPT_STATS *fes);
 // -- reset the filter
 void iir_rp_reset(IIR_RAT_POLY *filter);
-// -- change summation algorithm
-void iir_rp_setsum(IIR_RAT_POLY *filter, BOOL is_kahan);
+// -- change computation rules
+void iir_rp_setcfg(IIR_RAT_POLY *filter, const IIR_COMP_CONFIG *comp_cfg);
+// -- reset subnorm rejecttions counter
+void iir_rp_reset_sncnt(IIR_RAT_POLY *filter);
+// -- get current subnorm rejecttions counter
+uint64_t iir_rp_get_sncnt(IIR_RAT_POLY *filter);
 
 // -- process one sample -- generic frontend
 static __inline double iir_rp_process(double sample, IIR_RAT_POLY *filter, FP_EXCEPT_STATS *fes)
