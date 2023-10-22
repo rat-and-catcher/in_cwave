@@ -15,7 +15,7 @@
 *.log
 *.tlog
 **/*.log/
-# Ignore arcives
+# Ignore archives
 *.zip
 # Ignore IDE profiles
 *.user
