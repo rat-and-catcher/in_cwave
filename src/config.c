@@ -115,7 +115,8 @@ static BOOL handle_node_dsp(FILE *fp, TCHAR **buf,
  * --- ------ ------- - ------ ----- --------- ------------
  */
 // unsigned ver_config; config file version, > 0
-static const DB_VAUES_UNSIGNED DB_ver_config = { 0, 0, ~0 };
+static const DB_VAUES_UNSIGNED DB_ver_config =
+{ 0, 0, ~0 /* to special check */ };
 
 // BOOL is_wav_support; true, if the module support WAV
 static const BOOL DB_is_wav_support = TRUE;
@@ -181,19 +182,19 @@ static const BOOL DB_is_fp_check = FALSE;
 // BOOL is24bits; FALSE -- 16 bits decoding (real output of playback/transcode)
 static const BOOL DB_need24bits = TRUE;
 
-// double dth_bits; bits to dither (+-LSbits; _TPDF reduced_)
+// double sr_config.dth_bits; bits to dither (+-LSbits; _TPDF reduced_)
 static const DB_VAUES_DOUBLE DB_dth_bits =
 { DEF_DITHER_BITS, 0.0, MAX_DITHER_BITS };
 
-// unsigned quantz_type; type of rounding while convert double to int
+// unsigned sr_config.quantz_type; type of rounding while convert double to int
 static const DB_VAUES_UNSIGNED DB_quantz_type =
 { SND_QUANTZ_MID_RISER, SND_QUANTZ_MID_TREAD, SND_QUANTZ_MAX };
 
-// unsigned render_type; type of dithering (rendering) while convert double to int
+// unsigned sr_config.render_type; type of dithering (rendering) while convert double to int
 static const DB_VAUES_UNSIGNED DB_render_type =
 { SND_RENDER_ROUND, SND_RENDER_ROUND, SND_RENDER_MAX };
 
-// unsigned nshape_type; noise shaping type SND_NSHAPE_xxx
+// unsigned sr_config.nshape_type; noise shaping type SND_NSHAPE_xxx
 static const DB_VAUES_UNSIGNED DB_nshape_type =
 { SND_NSHAPE_FLAT, SND_NSHAPE_FLAT, SND_NSHAPE_MAX };
 
@@ -206,6 +207,7 @@ static const CONFIG config_list[] =
 {
 // unsigned ver_config; config file version, > 0
 // ** THIS ALWAYS HAS INDEX == 0 -> NO ANY CONFIG LINES BEFORE! **
+#define CVER_VAL    (*(unsigned *)(config_list[0].val))     /* L/R value of the version */
  { _T("VER_CONFIG"),    VCFG_UNSIGNED,  &the.cfg.ver_config,                        &DB_ver_config },
 
 // BOOL is_wav_support; true, if the module support WAV
@@ -806,11 +808,15 @@ BOOL load_config(const TCHAR *config_name)
  BOOL is_ok;
 
  // set defaults
- reset_config(TRUE);
+ reset_config(TRUE);                                        // .version incorrect!!
 
  // open a file and prepare to per-line reading
  if(NULL == (fp = _tfopen(config_name, _T("r") FOPEN_FLG)))
+ {
+  CVER_VAL = VERSION_CONFIG;                                // somewhat oddily
   return FALSE;
+ }
+
  conf_line = cmalloc((MAX_CONFIG_LINE + 1) * sizeof(TCHAR));
 
  // silly and stupid per-line reading (where is a map<>?) -- up to the *FIRST* error
@@ -882,11 +888,11 @@ BOOL load_config(const TCHAR *config_name)
  fclose(fp);
 
  // config version check
- if(*(unsigned *)(config_list[0].val) != VERSION_CONFIG)
+ if((CVER_VAL != VERSION_CONFIG) || !is_ok)
  {
   reset_config(FALSE);
   is_ok = FALSE;
-  *(unsigned *)(config_list[0].val) = VERSION_CONFIG;
+  CVER_VAL = VERSION_CONFIG;
  }
 
  return is_ok;
