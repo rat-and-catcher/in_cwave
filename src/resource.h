@@ -208,6 +208,10 @@
 #define IDC_RJ_SUB_THR                  1213
 #define IDB_RESET_RJ_PLAY               1215
 #define IDB_RESET_RJ_TRANS              1216
+#define IDC_SIGNBITS_16                 1218
+#define IDS_SIGNBITS_16                 1219
+#define IDC_SIGNBITS_24                 1220
+#define IDS_SIGNBITS_24                 1221
 
 // Next default values for new objects
 // 
@@ -215,7 +219,7 @@
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        107
 #define _APS_NEXT_COMMAND_VALUE         40001
-#define _APS_NEXT_CONTROL_VALUE         1217
+#define _APS_NEXT_CONTROL_VALUE         1222
 #define _APS_NEXT_SYMED_VALUE           101
 #endif
 #endif

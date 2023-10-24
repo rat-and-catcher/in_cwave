@@ -105,10 +105,9 @@ static NODE_DSP *add_dsp_node_dialog(HWND hwndParent, AMOD_GUI_CONTEXT *agc);
 */
 static BOOL edit_value_dialog(HWND hwndParent,  int id_par_slider,
         const TCHAR *title, double *val, AMOD_GUI_CONTEXT *agc);
-/* the front-end for plugin setup gialog, TRUE==OK, FALSE==Cancel
+/* the front-end for plugin setup dialog
 */
-static BOOL plugin_systetup_dialog(HWND hwndParent,
-        IN_CWAVE_CFG *ic_conf, AMOD_GUI_CONTEXT *agc);
+static void plugin_systetup_dialog(HWND hwndParent, AMOD_GUI_CONTEXT *agc);
 
 /* front-end advanced modulator GUI setup
 */
@@ -1556,11 +1555,7 @@ static void Setup_Dlg_OnCommand(HWND hwnd, int id, HWND hwndCtl, UINT codeNotify
 
   // player (system) setup
   case IDB_SYSETUP:
-   if(plugin_systetup_dialog(hwnd, &the.cfg, agc))
-   {
-    // some immediately applies:
-    mod_context_change_all_hilberts_config(&(the.cfg.iir_comp_config));
-   }
+   plugin_systetup_dialog(hwnd, agc);
    break;
 
   // toggle long/short number
@@ -1969,6 +1964,8 @@ typedef struct tagSYSETUP_CONTEXT
  unsigned fade_in;                              // track fade in, ms
  unsigned fade_out;                             // track fade out, ms
  BOOL is_frmod_scaled;                          // true, if unsigned scaled modulation freqencies in use
+ unsigned sign_bits16;                          // significant bits for 16bit output for SR_VCONFIG
+ unsigned sign_bits24;                          // significant bits for 24bit output for SR_VCONFIG
 } SYSETUP_CONTEXT;
 
 // Message Handlers
@@ -2010,6 +2007,18 @@ static BOOL SySetup_Dlg_OnInitDialog(HWND hwnd, HWND hwndFocus, LPARAM lParam)
 
  CheckRadioButton(hwnd, IDC_MODFR_SCALED, IDC_MODFR_NATIVE,
         ssc -> is_frmod_scaled? IDC_MODFR_SCALED : IDC_MODFR_NATIVE);
+
+ TB_SetRange(hwnd,  IDC_SIGNBITS_16, MAX_SIGN_BITS16, MIN_SIGN_BITS16, TRUE);
+ TB_SetSteps(hwnd,  IDC_SIGNBITS_16, 1, 1);
+ TB_SetTicks(hwnd,  IDC_SIGNBITS_16, 1);
+ TB_SetTrack(hwnd,  IDC_SIGNBITS_16, ssc -> sign_bits16, TRUE);
+ TXT_PrintTxt(hwnd, IDS_SIGNBITS_16, _T("%u"), ssc -> sign_bits16);
+
+ TB_SetRange(hwnd,  IDC_SIGNBITS_24, MAX_SIGN_BITS24, MIN_SIGN_BITS24, TRUE);
+ TB_SetSteps(hwnd,  IDC_SIGNBITS_24, 1, 1);
+ TB_SetTicks(hwnd,  IDC_SIGNBITS_24, 1);
+ TB_SetTrack(hwnd,  IDC_SIGNBITS_24, ssc -> sign_bits24, TRUE);
+ TXT_PrintTxt(hwnd, IDS_SIGNBITS_24, _T("%u"), ssc -> sign_bits24);
 
  return TRUE;
 }
@@ -2120,6 +2129,35 @@ static void SySetup_Dlg_OnCommand(HWND hwnd, int id, HWND hwndCtl, UINT codeNoti
  }
 }
 
+/* WM_HSCROLL handling (track bars)
+*/
+static UINT SySetup_Dlg_OnHscroll(HWND hwnd, HWND hwndCtl, UINT code, int pos)
+{
+ SYSETUP_CONTEXT *ssc = (SYSETUP_CONTEXT *)GetWindowLongPtr(hwnd, GWLP_USERDATA);
+
+ if(SB_THUMBTRACK == code)              // not handling
+  return 1;
+
+ // -- significant bits for 16bit output
+ if(GetDlgItem(hwnd, IDC_SIGNBITS_16) == hwndCtl)
+ {
+  ssc -> sign_bits16 = (unsigned)TB_GetTrack(hwnd, IDC_SIGNBITS_16);
+  TXT_PrintTxt(hwnd, IDS_SIGNBITS_16, _T("%u"), ssc -> sign_bits16);
+  return 0;
+ }
+
+ // -- significant bits for 24bit output
+ if(GetDlgItem(hwnd, IDC_SIGNBITS_24) == hwndCtl)
+ {
+  ssc -> sign_bits24 = (unsigned)TB_GetTrack(hwnd, IDC_SIGNBITS_24);
+  TXT_PrintTxt(hwnd, IDS_SIGNBITS_24, _T("%u"), ssc -> sign_bits24);
+  return 0;
+ }
+
+ // not handled
+ return 1;
+}
+
 /* the main dialog function
 */
 static BOOL CALLBACK SySetup_DlgProc(HWND hDlg, UINT uMsg,
@@ -2131,6 +2169,7 @@ static BOOL CALLBACK SySetup_DlgProc(HWND hDlg, UINT uMsg,
  {
   HANDLE_MSG(hDlg, WM_INITDIALOG,       SySetup_Dlg_OnInitDialog);
   HANDLE_MSG(hDlg, WM_COMMAND,          SySetup_Dlg_OnCommand);
+  HANDLE_MSG(hDlg, WM_HSCROLL,          SySetup_Dlg_OnHscroll);
   default:
    fProcessed = FALSE;
    break;
@@ -2138,35 +2177,36 @@ static BOOL CALLBACK SySetup_DlgProc(HWND hDlg, UINT uMsg,
  return fProcessed;
 }
 
-/* the front-end for plugin setup gialog, TRUE==OK, FALSE==Cancel
+/* the front-end for plugin setup dialog
 */
-static BOOL plugin_systetup_dialog(HWND hwndParent,
-        IN_CWAVE_CFG *ic_conf, AMOD_GUI_CONTEXT *agc)
+static void plugin_systetup_dialog(HWND hwndParent, AMOD_GUI_CONTEXT *agc)
 {
  SYSETUP_CONTEXT ssc;
  INT_PTR res;
 
- ssc.is_wav_support         = ic_conf -> is_wav_support;
- ssc.is_rwave_support       = ic_conf -> is_rwave_support;
- ssc.infobox_parenting      = ic_conf -> infobox_parenting;
- ssc.enable_unload_cleanup  = ic_conf -> enable_unload_cleanup;
- ssc.play_sleep             = ic_conf -> play_sleep;
- ssc.disable_play_sleep     = ic_conf -> disable_play_sleep;
+ ssc.is_wav_support         = the.cfg.is_wav_support;
+ ssc.is_rwave_support       = the.cfg.is_rwave_support;
+ ssc.infobox_parenting      = the.cfg.infobox_parenting;
+ ssc.enable_unload_cleanup  = the.cfg.enable_unload_cleanup;
+ ssc.play_sleep             = the.cfg.play_sleep;
+ ssc.disable_play_sleep     = the.cfg.disable_play_sleep;
 
- memcpy(&(ssc.icc), &(ic_conf -> iir_comp_config), sizeof(IIR_COMP_CONFIG));
+ memcpy(&(ssc.icc), &(the.cfg.iir_comp_config), sizeof(IIR_COMP_CONFIG));
 
- ssc.sec_align              = ic_conf -> sec_align;
- ssc.fade_in                = ic_conf -> fade_in;
- ssc.fade_out               = ic_conf -> fade_out;
- ssc.is_frmod_scaled        = ic_conf -> is_frmod_scaled;
+ ssc.sec_align              = the.cfg.sec_align;
+ ssc.fade_in                = the.cfg.fade_in;
+ ssc.fade_out               = the.cfg.fade_out;
+ ssc.is_frmod_scaled        = the.cfg.is_frmod_scaled;
+ ssc.sign_bits16            = the.cfg.sr_config.sign_bits16;
+ ssc.sign_bits24            = the.cfg.sr_config.sign_bits24;
 
  res = DialogBoxParam(agc -> loc_hi, MAKEINTRESOURCE(IDD_SYSETUP),
         hwndParent, SySetup_DlgProc, (LPARAM)&ssc);
 
  if(res && res != -1)
  {
-  if(ssc.is_wav_support != ic_conf -> is_wav_support
-        || ssc.is_rwave_support != ic_conf -> is_rwave_support)
+  if(ssc.is_wav_support != the.cfg.is_wav_support
+        || ssc.is_rwave_support != the.cfg.is_rwave_support)
   {
    if(IDOK == MessageBox(hwndParent,
         _T("You make changes in supported file types\n")
@@ -2175,13 +2215,13 @@ static BOOL plugin_systetup_dialog(HWND hwndParent,
         _T("Need to restart"),
         MB_OKCANCEL | MB_ICONWARNING))
    {
-    ic_conf -> is_wav_support = ssc.is_wav_support;
-    ic_conf -> is_rwave_support = ssc.is_rwave_support;
+    the.cfg.is_wav_support = ssc.is_wav_support;
+    the.cfg.is_rwave_support = ssc.is_rwave_support;
    }
   }
 
-  ic_conf -> infobox_parenting = ssc.infobox_parenting;
-  ic_conf -> enable_unload_cleanup = ssc.enable_unload_cleanup;
+  the.cfg.infobox_parenting = ssc.infobox_parenting;
+  the.cfg.enable_unload_cleanup = ssc.enable_unload_cleanup;
 
   if(ssc.disable_play_sleep || !ssc.play_sleep)
   {
@@ -2192,39 +2232,49 @@ static BOOL plugin_systetup_dialog(HWND hwndParent,
         _T("Set 100% CPU load at playback"),
         MB_OKCANCEL | MB_ICONWARNING))
    {
-    ic_conf -> play_sleep = ssc.play_sleep;
-    ic_conf -> disable_play_sleep = ssc.disable_play_sleep;
+    the.cfg.play_sleep = ssc.play_sleep;
+    the.cfg.disable_play_sleep = ssc.disable_play_sleep;
    }
   }
 
   // unchecked cases
   if(ssc.play_sleep)
-   ic_conf -> play_sleep = ssc.play_sleep;
+   the.cfg.play_sleep = ssc.play_sleep;
   if(!ssc.disable_play_sleep)
-   ic_conf -> disable_play_sleep = ssc.disable_play_sleep;
+   the.cfg.disable_play_sleep = ssc.disable_play_sleep;
 
-  memcpy(&(ic_conf -> iir_comp_config), &(ssc.icc), sizeof(IIR_COMP_CONFIG));
+  // little oddy -- change and apply
+  mod_context_change_all_hilberts_config(&(ssc.icc));
 
-  ic_conf -> sec_align = ssc.sec_align;
-  ic_conf -> fade_in   = ssc.fade_in;
-  ic_conf -> fade_out  = ssc.fade_out;
+  the.cfg.sec_align = ssc.sec_align;
+  the.cfg.fade_in   = ssc.fade_in;
+  the.cfg.fade_out  = ssc.fade_out;
 
   // milihertz or hertz
-  if(ic_conf -> is_frmod_scaled != ssc.is_frmod_scaled)
+  if(the.cfg.is_frmod_scaled != ssc.is_frmod_scaled)
   {
    MessageBox(hwndParent,
         _T("You had changed the rules of phase computation.\n")
         _T("Restart player to apply the changes."),
         _T("Change Phase Rules"),
         MB_OK | MB_ICONWARNING);
-   ic_conf -> is_frmod_scaled = ssc.is_frmod_scaled;
+   the.cfg.is_frmod_scaled = ssc.is_frmod_scaled;
   }
 
-  return TRUE;
- }                      // if(OK@Dlg)
+  {
+   // sound render -- change and apply
+   SR_VCONFIG sr_vcfg;
 
- return FALSE;          // if(Cancel@Dlg)
+   srenders_get_vcfg(&sr_vcfg);
+
+   sr_vcfg.sign_bits16  = ssc.sign_bits16;
+   sr_vcfg.sign_bits24  = ssc.sign_bits24;
+
+   srenders_set_vcfg(&sr_vcfg);
+  }
+ }                      // if(OK@Dlg)
 }
+
 
 /* the end...
 */

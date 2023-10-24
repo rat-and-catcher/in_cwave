@@ -100,7 +100,7 @@
  */
 
 // see OLD_NEWS and CHANGELOG about versioning
-#define VERSION_IN_CWAVE        "V2.3.2"
+#define VERSION_IN_CWAVE        "V2.4.0"
 
 #if !defined(MAX_FILE_PATH)
 #if defined(UNICODE)

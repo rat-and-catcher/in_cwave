@@ -100,6 +100,14 @@ extern "C" {
 */
 #define SR_ZERO_SIGNAL_DB       (-555.0)                /* zero signal value in dB */
 
+#define MIN_SIGN_BITS16         (2)                     /* min signif. bits in 16bit output */
+#define MAX_SIGN_BITS16         (16)                    /* max signif. bits in 16bit output */
+#define DEF_SIGN_BITS16         (MAX_SIGN_BITS16)       /* default signif. bits in 16bit output */
+
+#define MIN_SIGN_BITS24         (2)                     /* min signif. bits in 24bit output */
+#define MAX_SIGN_BITS24         (24)                    /* max signif. bits in 24bit output */
+#define DEF_SIGN_BITS24         (MAX_SIGN_BITS24)       /* default signif. bits in 24bit output */
+
 /* the noise shaping dithering type
  * --- ----- ------- --------- ----
  */
@@ -135,6 +143,8 @@ typedef struct tagSR_VCONFIG
  unsigned quantz_type;                                  // SND_QUANTZ_xxx
  unsigned render_type;                                  // SND_RENDER_xxx
  unsigned nshape_type;                                  // SND_NSHAPE_xxx
+ unsigned sign_bits16;                                  // significant bits for 16bit output 1..16
+ unsigned sign_bits24;                                  // significant bits for 24bit output 1..24
 } SR_VCONFIG;
 
 /* the render object
@@ -146,10 +156,11 @@ typedef struct tagSOUND_RENDER
  double prev_rnd;                                       // previous (-1..+1) random (for sloped TPDF only)
  double hi_bound;                                       // high bound (always less)
  double lo_bound;                                       // low bound (alvays greater)
- double norm_mul;                                       // 1.0==16 bits, 256.0==24 bits
+ double norm_mul;                                       // 1.0==16 bits, 256.0==24 bits, etc.
  double round_offset;                                   // 0.5 to mid tread, 0 to mid riser
  double prev_ns_err;                                    // previous noise shaping error correction
  int sign_delta;                                        // to _ADD_ to int result, if input < 0
+ int norm_shift;                                        // shitft to reduce significant bits
  int is24bits;                                          // ==0 - output to 16 bits; else -- to 24
  NS_SHAPER ns_shaper;                                   // our shaper
  MT_JRND_STATE jrnd;                                    // current state of random numbers gen
@@ -160,7 +171,7 @@ typedef struct tagSOUND_RENDER
  */
 /* one-time init the render with the random's seed
 */
-void sound_render_init(const SR_VCONFIG *cfg,   int need24bits, uint32_t seed, SOUND_RENDER *sr);
+void sound_render_init(const SR_VCONFIG *cfg,  int need24bits, uint32_t seed, SOUND_RENDER *sr);
 /* sound render deinitialization
 */
 void sound_render_cleanup(SOUND_RENDER *sr);

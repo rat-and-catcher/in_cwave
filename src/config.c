@@ -47,7 +47,7 @@
  * !CHANGE VERSION_CONFIG EVERY TIME WHEN CONFIG FILE FORMAT CHANGED!
  */
 
-#define VERSION_CONFIG                  (8U)    /* we start to count cfg versions from 1 */
+#define VERSION_CONFIG                  (9U)    /* we start to count cfg versions from 1 */
 
 /* NOTE: It's a simple config handler -- this is not a beauty language. If anybody
  * like to write / edit configs -- the way is clear, but silly -- there is no way to set
@@ -198,6 +198,14 @@ static const DB_VAUES_UNSIGNED DB_render_type =
 static const DB_VAUES_UNSIGNED DB_nshape_type =
 { SND_NSHAPE_FLAT, SND_NSHAPE_FLAT, SND_NSHAPE_MAX };
 
+// unsigned sr_config.sign_bits16; significant bits for 16bit output
+static const DB_VAUES_UNSIGNED DB_sign_bits16 =
+{ DEF_SIGN_BITS16, MIN_SIGN_BITS16, MAX_SIGN_BITS16 };
+
+// unsigned sr_config.sign_bits24; significant bits for 24bit output
+static const DB_VAUES_UNSIGNED DB_sign_bits24 =
+{ DEF_SIGN_BITS24, MIN_SIGN_BITS24, MAX_SIGN_BITS24 };
+
 // [NOT-NEED-HERE] NODE_DSP *dsp_list; the copy last dsp-list
 
 /* the full list of the module configuration
@@ -278,6 +286,12 @@ static const CONFIG config_list[] =
 
 // unsigned sr_config.nshape_type; noise shaping type SND_NSHAPE_xxx
  { _T("NOISE_SHAPING"), VCFG_UNSIGNED,  &the.cfg.sr_config.nshape_type,             &DB_nshape_type },
+
+// unsigned sr_config.sign_bits16; significant bits for 16bit output
+ { _T("SIGNBITS16"),    VCFG_UNSIGNED,  &the.cfg.sr_config.sign_bits16,             &DB_sign_bits16},
+
+// unsigned sr_config.sign_bits24; significant bits for 24bit output
+ { _T("SIGNBITS24"),    VCFG_UNSIGNED,  &the.cfg.sr_config.sign_bits24,             &DB_sign_bits24},
 
 // NODE_DSP *dsp_list; the copy of last dsp-list
  { _T("NODE_DSP"),      VCFG_FUNCTION,  &the.cfg.dsp_list,                          &handle_node_dsp },

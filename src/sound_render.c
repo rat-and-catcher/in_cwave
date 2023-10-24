@@ -507,17 +507,30 @@ static void sound_render_recalc(SOUND_RENDER *sr)
 
  if(sr -> is24bits)
  {
-  sr -> hi_bound =  (double)(0x800000);
-  sr -> lo_bound = -(double)(0x800001 + sr -> sign_delta);
-  sr -> norm_mul = 256.0;
+  int hib  = 0x800000;                                  // 2 ** 23
+
+  sr -> norm_shift = 24 - sr -> config.sign_bits24;
+  hib >>= sr -> norm_shift;
+
+  sr -> hi_bound =  (double) hib;
+  sr -> lo_bound = -(double)(hib + 1 + sr -> sign_delta);
+  sr -> norm_mul = (sr -> norm_shift < 8)?
+    (double)(0x100 >> sr -> norm_shift)
+    :
+    1.0 / (double)(1 << (sr -> norm_shift - 8));
  }
  else
  {
-  sr -> hi_bound =  (double)(0x8000);
-  sr -> lo_bound = -(double)(0x8001 + sr -> sign_delta);
-  sr -> norm_mul = 1.0;
+  int hib  = 0x8000;                                    // 2 ** 15;
+
+  sr -> norm_shift = 16 - sr -> config.sign_bits16;
+  hib >>= sr -> norm_shift;
+
+  sr -> hi_bound =  (double) hib;
+  sr -> lo_bound = -(double)(hib + 1 + sr -> sign_delta);
+  sr -> norm_mul = 1.0 / (double)(1 << sr -> norm_shift);
  }
- sr -> lo_bound -= sr -> sign_delta;
+ sr -> lo_bound -= (double)(sr -> sign_delta);
 
  // noise shaping part
  if(sr -> config.nshape_type > SND_NSHAPE_MAX)          // just in case
@@ -554,7 +567,7 @@ static void sound_render_recalc(SOUND_RENDER *sr)
  */
 /* one-time init the render with the random's seed
 */
-void sound_render_init(const SR_VCONFIG *cfg,   int need24bits, uint32_t seed, SOUND_RENDER *sr)
+void sound_render_init(const SR_VCONFIG *cfg,  int need24bits, uint32_t seed, SOUND_RENDER *sr)
 {
  mtrnd_init_seed(&sr -> jrnd, seed);
 
@@ -601,10 +614,7 @@ void sound_render_setup(const SR_VCONFIG *cfg, SOUND_RENDER *sr)
 */
 void sound_render_copy_cfg(const SR_VCONFIG *src, volatile SR_VCONFIG *dst)
 {
- dst -> dth_bits    = src -> dth_bits;
- dst -> quantz_type = src -> quantz_type;
- dst -> render_type = src -> render_type;
- dst -> nshape_type = src -> nshape_type;
+ *dst = *src;                                   // for the moment the world is simple
 }
 
 /* return string list ordered according .quantz_type indexes
@@ -764,8 +774,7 @@ void sound_render_value
    cv = cv? 20.0 * log10(cv) : SR_ZERO_SIGNAL_DB;
 
    if(cv > pv)
-    adbl_write(peak_val, cv);
-//  *peak_val = cv;
+    adbl_write(peak_val, cv);                                       //  *peak_val = cv;
   }
 
   // check for clips / saturation
@@ -788,6 +797,9 @@ void sound_render_value
 
   // noise shaping for the next time
   sr -> prev_ns_err = (*(sr -> ns_shaper.dsc -> ns_filter))((double)val - input, &sr -> ns_shaper, fes);
+
+  // LSB always zero
+  val <<= sr -> norm_shift;
 
   // place into the buffer
   *(*buf)++ = (char)(val);
@@ -865,21 +877,20 @@ void sound_render_value
    cv = cv? 20.0 * log10(cv) : SR_ZERO_SIGNAL_DB;
 
    if(cv > pv)
-    adbl_write(peak_val, cv);
-//  *peak_val = cv;
+    adbl_write(peak_val, cv);                           //  *peak_val = cv;
   }
 
   // check for clips / saturation
   if(qinput >= sr -> hi_bound)
   {
-   qinput =  sr -> hi_bound - 1.0;              // FC() don't need -- it's precictable constant
+   qinput =  sr -> hi_bound - 1.0;                      // FC() don't need -- it's precictable constant
    // ++(*clip_cnt)
    if(clip_cnt)
     InterlockedIncrement((volatile LONG *)clip_cnt);
   }
   if(qinput <= sr -> lo_bound)
   {
-   qinput = sr -> lo_bound + 1.0;               // FC() don't need -- it's precictable constant
+   qinput = sr -> lo_bound + 1.0;                       // FC() don't need -- it's precictable constant
    // ++(*clip_cnt);
    if(clip_cnt)
     InterlockedIncrement((volatile LONG *)clip_cnt);
@@ -889,6 +900,9 @@ void sound_render_value
 
   // noise shaping for the next time
   sr -> prev_ns_err = (*(sr -> ns_shaper.dsc -> ns_filter))(FC((double)val - input), &sr -> ns_shaper, fes);
+
+  // LSB always zero
+  val <<= sr -> norm_shift;
 
   // place into the buffer
   *(*buf)++ = (char)(val);
