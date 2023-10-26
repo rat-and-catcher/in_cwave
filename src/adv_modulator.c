@@ -96,7 +96,7 @@ static NODE_DSP *create_node_dsp(const TCHAR *name, int mode, int force_master)
    temp -> l_gain = temp -> r_gain = DEF_GAIN_MASTER;
    if(force_master)
    {
-    temp -> dsp.mk_master.le.tout = temp -> dsp.mk_master.ri.tout = S_RE;
+    temp -> dsp.mk_master.le.tout = temp -> dsp.mk_master.ri.tout = S_ADD_REIM;
     temp -> inputs[0] = 1;              // master initially always has 'in' On
    }
    else
@@ -471,8 +471,12 @@ static __inline double dsp_master(CMAKE_MASTER *master, CCOMPLEX *input)
    return input -> im;
    break;
 
-  case S_SUM_REIM:              // here we (PROBABLY) could to compensate analitic dyn. range losses
-   return (input -> re + input -> im) / 2.0;
+  case S_ADD_REIM:              // here we (PROBABLY) could to compensate analitic dyn. range losses
+   return (input -> re + input -> im) / 2.0;    // from LSB ;))
+   break;
+
+  case S_SUB_REIM:              // here we (PROBABLY) could to compensate analitic dyn. range losses
+   return (input -> re - input -> im) / 2.0;    // from USB ;))
    break;
  }
  // default -- some sort of 'assert'

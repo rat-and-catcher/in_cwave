@@ -646,12 +646,12 @@ static void UpdateControls(HWND hwnd, AMOD_GUI_CONTEXT *agc)
  // -- left master:
  static const int radio_lmaster[] =
  {
-  IDC_ML_RE, IDC_ML_IM, IDC_ML_SUM_REIM
+  IDC_ML_ADD_REIM, IDC_ML_SUB_REIM, IDC_ML_RE, IDC_ML_IM
  };
  // -- right master:
  static const int radio_rmaster[] =
  {
-  IDC_MR_RE, IDC_MR_IM, IDC_MR_SUM_REIM
+  IDC_MR_ADD_REIM, IDC_MR_SUB_REIM, IDC_MR_RE, IDC_MR_IM
  };
 
  // inputs
@@ -683,9 +683,12 @@ static void UpdateControls(HWND hwnd, AMOD_GUI_CONTEXT *agc)
    endis_mode(hwnd, disen_master);
 
    // here DSP-specific need only for one-time initialization, sorry ;)
-   CheckRadioButton(hwnd, IDC_ML_RE, IDC_ML_SUM_REIM,
+   // !! On init dialog we always setup Master Node now. if Somebody (slightly)
+   // change the rules, the next buttons stay not updated.
+   // FIXME for more robast code
+   CheckRadioButton(hwnd, IDC_ML_ADD_REIM, IDC_ML_IM,
         radio_lmaster[agc -> lCur -> dsp.mk_master.le.tout]);
-   CheckRadioButton(hwnd, IDC_MR_RE, IDC_MR_SUM_REIM,
+   CheckRadioButton(hwnd, IDC_MR_ADD_REIM, IDC_MR_IM,
         radio_rmaster[agc -> lCur -> dsp.mk_master.ri.tout]);
    break;
 
@@ -978,6 +981,7 @@ static BOOL Setup_Dlg_OnInitDialog(HWND hwnd, HWND hwndFocus, LPARAM lParam)
 
  // DSP List Box
  GetDspList(hwnd, agc);
+ // here agc -> lCur == agc -> lHead == amod_get_headdsp(); we setup Master Node!!
 
  // sliders setup
  SetupSliderPair(hwnd, IDC_GAINL, IDC_GAINR,
@@ -1408,6 +1412,14 @@ static void Setup_Dlg_OnCommand(HWND hwnd, int id, HWND hwndCtl, UINT codeNotify
    break;
 
   // Master Real/Imaginary/Middle
+  case IDC_ML_ADD_REIM:                 // left = (Re + Im) / 2
+   agc -> lHead -> dsp.mk_master.le.tout = S_ADD_REIM;
+   break;
+
+  case IDC_ML_SUB_REIM:                 // left = (Re - Im) / 2
+   agc -> lHead -> dsp.mk_master.le.tout = S_SUB_REIM;
+   break;
+
   case IDC_ML_RE:                       // left = real
    agc -> lHead -> dsp.mk_master.le.tout = S_RE;
    break;
@@ -1416,8 +1428,12 @@ static void Setup_Dlg_OnCommand(HWND hwnd, int id, HWND hwndCtl, UINT codeNotify
    agc -> lHead -> dsp.mk_master.le.tout = S_IM;
    break;
 
-  case IDC_ML_SUM_REIM:                 // left = (Re + Im) / 2
-   agc -> lHead -> dsp.mk_master.le.tout = S_SUM_REIM;
+  case IDC_MR_ADD_REIM:                 // right = (Re + Im) / 2
+   agc -> lHead -> dsp.mk_master.ri.tout = S_ADD_REIM;
+   break;
+
+  case IDC_MR_SUB_REIM:                 // right = (Re - Im) / 2
+   agc -> lHead -> dsp.mk_master.ri.tout = S_SUB_REIM;
    break;
 
   case IDC_MR_RE:                       // right = real
@@ -1426,10 +1442,6 @@ static void Setup_Dlg_OnCommand(HWND hwnd, int id, HWND hwndCtl, UINT codeNotify
 
   case IDC_MR_IM:                       // right = imaginary
    agc -> lHead -> dsp.mk_master.ri.tout = S_IM;
-   break;
-
-  case IDC_MR_SUM_REIM:                 // right = (Re + Im) / 2
-   agc -> lHead -> dsp.mk_master.ri.tout = S_SUM_REIM;
    break;
 
   // clear frame counters

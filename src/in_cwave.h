@@ -139,9 +139,10 @@
  * --------- ------- -----
  */
 // conversions types
-#define S_RE            (0)                     /* real output */
-#define S_IM            (1)                     /* imaginary output */
-#define S_SUM_REIM      (2)                     /* sum Re(.) + Im(.) */
+#define S_ADD_REIM      (0)                     /* sum Re(.) + Im(.) */
+#define S_SUB_REIM      (1)                     /* sum Re(.) - Im(.) */
+#define S_RE            (2)                     /* real output */
+#define S_IM            (3)                     /* imaginary output */
 
 // boundary values
 #define MAX_FS_SRC      (2000000U)              /* max source sample freqency, Hz; agree with HZ_SCALE  */

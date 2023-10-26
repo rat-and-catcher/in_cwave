@@ -517,7 +517,7 @@ static void sound_render_recalc(SOUND_RENDER *sr)
   sr -> norm_mul = (sr -> norm_shift < 8)?
     (double)(0x100 >> sr -> norm_shift)
     :
-    1.0 / (double)(1 << (sr -> norm_shift - 8));
+    1.0 / (double)(1ULL << (sr -> norm_shift - 8));     // "1ULL" to avoid MS warnings
  }
  else
  {
@@ -528,7 +528,7 @@ static void sound_render_recalc(SOUND_RENDER *sr)
 
   sr -> hi_bound =  (double) hib;
   sr -> lo_bound = -(double)(hib + 1 + sr -> sign_delta);
-  sr -> norm_mul = 1.0 / (double)(1 << sr -> norm_shift);
+  sr -> norm_mul = 1.0 / (double)(1ULL << sr -> norm_shift); // "1ULL" to avoid MS warnings
  }
  sr -> lo_bound -= (double)(sr -> sign_delta);
 
