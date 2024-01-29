@@ -3,7 +3,7 @@
  *
  *      hblpf.h -- all about Half Band Low Pass Elliptic Filters
  *
- * Copyright (c) 2010-2023, Rat and Catcher Technologies
+ * Copyright (c) 2010-2024, Rat and Catcher Technologies
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without

@@ -3,7 +3,7 @@
  *
  *      xwave_reader.c -- all about reading CWAVE and WAV ('RWAVE')
  *
- * Copyright (c) 2010-2023, Rat and Catcher Technologies
+ * Copyright (c) 2010-2024, Rat and Catcher Technologies
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -286,7 +286,7 @@ static BOOL cwave_reader_create(XWAVE_READER *xr)       // FALSE == BAD
         || (memcpy(&xr -> spec.cwave.header.n_samples, &hbuf[i], sizeof(unsigned))
          , i += sizeof(unsigned)
          , xr -> spec.cwave.header.n_samples < MIN_FILE_SAMPLES)
-        || xr -> spec.cwave.header.n_samples
+        || (int64_t)xr -> spec.cwave.header.n_samples   // int64_t to correct cmp with fsize
                         * xr -> spec.cwave.header.n_channels
                         * cw_slen[xr -> spec.cwave.header.format]
                         + xr -> spec.cwave.header.hsize > fsize
@@ -704,23 +704,23 @@ XWAVE_READER *xwave_reader_create(
  }
 
  // fade_in / fade_out to samples (rounding down)
- xr -> n_fade_in  = (unsigned)((((uint64_t)fade_in ) * (uint64_t)(xr -> sample_rate)) / 1000ULL);
- xr -> n_fade_out = (unsigned)((((uint64_t)fade_out) * (uint64_t)(xr -> sample_rate)) / 1000ULL);
+ xr -> n_fade_in  = (int64_t)((((uint64_t)fade_in ) * (uint64_t)(xr -> sample_rate)) / 1000ULL);
+ xr -> n_fade_out = (int64_t)((((uint64_t)fade_out) * (uint64_t)(xr -> sample_rate)) / 1000ULL);
 
  // correcting fading, if the track too short
  if(xr -> n_fade_in + xr -> n_fade_out >= xr -> n_samples)
  {
-  if(xr -> n_samples < 300 /* really short */)
+  if(xr -> n_samples < 300LL /* really short */)
   {
    // do not apply faders at all to really short track
-   xr -> n_fade_in = xr -> n_fade_out  = 0;
+   xr -> n_fade_in = xr -> n_fade_out  = 0LL;
   }
   else
   {
    if(xr -> n_fade_in)
-    xr -> n_fade_in  = (unsigned)(xr -> n_samples) / 3 /* no more, than 1/3 of track or 0 */;
+    xr -> n_fade_in  = xr -> n_samples / 3    /* no more, than 1/3 of track or 0 */;
    if(xr -> n_fade_out)
-    xr -> n_fade_out = (unsigned)(xr -> n_samples) / 3 /* no more, than 1/3 of track or 0 */;
+    xr -> n_fade_out = (xr -> n_samples) / 3  /* no more, than 1/3 of track or 0 */;
   }
  }
 
@@ -921,14 +921,14 @@ void xwave_unpack_csample(double *lI, double *lQ, double *rI, double *rQ,
  // compute fading variables
  fade = -1.0;
  ix_sample = (xr -> pos_samples + xr -> pos_tail) - (xr -> really_readed - xr -> unpacked);
- if(ix_sample < (int64_t)(xr -> n_fade_in))             // in fade in?
+ if(ix_sample < xr -> n_fade_in)                    // in fade in?
  {
   fade = ((double)ix_sample) / ((double)(xr -> n_fade_in));
  }
  else
  {
   // not in fade in
-  if(ix_sample > xr -> n_samples - (int64_t)(xr -> n_fade_out) && ix_sample < xr -> n_samples)
+  if(ix_sample > xr -> n_samples - xr -> n_fade_out && ix_sample < xr -> n_samples)
   {
    // in fade out
    fade = ((double)(xr -> n_samples - ix_sample)) / ((double)(xr -> n_fade_out));

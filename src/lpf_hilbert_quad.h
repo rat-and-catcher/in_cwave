@@ -57,10 +57,45 @@ typedef struct tagLPF_HILBERT_QUAD
  unsigned sampe_ix;                             // sample counter mod 4
 } LPF_HILBERT_QUAD;
 
+/* the internal descriptor for IIR HB LPF filter (and, probably, corresponded stuff)
+*/
+typedef struct tagLPF_HILBERT_FILTER
+{
+ const RP_IIR_FILTER_DESCR *half_band;          // the "main" low-pass half-band filter
+ const TCHAR *hilb_descr;                       // description string
+} LPF_HILBERT_FILTER;
+
+/* possible filters indexes (correspond to IX_IIR_LOEL_xxx)
+*/
+// Low pass: 0.495000/0.505000; ripple 1.500000 dB; rejection 100.000000 dB -- order 15
+#define IX_LPF_HILB_TYPE0               (0)
+// Low pass: 0.499000/0.502000; ripple 1.800000 dB; rejection 100.000000 dB -- order 19
+#define IX_LPF_HILB_TYPE1               (1)
+// Low pass: 0.499000/0.501000; ripple 2.000000 dB; rejection 90.000000 dB -- order 18
+#define IX_LPF_HILB_TYPE2               (2)
+/* not so "canonical"
+*/
+// Low pass: 0.498200/0.500000; ripple 2.000000 dB; rejection 96.000000 dB -- order 19
+#define IX_LPF_HILB_TYPE3               (3)
+// Low pass: 0.498200/0.500000; ripple 2.000000 dB; rejection 100.000000 dB -- order 20
+#define IX_LPF_HILB_TYPE4               (4)
+// Low pass: 0.498500/0.500000; ripple 2.000000 dB; rejection 100.000000 dB -- order 20
+#define IX_LPF_HILB_TYPE5               (5)
+// [...to be continued...]
+#define IX_LPF_HILB_TYPEMAX             (IX_LPF_HILB_TYPE5)
+
+// the default filter type
+#define IX_LPF_HILB_DEF                 (IX_LPF_HILB_TYPE1)
+
+// the number of filters
+#define NM_LPF_HILB                     (6)
+
 /* functions
 */
-// -- create the converter by IIR_COEFF
-LPF_HILBERT_QUAD *hq_rp_create(const RP_IIR_FILTER_DESCR *fdescr, const IIR_COMP_CONFIG *comp_cfg);
+// the creation by the index (IX_LPF_HILB_xxx)
+LPF_HILBERT_QUAD *hq_rp_create_ix(unsigned index, const IIR_COMP_CONFIG *comp_cfg);
+// -- create the converter by LPF_HILBERT_FILTER
+LPF_HILBERT_QUAD *hq_rp_create(const LPF_HILBERT_FILTER *fdescr, const IIR_COMP_CONFIG *comp_cfg);
 // -- destroy the converter
 void hq_rp_destroy(LPF_HILBERT_QUAD *hconv);
 // -- return string list ordered according hq_rp_create_ix() indexes
@@ -75,12 +110,6 @@ void hq_rp_setcfg(const LPF_HILBERT_QUAD *hconv, const IIR_COMP_CONFIG *comp_cfg
 void hq_rp_reset_sncnt(const LPF_HILBERT_QUAD *hconv);
 // -- get current summary subnorm rejecttions counter
 uint64_t hq_rp_get_sncnt(const LPF_HILBERT_QUAD *hconv);
-
-// the creation by the index (IX_IIR_LOEL_xxx)
-static __inline LPF_HILBERT_QUAD *hq_rp_create_ix(unsigned index, const IIR_COMP_CONFIG *comp_cfg)
-{
- return hq_rp_create(&iir_hb_lpf_const_filters[index], comp_cfg);
-}
 
 
 #if defined(__cplusplus)

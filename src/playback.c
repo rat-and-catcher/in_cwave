@@ -3,7 +3,7 @@
  *
  *      playback.c -- the main playback interface
  *
- * Copyright (c) 2010-2023, Rat and Catcher Technologies
+ * Copyright (c) 2010-2024, Rat and Catcher Technologies
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -111,7 +111,9 @@ static void about(HWND hwndParent)
  TCHAR msg[sizeof(fmsg) / sizeof(TCHAR) + 80 + 2];
 
  int safez = _sntprintf(msg, sizeof(fmsg) / sizeof(TCHAR) + 80, fmsg, the.cfg.ver_config);
- msg[safez] = _T('\0');
+
+ // to avoid silly code analizies warning
+ msg[sizeof(msg) / sizeof(TCHAR) - 1 > safez? safez : sizeof(msg) / sizeof(TCHAR) - 1] = _T('\0');
 
  MessageBox(hwndParent, msg, _T("About CWAVE quad modulator"), MB_OK | MB_ICONINFORMATION);
 }

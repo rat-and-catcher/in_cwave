@@ -139,6 +139,7 @@
 		<Unit filename="../src/playback.c">
 			<Option compilerVar="CC" />
 		</Unit>
+		<Unit filename="../src/rc_incres.h" />
 		<Unit filename="../src/resource.h" />
 		<Unit filename="../src/sound_render.c">
 			<Option compilerVar="CC" />

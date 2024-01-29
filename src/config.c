@@ -155,7 +155,7 @@ static const BOOL DB_is_frmod_scaled = TRUE;
 
 // unsigned iir_filter_no; number of current HB LPF for quad
 static const DB_VAUES_UNSIGNED DB_iir_filter_no =
-{ IX_IIR_LOEL_DEF, IX_IIR_LOEL_TYPE0, IX_IIR_LOEL_TYPEMAX };
+{ IX_LPF_HILB_DEF, IX_LPF_HILB_TYPE0, IX_LPF_HILB_TYPEMAX };
 
 // BOOL iir_comp_config.is_kahan; type of process IIR computation (Kahan / baseline summation)
 static const BOOL DB_iir_sum_kahan = TRUE;

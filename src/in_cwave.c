@@ -3,7 +3,7 @@
  *
  *      in_cwave.c -- the DllMain, module-wide 'the' stuff
  *
- * Copyright (c) 2010-2023, Rat and Catcher Technologies
+ * Copyright (c) 2010-2024, Rat and Catcher Technologies
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -186,7 +186,7 @@ void mod_context_change_all_hilberts_config(const IIR_COMP_CONFIG *new_comp_cfg)
 void mod_context_change_all_hilberts_filter(unsigned new_filter_no)
 {
  if(the.cfg.iir_filter_no != new_filter_no
-        && new_filter_no <= IX_IIR_LOEL_TYPEMAX)
+        && new_filter_no <= IX_LPF_HILB_TYPEMAX)
  {
   all_hilberts_lock();
 

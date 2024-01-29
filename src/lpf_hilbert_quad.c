@@ -6,7 +6,7 @@
  *      Serge Bahurin, dsplib.ru / dsplib.org. Lots of thanks for him from
  *      Rat and Catcher technologies.
  *
- * Copyright (c) 2010-2023, Rat and Catcher Technologies
+ * Copyright (c) 2010-2024, Rat and Catcher Technologies
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -37,14 +37,52 @@
 #include "cmalloc.h"
 #include "lpf_hilbert_quad.h"
 
-/* create the converter by IIR_COEFF
+// internal table of filters, index 
+static const LPF_HILBERT_FILTER iir_filters[] =
+{
+ {  // IX_LPF_HILB_TYPE0
+    &iir_hb_lpf_const_filters[IX_IIR_LOEL_TYPE0],
+    _T("HB LPF Type 0 (weak, ord. 15)")
+ },
+ {  // IX_LPF_HILB_TYPE1
+    &iir_hb_lpf_const_filters[IX_IIR_LOEL_TYPE1],
+    _T("HB LPF Type 1 (strong, ord. 19)")
+ },
+ {  // IX_LPF_HILB_TYPE2
+    &iir_hb_lpf_const_filters[IX_IIR_LOEL_TYPE2],
+    _T("HB LPF Type 2 (medium, ord. 18)")
+ },
+ {  // IX_LPF_HILB_TYPE3
+    &iir_hb_lpf_const_filters[IX_IIR_LOEL_TYPE3],
+    _T("HB LPF Type 3, !UGLY!, ord. 19")
+ },
+ {  // IX_LPF_HILB_TYPE4
+    &iir_hb_lpf_const_filters[IX_IIR_LOEL_TYPE4],
+    _T("HB LPF Type 4, !UGLY!, ord. 20")
+ },
+ {  // IX_LPF_HILB_TYPE5
+    &iir_hb_lpf_const_filters[IX_IIR_LOEL_TYPE5],
+    _T("HB LPF Type 5, !UGLY!, ord. 20")
+ }
+};
+
+// the creation by the index (IX_LPF_HILB_xxx)
+LPF_HILBERT_QUAD *hq_rp_create_ix(unsigned index, const IIR_COMP_CONFIG *comp_cfg)
+{
+ if(index > IX_LPF_HILB_TYPEMAX)
+  index = IX_LPF_HILB_DEF;
+
+ return hq_rp_create(&iir_filters[index], comp_cfg);
+}
+
+/* create the converter by LPF_HILBERT_FILTER
 */
-LPF_HILBERT_QUAD *hq_rp_create(const RP_IIR_FILTER_DESCR *fdescr, const IIR_COMP_CONFIG *comp_cfg)
+LPF_HILBERT_QUAD *hq_rp_create(const LPF_HILBERT_FILTER *fdescr, const IIR_COMP_CONFIG *comp_cfg)
 {
  LPF_HILBERT_QUAD *hconv = cmalloc(sizeof(LPF_HILBERT_QUAD));
 
- hconv -> iir_I = iir_rp_create(fdescr, comp_cfg);
- hconv -> iir_Q = iir_rp_create(fdescr, comp_cfg);
+ hconv -> iir_I = iir_rp_create(fdescr -> half_band, comp_cfg);
+ hconv -> iir_Q = iir_rp_create(fdescr -> half_band, comp_cfg);
  hconv -> sampe_ix = 0;
  return hconv;
 }
@@ -75,16 +113,13 @@ void hq_rp_destroy(LPF_HILBERT_QUAD *hconv)
 */
 const TCHAR **hq_get_type_names(void)
 {
- static const TCHAR *type_names[] =
- {
-  _T("HB LPF Type 0 (weak, ord. 15)"),          // [IX_IIR_LOEL_TYPE0]
-  _T("HB LPF Type 1 (strong, ord. 19)"),        // [IX_IIR_LOEL_TYPE1]
-  _T("HB LPF Type 2 (medium, ord. 18)"),        // [IX_IIR_LOEL_TYPE2]
-  _T("HB LPF Type 3, !UGLY!, ord. 19"),         // [IX_IIR_LOEL_TYPE3]
-  _T("HB LPF Type 4, !UGLY!, ord. 20"),         // [IX_IIR_LOEL_TYPE4]
-  _T("HB LPF Type 5, !UGLY!, ord. 20"),         // [IX_IIR_LOEL_TYPE5]
-  NULL
- };
+ static const TCHAR *type_names[NM_LPF_HILB + 1];
+ int i;
+
+ for(i = 0; i < NM_LPF_HILB; ++i)
+  type_names[i] = iir_filters[i].hilb_descr;
+
+ type_names[NM_LPF_HILB] = NULL;
 
  return type_names;
 }

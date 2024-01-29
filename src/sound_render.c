@@ -3,7 +3,7 @@
  *
  *      sound_render.c -- all about convertig double to the integer sound samples
  *
- * Copyright (c) 2010-2021, Rat and Catcher Technologies
+ * Copyright (c) 2010-2024, Rat and Catcher Technologies
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -507,7 +507,7 @@ static void sound_render_recalc(SOUND_RENDER *sr)
 
  if(sr -> is24bits)
  {
-  int hib  = 0x800000;                                  // 2 ** 23
+  int64_t hib  = 0x800000LL;                            // 2 ** 23; int64_t to avoid silly analyze msg
 
   sr -> norm_shift = 24 - sr -> config.sign_bits24;
   hib >>= sr -> norm_shift;
@@ -517,18 +517,18 @@ static void sound_render_recalc(SOUND_RENDER *sr)
   sr -> norm_mul = (sr -> norm_shift < 8)?
     (double)(0x100 >> sr -> norm_shift)
     :
-    1.0 / (double)(1ULL << (sr -> norm_shift - 8));     // "1ULL" to avoid MS warnings
+    1.0 / (double)(1ULL << (sr -> norm_shift - 8));     // "1ULL" to avoid silly MS analyze warning
  }
  else
  {
-  int hib  = 0x8000;                                    // 2 ** 15;
+  int64_t hib  = 0x8000LL;                              // 2 ** 15; int64_t to avoid silly analyze msg
 
   sr -> norm_shift = 16 - sr -> config.sign_bits16;
   hib >>= sr -> norm_shift;
 
   sr -> hi_bound =  (double) hib;
   sr -> lo_bound = -(double)(hib + 1 + sr -> sign_delta);
-  sr -> norm_mul = 1.0 / (double)(1ULL << sr -> norm_shift); // "1ULL" to avoid MS warnings
+  sr -> norm_mul = 1.0 / (double)(1ULL << sr -> norm_shift); // "1ULL" to avoid MS analyze warning
  }
  sr -> lo_bound -= (double)(sr -> sign_delta);
 

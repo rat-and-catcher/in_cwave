@@ -3,7 +3,7 @@
  *
  *      in_cwave.h -- input / quad modulation plug-in -- common declarations
  *
- * Copyright (c) 2010-2021, Rat and Catcher Technologies
+ * Copyright (c) 2010-2024, Rat and Catcher Technologies
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -379,8 +379,8 @@ typedef struct tagXWAVE_READER
  int64_t offset_data;                           // offset of audio data in the file
  int64_t pos_samples;                           // current position in file in samples
  int64_t pos_tail;                              // position in virtual silence tail
- unsigned n_fade_in;                            // fade in, samples
- unsigned n_fade_out;                           // fade_out, samples
+ int64_t n_fade_in;                             // fade in, samples
+ int64_t n_fade_out;                            // fade_out, samples
 
  BYTE *tbuff;                                   // the data buffer for read quant
  BYTE *ptr_tbuff;                               // pointer to sample-based reader
@@ -431,7 +431,7 @@ typedef struct tagIN_CWAVE_CFG
  unsigned fade_in;                              // track fade in, ms
  unsigned fade_out;                             // track fade out, ms
  BOOL is_frmod_scaled;                          // true, if unsigned scaled modulation frequencies in use
- unsigned iir_filter_no;                        // number of current HB LPF for quad Hilbert conv.
+ unsigned iir_filter_no;                        // current HB LPF for quad Hilbert conv. -- IX_LPF_HILB_xxx
  IIR_COMP_CONFIG iir_comp_config;               // IIR HB LPF computation config
  BOOL is_clr_nframe_trk;                        // clear sample counter per each track
  BOOL is_clr_hilb_trk;                          // clear analitic transformers per track
