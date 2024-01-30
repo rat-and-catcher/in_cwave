@@ -53,7 +53,6 @@ typedef struct tagLPF_HILBERT_QUAD
 {
  IIR_RAT_POLY *iir_I;                           // in-phase channel LPF
  IIR_RAT_POLY *iir_Q;                           // quadrature channel LPF
- IIR_RP_PROCESS p_iir_rp_process;               // the futction to process
  unsigned sampe_ix;                             // sample counter mod 4
 } LPF_HILBERT_QUAD;
 

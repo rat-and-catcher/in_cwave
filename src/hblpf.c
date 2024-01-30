@@ -413,7 +413,7 @@ const RP_IIR_FILTER_DESCR iir_hb_lpf_const_filters[] =
   0,                            // right cutoff
   0.002131305,                  // (??unsure-R&C) transition width
   IIR_LOEL_TYPE1_B,
-  IIR_LOEL_TYPE1_A,
+  IIR_LOEL_TYPE1_A
  }
 
  ,
@@ -426,7 +426,7 @@ const RP_IIR_FILTER_DESCR iir_hb_lpf_const_filters[] =
   0,                            // right cutoff
   0.0015685821,                 // (??unsure-R&C) transition width
   IIR_LOEL_TYPE2_B,
-  IIR_LOEL_TYPE2_A,
+  IIR_LOEL_TYPE2_A
  }
 
  ,
@@ -439,7 +439,7 @@ const RP_IIR_FILTER_DESCR iir_hb_lpf_const_filters[] =
   0,                            // right cutoff
   0.0015899102,                 // (??unsure-R&C) transition width
   IIR_LOEL_TYPE3_B,
-  IIR_LOEL_TYPE3_A,
+  IIR_LOEL_TYPE3_A
  }
 
  ,
@@ -452,7 +452,7 @@ const RP_IIR_FILTER_DESCR iir_hb_lpf_const_filters[] =
   0,                            // right cutoff
   0.001414773,                  // (??unsure-R&C) transition width
   IIR_LOEL_TYPE4_B,
-  IIR_LOEL_TYPE4_A,
+  IIR_LOEL_TYPE4_A
  }
 
  ,
@@ -465,7 +465,7 @@ const RP_IIR_FILTER_DESCR iir_hb_lpf_const_filters[] =
   0,                            // right cutoff
   0.001414773,                  // (??unsure-R&C) transition width
   IIR_LOEL_TYPE5_B,
-  IIR_LOEL_TYPE5_A,
+  IIR_LOEL_TYPE5_A
  }
 
 // [...to be continued...]
