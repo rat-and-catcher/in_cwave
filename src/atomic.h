@@ -53,6 +53,15 @@
 extern "C" {
 #endif
 
+/* the evil fate of the atomic double copying --
+ * -- the code work incorectly with MS VC2022 (v143 ==
+ * == "Microsoft (R) C/C++ Optimizing Compiler Version 19.39.33523")
+ * with optimization. So -- eliminate it.
+ */
+#if !defined(ATM_COPY_FAST)
+#define ATM_COPY_FAST   /* kill the rest of the file ;,( */
+#endif
+
 /* atomic write double value
 */
 static __inline void adbl_write(volatile double *dst, double src)
