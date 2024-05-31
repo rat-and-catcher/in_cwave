@@ -4,7 +4,7 @@
  *      adv_modulator.c -- advanced analitic signal modulator
  *      (there is no any "simple" renders / mods from in_cwave V1.5.0)
  *
- * Copyright (c) 2010-2021, Rat and Catcher Technologies
+ * Copyright (c) 2010-2024, Rat and Catcher Technologies
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -67,6 +67,20 @@ static const TCHAR *dsp_names[] =               // Names (or prefixes) of DSP-no
 /* Helpers
  * -------
  */
+/* lock DSP list from insertion/deletion
+*/
+static void dsp_list_lock(void)
+{
+ EnterCriticalSection(&am.cs_dsp_list);
+}
+
+/* unlock DSP list for insertion/deletion
+*/
+static void dsp_list_unlock(void)
+{
+ LeaveCriticalSection(&am.cs_dsp_list);
+}
+
 /* helper to create new node
 */
 static NODE_DSP *create_node_dsp(const TCHAR *name, int mode, int force_master)
@@ -342,7 +356,8 @@ NODE_DSP *amod_cleanup(int is_transfer)
 */
 void amod_del_dsplist(void)
 {
- EnterCriticalSection(&am.cs_dsp_list);
+ dsp_list_lock();
+
  while(am.tail -> prev)
  {
   am.tail = am.tail -> prev;
@@ -350,14 +365,16 @@ void amod_del_dsplist(void)
   free(am.tail -> next);
   am.tail -> next = NULL;
  }
- LeaveCriticalSection(&am.cs_dsp_list);
+
+ dsp_list_unlock();
 }
 
 /* delete the last DSP list element
 */
 void amod_del_lastdsp(void)
 {
- EnterCriticalSection(&am.cs_dsp_list);
+ dsp_list_lock();
+
  if(am.tail -> prev)
  {
   am.tail = am.tail -> prev;
@@ -365,7 +382,8 @@ void amod_del_lastdsp(void)
   free(am.tail -> next);
   am.tail -> next = NULL;
  }
- LeaveCriticalSection(&am.cs_dsp_list);
+
+ dsp_list_unlock();
 }
 
 /* add the last element to the DSP list
@@ -378,11 +396,13 @@ NODE_DSP *amod_add_lastdsp(const TCHAR *name, int mode)
   return temp;
 
  // ok, include to the list
- EnterCriticalSection(&am.cs_dsp_list);
+ dsp_list_lock();
+
  temp -> prev = am.tail;
  am.tail -> next = temp;
  am.tail = temp;
- LeaveCriticalSection(&am.cs_dsp_list);
+
+ dsp_list_unlock();
 
  return am.tail;
 }
@@ -412,14 +432,14 @@ NODE_DSP *amod_get_headdsp(void)
 */
 void amod_set_output_plug(NODE_DSP *ndEd, int n)        // n == -1 -> remove only
 {
- EnterCriticalSection(&am.cs_dsp_list);
+ dsp_list_lock();
  replace_output_plug(ndEd, n);
- LeaveCriticalSection(&am.cs_dsp_list);
+ dsp_list_unlock();
 }
 
 /* get channel's clips counters and peak values
 */
-void amod_get_clips_peaks
+void NOINLINE amod_get_clips_peaks                      // problem with MSVS2022
     ( unsigned *lc
     , unsigned *rc
     , double *lpv
@@ -437,8 +457,8 @@ void amod_get_clips_peaks
  *lc = am.l_clips;
  *rc = am.r_clips;
  // asynchronious changes of X_peak uncritical
- adbl_write(lpv, am.l_peak);
- adbl_write(rpv, am.r_peak);
+ *lpv = adbl_read(&(am.l_peak));
+ *rpv = adbl_read(&(am.r_peak));
 }
 
 /* convert a frequency to it's "true" value
@@ -501,7 +521,7 @@ static __inline void dsp_shift(CMAKE_SHIFT *shift, CCOMPLEX *output,
   double sh_freq, phase, cos_v, sin_v;
   BOOL sh_sign = FALSE;
 
-  adbl_read(&sh_freq, &(shift -> fr_shift));
+  sh_freq = adbl_read(&(shift -> fr_shift));
   if(sh_freq < 0.0)
   {
    sh_freq = -sh_freq;
@@ -535,10 +555,11 @@ static __inline void dsp_pm(CMAKE_PM *pm, CCOMPLEX *output,
  {
   double freq, fphase, flevel, fangle, phase;
 
-  adbl_read(&freq,    &(pm -> freq));
-  adbl_read(&fphase,  &(pm -> phase));
-  adbl_read(&flevel,  &(pm -> level));
-  adbl_read(&fangle,  &(pm -> angle));
+  freq      = adbl_read(&(pm -> freq));
+  fphase    = adbl_read(&(pm -> phase));
+  flevel    = adbl_read(&(pm -> level));
+  fangle    = adbl_read(&(pm -> angle));
+
   if(am.is_frmod_scaled)
   {
    freq = DGET_SCALED_FR(freq);
@@ -608,7 +629,8 @@ int amod_process_samples(char *buf, MOD_CONTEXT *mc)
   all_hilberts_unlock();
 
   // loop by the DSP list from TAIL to HEAD
-  EnterCriticalSection(&am.cs_dsp_list);
+  dsp_list_lock();
+
   for(cur = am.is_bypass_list? am.head : am.tail; cur; cur = cur -> prev)
   {
    LRCOMPLEX data, *pout;
@@ -689,8 +711,8 @@ int amod_process_samples(char *buf, MOD_CONTEXT *mc)
    }
 
    // adjust levels (make _after_ channels exchange)
-   adbl_read(&lg, &(cur -> l_gain));
-   adbl_read(&rg, &(cur -> r_gain));
+   lg = adbl_read(&(cur -> l_gain));
+   rg = adbl_read(&(cur -> r_gain));
    data.le.re *= lg;
    data.le.im *= lg;
    data.ri.re *= rg;
@@ -724,7 +746,8 @@ int amod_process_samples(char *buf, MOD_CONTEXT *mc)
      break;
    }                                            // switch .mode
   }                                             // END of DSP loop
-  LeaveCriticalSection(&am.cs_dsp_list);
+
+  dsp_list_unlock();
 
   // place into out buffer
   all_srenders_lock();

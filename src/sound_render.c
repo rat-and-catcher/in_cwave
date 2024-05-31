@@ -768,7 +768,7 @@ void sound_render_value
   // update peak level (dB, 0.0 == SR_ZERO_SIGNAL_DB (-555.0) dB)
   if(peak_val)
   {
-   double pv = *peak_val;
+   double pv = adbl_read(peak_val);
    double cv = fabs(qinput) / sr -> hi_bound;
    
    cv = cv? 20.0 * log10(cv) : SR_ZERO_SIGNAL_DB;
@@ -871,7 +871,7 @@ void sound_render_value
   // update peak level (dB, 0.0 == -150 dB)
   if(peak_val)
   {
-   double pv = *peak_val;
+   double pv = adbl_read(peak_val);
    double cv = fabs(qinput) / sr -> hi_bound;
    
    cv = cv? 20.0 * log10(cv) : SR_ZERO_SIGNAL_DB;

@@ -3,7 +3,7 @@
  *
  *      atomic.h -- some atomic data manipulation stuff
  *
- * Copyright (c) 2010-2021, Rat and Catcher Technologies
+ * Copyright (c) 2010-2024, Rat and Catcher Technologies
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -53,14 +53,6 @@
 extern "C" {
 #endif
 
-/* the evil fate of the atomic double copying --
- * -- the code work incorectly with MS VC2022 (v143 ==
- * == "Microsoft (R) C/C++ Optimizing Compiler Version 19.39.33523")
- * with optimization. So -- eliminate it.
- */
-#if !defined(ATM_COPY_FAST)
-#define ATM_COPY_FAST   /* kill the rest of the file ;,( */
-#endif
 
 /* atomic write double value
 */
@@ -76,11 +68,16 @@ static __inline void adbl_write(volatile double *dst, double src)
 // than WIN32 "LONGLONG"
 #pragma GCC diagnostic ignored "-Wstrict-aliasing"
 #endif
+// should work -- double value is simple 64 "integer" bits
+ volatile LONGLONG *ldst = (volatile LONGLONG *)dst;
+ LONGLONG lsrc = *((LONGLONG *)&src);
+ LONGLONG tmp;
 
- (void)InterlockedCompareExchange64(        // should work -- double value is simple 64 "integer" bits
-      (LONGLONG *)dst
-    , *((LONGLONG *)(&src))
-    , *((LONGLONG *)dst));
+ do
+ {
+  tmp = *ldst;
+ }
+ while(InterlockedCompareExchange64(ldst, lsrc, tmp) != tmp);
 
 #if defined(__GNUC__)
 #pragma GCC diagnostic pop
@@ -91,14 +88,30 @@ static __inline void adbl_write(volatile double *dst, double src)
 
 /* atomic read double value
 */
-static __inline void adbl_read(double *dst, const volatile double *src)
+static __inline double adbl_read(/*!!const!!*/ volatile double *src)
 {
 #if defined(ATM_COPY_FAST)
- *dst = *src;
+ return *src;
 #else
- // we are sorry. The function call now only reflect the problem,
- // that we need somewhat "atomic" here.
- *dst = *src;
+
+#if defined(__GNUC__)
+#pragma GCC diagnostic push
+// we are sure, that for x86 "double" not less strictly aligned,
+// than WIN32 "LONGLONG"
+#pragma GCC diagnostic ignored "-Wstrict-aliasing"
+#endif
+
+ LONGLONG res = InterlockedCompareExchange64(   // should work -- double value is simple 64 "integer" bits
+      (volatile LONGLONG *)src
+    , 0LL
+    , 0LL);
+
+ return *((double *)&res);
+
+#if defined(__GNUC__)
+#pragma GCC diagnostic pop
+#endif
+
 #endif
 }
 

@@ -102,6 +102,15 @@
 // see OLD_NEWS and CHANGELOG about versioning
 #define VERSION_IN_CWAVE        "V2.4.0"
 
+// some compiler specifics
+#if defined(_MSC_VER )
+#define NOINLINE        __declspec(noinline)
+#elif defined(__GNUC__)
+#define NOINLINE        __attribute__((noinline))
+#else
+#error  "Unsupported C compiler"
+#endif
+
 #if !defined(MAX_FILE_PATH)
 #if defined(UNICODE)
 #define MAX_FILE_PATH   (32769)
