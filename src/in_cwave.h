@@ -103,7 +103,7 @@
 #define VERSION_IN_CWAVE        "V2.4.0"
 
 // some compiler specifics
-#if defined(_MSC_VER )
+#if defined(_MSC_VER)
 #define NOINLINE        __declspec(noinline)
 #elif defined(__GNUC__)
 #define NOINLINE        __attribute__((noinline))
