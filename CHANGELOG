@@ -50,3 +50,5 @@ in_cwave V1.*.* (Unpublic!) Versions History -- see OLD_NEWS
         statistics, move Kahan setup to "Bugs control", some GUI rearrange;
         fix saving config for the 1st time run when config file not exist;
         add ability to reduce output significant bits (reduce entropy).
+31-Jul-2024 -- V2.4.1 -- minor fixes; add VS 2017/2022 projects.
+        No any new fuctionality.

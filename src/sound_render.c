@@ -637,8 +637,8 @@ const TCHAR **sound_render_get_rtypenames(void)
  static const TCHAR *render_type_names[] =
  {
   _T("Round to integer"),                       // [SND_RENDER_ROUND]
-  _T("Rectangle PDF dithering"),                // [SND_RENDER_RPDF]
-  _T("Triangle PDF dithering"),                 // [SND_RENDER_TPDF]
+  _T("Rectangular PDF dithering"),              // [SND_RENDER_RPDF]
+  _T("Triangular PDF dithering"),               // [SND_RENDER_TPDF]
   _T("Sloped TPDF dithering"),                  // [SND_RENDER_STPDF]
   _T("Gaussian PDF dithering"),                 // [SND_RENDER_GAUSS]
   NULL

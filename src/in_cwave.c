@@ -518,11 +518,13 @@ BOOL WINAPI DllMain(HANDLE hInst, DWORD reasonForCall, LPVOID lpReserved)
  switch(reasonForCall)
  {
   case DLL_PROCESS_ATTACH:              // load library
-   // ..nothing yet..
+   (void)DisableThreadLibraryCalls(hInst);
    break;
 
   case DLL_PROCESS_DETACH:              // free library
    // last chance to save config and delete (partially) module object. This cleanup incomplete!!
+   // [this someway works under Windows XP and did not work under Windows 10]
+   // [this can crush Winamp on exit, when it work]
    // FIXME::remove next two lines
    if(the.cfg.enable_unload_cleanup)
     module_cleanup();
