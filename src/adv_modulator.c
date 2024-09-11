@@ -39,6 +39,9 @@
 // get scaled frequency as unscaled double
 #define DGET_USCALED_FR(df)         (DGET_SCALED_FR(df) / ((double)HZ_SCALE))
 
+// square root (2)
+#define SQRT2           (1.4142135623730950488016887242097)
+
 /*
  * global statics
  * ------ -------
@@ -492,11 +495,11 @@ static __inline double dsp_master(CMAKE_MASTER *master, CCOMPLEX *input)
    break;
 
   case S_ADD_REIM:              // here we (PROBABLY) could to compensate analitic dyn. range losses
-   return (input -> re + input -> im) / 2.0;    // from LSB ;))
+   return (input -> re + input -> im) / SQRT2;  // from LSB ;))
    break;
 
   case S_SUB_REIM:              // here we (PROBABLY) could to compensate analitic dyn. range losses
-   return (input -> re - input -> im) / 2.0;    // from USB ;))
+   return (input -> re - input -> im) / SQRT2;  // from USB ;))
    break;
  }
  // default -- some sort of 'assert'

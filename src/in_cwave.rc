@@ -25,8 +25,8 @@ LANGUAGE LANG_NEUTRAL, SUBLANG_NEUTRAL
 //
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION 2,4,1,1
- PRODUCTVERSION 2,4,1,1
+ FILEVERSION 2,4,2,1
+ PRODUCTVERSION 2,4,2,1
  FILEFLAGSMASK 0x3fL
 #ifdef _DEBUG
  FILEFLAGS 0x29L
@@ -44,13 +44,13 @@ BEGIN
             VALUE "Comments", "This software licensed according BSD-like license"
             VALUE "CompanyName", "Rat and Catcher Technologies"
             VALUE "FileDescription", "CWAVE/RWAVE(WAV) universal quad modulator for Winamp (XMPlay)"
-            VALUE "FileVersion", "2.4.1.1"
+            VALUE "FileVersion", "2.4.2.1"
             VALUE "InternalName", "CWAVE Winamp quad modulator"
             VALUE "LegalCopyright", "Copyright (C) 2010-2024 Rat and Catcher Technologies"
             VALUE "OriginalFilename", "in_cwave.dll"
             VALUE "PrivateBuild", "experimental 'total' quad modulator"
             VALUE "ProductName", "Quad Audio Wave Morphing Tools Set"
-            VALUE "ProductVersion", "2.4.1.1"
+            VALUE "ProductVersion", "2.4.2.1"
         END
     END
     BLOCK "VarFileInfo"
