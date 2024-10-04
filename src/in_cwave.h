@@ -131,7 +131,7 @@
 
 #define NS_CHECKPT      (8192)                  /* samples per time to CRC check */
 
-#define DEF_PLAY_SLEEP  (20)                    /* default sleep time in playback loop */
+#define DEF_PLAY_SLEEP  (10)                    /* default sleep time in playback loop */
 #define MAX_PLAY_SLEEP  (100)                   /* max. sleep time in playback loop */
 
 #define MAX_ALIGN_SEC   (20)                    /* max. align time in seconds */

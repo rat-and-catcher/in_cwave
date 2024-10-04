@@ -52,4 +52,5 @@ in_cwave V1.*.* (Unpublic!) Versions History -- see OLD_NEWS
         add ability to reduce output significant bits (reduce entropy).
 31-Jul-2024 -- V2.4.1 -- minor fixes; add VS 2017/2022 projects.
         No any new fuctionality.
-31-Jul-2024 -- V2.4.2 -- SQRT2 divider for I+Q / I-Q; alt. filts. coeffs. set (FP_MIXED)
+05-Oct-2024 -- V2.4.2 -- SQRT2 divider for I+Q / I-Q; alt. filts. coeffs. set (FP_MIXED),
+		some pauback thread fixes (incomplete??)

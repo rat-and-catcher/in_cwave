@@ -505,7 +505,7 @@ void mp_playback_unlock(void)
 void playback_sleep(void)
 {
  if(!the.cfg.disable_play_sleep)
-  Sleep(the.cfg.play_sleep);
+  SleepEx(the.cfg.play_sleep, TRUE);
 }
 
 /* The general stuff

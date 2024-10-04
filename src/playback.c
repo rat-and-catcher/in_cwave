@@ -574,7 +574,7 @@ static DWORD WINAPI DecodeThread(LPVOID context)
     PostMessage(pb_iface.hMainWindow, WM_WA_MPEG_EOF, 0, 0);
     break;                              // to shutdown the thread
    }
-   Sleep(10);                           // give a little CPU time back to the system.
+   SleepEx(10, TRUE);                   // give a little CPU time back to the system.
   }
   else
   {
@@ -591,9 +591,14 @@ static DWORD WINAPI DecodeThread(LPVOID context)
     if(!len)                            // no samples means we're at eof
     {
      done = 1;
+     // according to WinAmp src@github, we should to do this here:
+     pb_iface.outMod -> Write(NULL, 0);
     }
     else                                // we got samples!
     {
+     // according to WinAmp src, we should to call pb_iface.dsp_dosamples() here..
+     // so TODO::fix?? here
+
      // give the samples to the vis subsystems
      pb_iface.SAAddPCMData(pc -> play_sample_buffer, 2 /* OUT channels */,
         out_size << (3 - 1 /*ONE ch bps*/), pc -> decode_pos_ms);
@@ -603,7 +608,7 @@ static DWORD WINAPI DecodeThread(LPVOID context)
      // adjust decode position variable
      pc -> decode_pos_ms += (mc -> xr -> really_readed * 1000) / mc -> xr -> sample_rate;
 
-     // if we have a DSP plug-in, then call it on our samples
+     // if we have a DSP plug-in, then call it on our samples [???]
      if(pb_iface.dsp_isactive())
       len = pb_iface.dsp_dosamples((short *)pc -> play_sample_buffer, len,
         out_size << 3, 2 /* OUT channels */, mc -> xr -> sample_rate);
