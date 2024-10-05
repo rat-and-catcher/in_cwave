@@ -569,7 +569,7 @@ static DWORD WINAPI DecodeThread(LPVOID context)
 
   if(done)                              // done was set to TRUE during decoding, signaling EOF
   {
-   pb_iface.outMod -> CanWrite();       // some out drivers need CanWrite to be called on a regular basis
+   (void)(pb_iface.outMod -> CanWrite()); // some out drivers need CanWrite to be called on a regular basis
    if(!pb_iface.outMod -> IsPlaying())
    {
     // we're done playing, so tell Winamp and quit the thread.
@@ -594,8 +594,8 @@ static DWORD WINAPI DecodeThread(LPVOID context)
     {
      done = 1;
      // according to WinAmp src@github, we should to do this here:
-     // ..but this sometimes broke XMPlay playback! So, stay without
-     // pb_iface.outMod -> Write(NULL, 0);
+     // ..but this sometimes broke XMPlay playback! So, stay without NULL as buffer
+     pb_iface.outMod -> Write(pc -> play_sample_buffer, 0);
     }
     else                                // we got samples!
     {
