@@ -596,14 +596,16 @@ static DWORD WINAPI DecodeThread(LPVOID context)
     }
     else                                // we got samples!
     {
-     // according to WinAmp src, we should to call pb_iface.dsp_dosamples() here..
-     // so TODO::fix?? here
+     if(len >= NS_PERTIME)              // some protector
+     {
+      // int timestamp = pb_iface.outMod -> GetWrittenTime();   // Winamp recomended...
 
-     // give the samples to the vis subsystems
-     pb_iface.SAAddPCMData(pc -> play_sample_buffer, 2 /* OUT channels */,
-        out_size << (3 - 1 /*ONE ch bps*/), pc -> decode_pos_ms);
-     pb_iface.VSAAddPCMData(pc -> play_sample_buffer, 2 /* OUT channels */,
-        out_size << (3 - 1 /*ONE ch bps*/), pc -> decode_pos_ms);
+      // give the samples to the vis subsystems
+      pb_iface.SAAddPCMData(pc -> play_sample_buffer, 2 /* OUT channels */,
+        out_size << (3 - 1 /*ONE ch bps*/), pc -> decode_pos_ms /* timestamp */);
+      pb_iface.VSAAddPCMData(pc -> play_sample_buffer, 2 /* OUT channels */,
+        out_size << (3 - 1 /*ONE ch bps*/), pc -> decode_pos_ms /* timestamp */);
+     }
 
      // adjust decode position variable
      pc -> decode_pos_ms += (mc -> xr -> really_readed * 1000) / mc -> xr -> sample_rate;
