@@ -120,7 +120,7 @@ static void about(HWND hwndParent)
 
 /* any one-time initialization goes here (configuration reading, etc)
 */
-static void init(void)
+static int init(void)
 {
  // 'the' already initialized; so -- plugin context
  memset(&plg, 0, sizeof(plg));
@@ -141,6 +141,8 @@ static void init(void)
  plg.is_gui_run = 0;
  plg.last_file_name = NULL;
  plg.last_length_in_ms = -1000 /* default unknown */;
+
+ return IN_INIT_SUCCESS; 
 }
 
 /* one-time deinitialization, such as memory freeing
@@ -680,16 +682,17 @@ static In_Module pb_iface =
         setvolume,
         setpan,
 
-        0, 0, 0, 0, 0, 0, 0, 0, 0, // visualization calls filled in by Winamp
+        // visualization calls filled in by Winamp
+        NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
 
-        0, 0,                   // DSP calls filled in by Winamp
+        NULL, NULL,             // DSP calls filled in by Winamp
 
         eq_set,
 
         NULL,                   // setinfo call filled in by Winamp
 
-        0                       // out_mod filled in by Winamp
-
+        NULL,                   // out_mod filled in by Winamp
+        NULL                    // *NEW* -- api_servece filled by Winamp
 };
 
 /* Return In_Module interface
