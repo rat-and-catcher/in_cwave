@@ -594,7 +594,8 @@ static DWORD WINAPI DecodeThread(LPVOID context)
     {
      done = 1;
      // according to WinAmp src@github, we should to do this here:
-     pb_iface.outMod -> Write(NULL, 0);
+     // ..but this sometimes broke XMPlay playback! So, stay without
+     // pb_iface.outMod -> Write(NULL, 0);
     }
     else                                // we got samples!
     {
