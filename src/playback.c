@@ -643,7 +643,7 @@ static DWORD WINAPI DecodeThread(LPVOID context)
 // playback interface module definition.
 static In_Module pb_iface =
 {
-        IN_VER,                 // defined in IN2.H; contain UNICODE info
+        IN_VER_OLD,             // defined in IN2.H; contain UNICODE info
         "CWAVE/WAV ('RWAVE') Decoder/Modulator " VERSION_IN_CWAVE " "
 #if defined(UNICODE)
         "(Unicode) "

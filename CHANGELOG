@@ -54,3 +54,5 @@ in_cwave V1.*.* (Unpublic!) Versions History -- see OLD_NEWS
         No any new fuctionality.
 05-Oct-2024 -- V2.4.2 -- SQRT2 divider for I+Q / I-Q; alt. filts. coeffs. set (FP_MIXED),
 		some palyback thread fixes. Renew ./Winamp -- Winamp SDK.
+14-Nov-2024 -- V2.4.3 -- Fix Playback API encoding Version for new SDK (very tiny and hard
+		bug).
