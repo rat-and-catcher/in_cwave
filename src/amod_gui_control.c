@@ -4,7 +4,7 @@
  *      amod_gui_control.c -- advanced modulator GUI setup
  *      (this file is "add-in" to gui_cwave.c)
  *
- * Copyright (c) 2010-2023, Rat and Catcher Technologies
+ * Copyright (c) 2010-2025, Rat and Catcher Technologies
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -486,13 +486,17 @@ static void updtxt_sign_lock_shift(HWND hwnd, int sign)
         sign? _T("^") : _T("="));
 }
 
-/* disable unused and enable usable controls for each mode
+/* uncheck, disable unused and enable usable controls for each mode
 */
 static void endis_mode(HWND hwnd, const int *disen_list)
 {
- // disable part
+ // uncheck part
  while(*disen_list)
-  EnDis(hwnd, *disen_list++, FALSE);
+  CheckDlgButton(hwnd, *disen_list++, BST_UNCHECKED);
+
+ // disable part
+ while(*++disen_list)
+  EnDis(hwnd, *disen_list, FALSE);
 
  // enable part
  while(*++disen_list)
@@ -541,7 +545,19 @@ static void UpdateControls(HWND hwnd, AMOD_GUI_CONTEXT *agc)
  // disable/enable lists
  static const int disen_master[] =
  {
-  // -- disable:
+  // -- to uncheck:
+  // outputs
+  IDC_OUTA, IDC_OUTB, IDC_OUTC, IDC_OUTD, IDC_OUTE, IDC_OUTF, IDC_OUTG,
+  IDC_OUTH, IDC_OUTI, IDC_OUTJ, IDC_OUTK, IDC_OUTL, IDC_OUTM, IDC_OUTN,
+  IDC_OUTO, IDC_OUTP, IDC_OUTQ, IDC_OUTR, IDC_OUTS, IDC_OUTT, IDC_OUTU,
+  IDC_OUTV, IDC_OUTW, IDC_OUTX, IDC_OUTY, IDC_OUTZ,
+  // shift
+  IDC_FSHIFTL_BYPASS, IDC_FSHIFTR_BYPASS, IDC_FSHIFT_LOCK,
+  // phase modulation
+  IDC_PML_BYPASS, IDC_PMR_BYPASS, IDC_PMFR_LOCK,
+  IDC_PMIPH_LOCK, IDC_PMLEV_LOCK, IDC_PMANG_LOCK,
+  0,
+  // -- to disable:
   // outputs
   IDC_OUTA, IDC_OUTB, IDC_OUTC, IDC_OUTD, IDC_OUTE, IDC_OUTF, IDC_OUTG,
   IDC_OUTH, IDC_OUTI, IDC_OUTJ, IDC_OUTK, IDC_OUTL, IDC_OUTM, IDC_OUTN,
@@ -560,12 +576,17 @@ static void UpdateControls(HWND hwnd, AMOD_GUI_CONTEXT *agc)
   IDC_PMANGL, IDC_PMANGR, IDB_PMANGL, IDB_PMANGR, IDC_PMANG_LOCK,
   IDS_PMFR, IDS_PMIPH, IDS_PMLEV, IDS_PMANG,
   0,
-  // -- enable:
+  // -- to enable:
   0
  };
  static const int disen_shift[] =
  {
-  // -- disable:
+  // -- to uncheck:
+  // phase modulation
+  IDC_PML_BYPASS, IDC_PMR_BYPASS, IDC_PMFR_LOCK,
+  IDC_PMIPH_LOCK, IDC_PMLEV_LOCK, IDC_PMANG_LOCK,
+  0,
+  // -- to disable:
   // phase modulation
   IDC_PMFRL, IDC_PMFRR, IDB_PMFRL, IDB_PMFRR,
   IDC_PML_BYPASS, IDC_PMR_BYPASS, IDC_PMFR_LOCK,
@@ -574,7 +595,7 @@ static void UpdateControls(HWND hwnd, AMOD_GUI_CONTEXT *agc)
   IDC_PMANGL, IDC_PMANGR, IDB_PMANGL, IDB_PMANGR, IDC_PMANG_LOCK,
   IDS_PMFR, IDS_PMIPH, IDS_PMLEV, IDS_PMANG,
   0,
-  // -- enable:
+  // -- to enable:
   // outputs
   IDC_OUTA, IDC_OUTB, IDC_OUTC, IDC_OUTD, IDC_OUTE, IDC_OUTF, IDC_OUTG,
   IDC_OUTH, IDC_OUTI, IDC_OUTJ, IDC_OUTK, IDC_OUTL, IDC_OUTM, IDC_OUTN,
@@ -589,13 +610,17 @@ static void UpdateControls(HWND hwnd, AMOD_GUI_CONTEXT *agc)
  };
  static const int disen_pm[] =
  {
-  // -- disable:
+  // -- to uncheck:
+  // shift
+  IDC_FSHIFTL_BYPASS, IDC_FSHIFTR_BYPASS, IDC_FSHIFT_LOCK,
+  0,
+  // -- to disable:
   // shift
   IDC_FSHIFTL, IDC_FSHIFTR, IDB_FSHIFTL, IDB_FSHIFTR,
   IDC_FSHIFTL_BYPASS, IDC_FSHIFTR_BYPASS, IDC_FSHIFT_LOCK,
   IDS_FSHIFT,
   0,
-  // -- enable:
+  // -- to enable:
   // outputs
   IDC_OUTA, IDC_OUTB, IDC_OUTC, IDC_OUTD, IDC_OUTE, IDC_OUTF, IDC_OUTG,
   IDC_OUTH, IDC_OUTI, IDC_OUTJ, IDC_OUTK, IDC_OUTL, IDC_OUTM, IDC_OUTN,
@@ -614,7 +639,14 @@ static void UpdateControls(HWND hwnd, AMOD_GUI_CONTEXT *agc)
  };
  static const int disen_mix[] =
  {
-  // -- disable:
+  // -- to uncheck:
+  // shift
+  IDC_FSHIFTL_BYPASS, IDC_FSHIFTR_BYPASS, IDC_FSHIFT_LOCK,
+  // phase modulation
+  IDC_PML_BYPASS, IDC_PMR_BYPASS, IDC_PMFR_LOCK,
+  IDC_PMIPH_LOCK, IDC_PMLEV_LOCK, IDC_PMANG_LOCK,
+  0,
+  // -- to disable:
   // shift
   IDC_FSHIFTL, IDC_FSHIFTR, IDB_FSHIFTL, IDB_FSHIFTR,
   IDC_FSHIFTL_BYPASS, IDC_FSHIFTR_BYPASS, IDC_FSHIFT_LOCK,
@@ -627,7 +659,7 @@ static void UpdateControls(HWND hwnd, AMOD_GUI_CONTEXT *agc)
   IDC_PMANGL, IDC_PMANGR, IDB_PMANGL, IDB_PMANGR, IDC_PMANG_LOCK,
   IDS_PMFR, IDS_PMIPH, IDS_PMLEV, IDS_PMANG,
   0,
-  // -- enable:
+  // -- to enable:
   // outputs
   IDC_OUTA, IDC_OUTB, IDC_OUTC, IDC_OUTD, IDC_OUTE, IDC_OUTF, IDC_OUTG,
   IDC_OUTH, IDC_OUTI, IDC_OUTJ, IDC_OUTK, IDC_OUTL, IDC_OUTM, IDC_OUTN,
@@ -675,10 +707,6 @@ static void UpdateControls(HWND hwnd, AMOD_GUI_CONTEXT *agc)
  switch(agc -> lCur -> mode)
  {
   case MODE_MASTER:
-   // all masters outputs unchecked (and disabled)
-   for(i = 1; i < N_INPUTS; ++i)
-    CheckDlgButton(hwnd, BusIds[i].out_id, BST_UNCHECKED);
-
    // disable unused and enable usable ones
    endis_mode(hwnd, disen_master);
 
@@ -978,6 +1006,12 @@ static BOOL Setup_Dlg_OnInitDialog(HWND hwnd, HWND hwndFocus, LPARAM lParam)
  SR_VCONFIG sr_vcfg;
 
  SetWindowLongPtr(hwnd, GWLP_USERDATA, (LONG_PTR)agc);
+
+ // window title with version
+ SetWindowText(hwnd,
+    _T("Advanced CWAVE Quad Modulator, version ") _T(VERSION_IN_CWAVE)
+    _T(" (") _T(__DATE__) _T(" / ") _T(__TIME__) _T(")")
+    );
 
  // DSP List Box
  GetDspList(hwnd, agc);

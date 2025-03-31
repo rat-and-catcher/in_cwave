@@ -103,7 +103,7 @@ static void about(HWND hwndParent)
  const TCHAR fmsg[] =
         _T("CWAVE / WAV ('RWAVE') universal reader / quad modulator\n")
         _T("Version ")
-        _T(VERSION_IN_CWAVE)
+        _T(VERSION_IN_CWAVE) _T(" (") _T(__DATE__) _T(")")
         _T("\n")
         _T("Config version ID is %u\n")
         _T("The plugin released under the BSD-like license\n")

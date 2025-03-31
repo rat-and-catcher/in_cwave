@@ -100,7 +100,7 @@
  */
 
 // see OLD_NEWS and CHANGELOG about versioning
-#define VERSION_IN_CWAVE        "V2.4.3"
+#define VERSION_IN_CWAVE        "V2.4.4"
 
 // some compiler specifics
 #if defined(_MSC_VER)
