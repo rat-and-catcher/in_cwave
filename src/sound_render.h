@@ -90,6 +90,7 @@ extern "C" {
 #define SND_NSHAPE_GES48        (17)                    /* 48000 Hz -- Gesemann */
 
 #define SND_NSHAPE_MAX          (17)                    /* max. value of SND_NSHAPE_xxx */
+#define NM_SND_NSHAPE           (SND_NSHAPE_MAX + 1)    /* total number of noise shapers */
 
 /* default / max bits to dither
 */
@@ -124,6 +125,7 @@ typedef struct tagNS_SHAPER_DSC
  const double *filter_coeffs;                           // current coefficients for current shaper
  unsigned num_coeffs;                                   // number of filter coefficients (filter order for IIR)
  unsigned target_sample_rate;                           // nominal sample rate for the filter, 0==any
+ const TCHAR *shaper_str;                               // description string
 } NS_SHAPER_DSC;
 
 // the shaper in whole

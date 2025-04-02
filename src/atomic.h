@@ -53,6 +53,39 @@
 extern "C" {
 #endif
 
+/* atomic int type
+*/
+typedef          LONG V_INT;                        // "atomic" value
+typedef volatile LONG A_INT;                        // variable to contain atomic value
+
+/* atomic write A_INT value
+*/
+static __inline void aint_write(A_INT *dst, V_INT src)
+{
+#if defined(ATM_COPY_FAST)
+ *dst = src;
+#else
+
+ V_INT tmp;
+
+ do
+ {
+  tmp = *dst;
+ }
+ while(InterlockedCompareExchange(dst, src, tmp) != tmp);
+#endif
+}
+
+/* atomic read A_INT value
+*/
+static __inline V_INT aint_read(/*!!const!!*/ A_INT *src)
+{
+#if defined(ATM_COPY_FAST)
+ return *src;
+#else
+ return InterlockedCompareExchange(src, 0, 0);
+#endif
+}
 
 /* atomic write double value
 */

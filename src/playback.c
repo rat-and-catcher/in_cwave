@@ -45,12 +45,12 @@ typedef struct tagPLUGIN_CONTEXT
 {
  char *play_sample_buffer;              // playback sample buffer -- twice as big as the block size
                                         // (block size == NS_PERTIME (* sizeof(int) * max.out.channels)
- int decode_pos_ms;                     // current decoding position, in milliseconds.
+ A_INT decode_pos_ms;                   // current decoding position, in milliseconds.
                                         // Used for correcting DSP plug-in pitch changes
  int paused;                            // are we paused?
- volatile int seek_needed;              // if != -1, it is the point that the decode
+ A_INT seek_needed;                     // if != -1, it is the point that the decode
                                         // thread should seek to, in ms.
- volatile int kill_decode_thread;       // the kill switch for the playback thread
+ A_INT kill_decode_thread;              // the kill switch for the playback thread
  HANDLE thread_handle;                  // the handle for the decode thread
 // GUI state(s)
  BOOL is_gui_init;                      // if FALSE -- GUI stuff unavailable
@@ -131,10 +131,10 @@ static int init(void)
  // factor of two (for tempo adjustment).
  // So, sample buffer twice as big as the block size
  plg.play_sample_buffer = cmalloc(NS_PERTIME * sizeof(int) * /*max.out.ch*/ 2 * /*twice*/ 2);
- plg.decode_pos_ms = 0;
+ aint_write(&(plg.decode_pos_ms), 0);
  plg.paused = 0;
- plg.seek_needed = -1;
- plg.kill_decode_thread = 0;
+ aint_write(&(plg.seek_needed), -1);
+ aint_write(&(plg.kill_decode_thread), 0);
  plg.thread_handle = NULL;
  plg.is_gui_init = gui_init();
  plg.show_play = TRUE;
@@ -185,8 +185,8 @@ static int play(const TCHAR *filename)
  MOD_CONTEXT *mc = &(the.mc_playback);
 
  plg.paused = 0;
- plg.decode_pos_ms = 0;
- plg.seek_needed = -1;
+ aint_write(&(plg.decode_pos_ms), 0);
+ aint_write(&(plg.seek_needed), -1);
 
  // Open our file here
  if(!mod_context_fopen(filename, NS_PERTIME, mc))
@@ -244,7 +244,7 @@ static int play(const TCHAR *filename)
  pb_iface.outMod -> SetVolume(-666);
 
  // launch decode thread
- plg.kill_decode_thread = 0;
+ aint_write(&(plg.kill_decode_thread), 0);
  plg.thread_handle = (HANDLE)_beginthreadex(NULL,
         0,
         (unsigned (WINAPI *) (void *))DecodeThread,
@@ -287,7 +287,7 @@ static void stop(void)
 
  if(NULL != plg.thread_handle)
  {
-  plg.kill_decode_thread = 1;
+  aint_write(&(plg.kill_decode_thread), 1);
   if(WaitForSingleObject(plg.thread_handle, 10000) == WAIT_TIMEOUT)      // 10" pretty enough
   {
    // ureachable (according WinAmp's SDK here must lay the MessageBox();
@@ -351,7 +351,7 @@ static int getoutputtime(void)
 // we could just use return pb_iface.outMod->GetOutputTime(),
 // but the DSP plug-ins that do tempo changing tend to make
 // that wrong.
- return plg.decode_pos_ms +
+ return aint_read(&(plg.decode_pos_ms)) +
         (pb_iface.outMod -> GetOutputTime() - pb_iface.outMod -> GetWrittenTime());
 }
 
@@ -364,7 +364,7 @@ static void setoutputtime(int time_in_ms)
 // usually we use it to set seek_needed to the seek
 // point (seek_needed is -1 when no seek is needed)
 // and the decode thread checks seek_needed.
- plg.seek_needed = time_in_ms;
+ aint_write(&(plg.seek_needed), time_in_ms);
 }
 
 // standard volume/pan functions
@@ -403,21 +403,22 @@ static int infoBox(const TCHAR *filename, HWND hwnd)
 
   plg.is_gui_run = 1;
 
-  switch(the.cfg.infobox_parenting)
-  {
-   case INFOBOX_NOPARENT:
-    par_wnd = NULL;
-    break;
-   case INFOBOX_LISTPARENT:
-    par_wnd = hwnd;
-    break;
-   case INFOBOX_MAINPARENT:
-    par_wnd = pb_iface.hMainWindow;
-    break;
-  }
-
   if(plg.show_play)
   {
+   // infoBox parenting valid for the amgui_setup_dialog() only
+   switch(the.cfg.infobox_parenting)
+   {
+    case INFOBOX_NOPARENT:
+     par_wnd = NULL;
+     break;
+    case INFOBOX_LISTPARENT:
+     par_wnd = hwnd;
+     break;
+    case INFOBOX_MAINPARENT:
+     par_wnd = pb_iface.hMainWindow;
+     break;
+   }
+
    amgui_setup_dialog(pb_iface.hDllInstance, par_wnd);
   }
   else
@@ -458,6 +459,15 @@ static void getfileinfo(const TCHAR *filename, TCHAR *title, int *length_in_ms)
 // if length_in_ms is NULL, no length is copied into it.
  MOD_CONTEXT *mc = &(the.mc_playback);
 
+// the file name to return, if we don't know about
+#if 0
+#define UNK_FN_     "-EMPTY-"       /* this is not a true.. */
+#else
+// ..according WinAmp sources..
+#define UNK_FN_     ""              /* this is "true".. */
+#endif
+
+
  if(!filename || !*filename)            // currently playing file
  {
   // ..it's look somewhat buggy..
@@ -477,7 +487,7 @@ static void getfileinfo(const TCHAR *filename, TCHAR *title, int *length_in_ms)
     , mc -> xr?
         mc -> xr -> file_pure_name
         :
-        (plg.last_file_name? plg.last_file_name : _T("-EMPTY-")));
+        (plg.last_file_name? plg.last_file_name : _T(UNK_FN_)));
   }
   mp_playback_unlock();
  }
@@ -546,22 +556,24 @@ static DWORD WINAPI DecodeThread(LPVOID context)
 {
  PLUGIN_CONTEXT *pc = (PLUGIN_CONTEXT *)context;
  MOD_CONTEXT *mc = &(the.mc_playback);
+ V_INT seek_needed = -1;
 
  int done = 0;                          // set to TRUE if decoding has finished
  unsigned out_size = sound_render_size(&mc -> sr_left) + sound_render_size(&mc -> sr_right);
 
- while (!pc -> kill_decode_thread)
+ while (!aint_read(&(pc -> kill_decode_thread)))
  {
-  if(pc -> seek_needed != -1)           // seek is needed.
+  seek_needed = aint_read(&(pc -> seek_needed));
+  if(seek_needed != -1)                 // seek is needed.
   {
-   pc -> decode_pos_ms = pc -> seek_needed;
-   pc -> seek_needed = -1;
+   aint_write(&(pc -> decode_pos_ms), seek_needed); // new (pc -> decode_pos_ms) == (local)seek_needed
+   aint_write(&(pc -> seek_needed), -1);
    done = 0;
-   pb_iface.outMod -> Flush(pc -> decode_pos_ms); // flush output device and set  output pos. to the seek pos.
+   pb_iface.outMod -> Flush(seek_needed); // flush output device and set  output pos. to the seek pos.
 
    // decode_pos_ms * SAMPLERATE / 1000 -- all in xwave_seek_ms():
    // we do hope, that (accordig generel tests) seek don't fail
-   (void)xwave_seek_ms(pc -> decode_pos_ms, mc -> xr);
+   (void)xwave_seek_ms(seek_needed, mc -> xr);
 
    // and reset the playback Hilbert's converter
    mod_context_reset_hilbert(mc);
@@ -599,19 +611,22 @@ static DWORD WINAPI DecodeThread(LPVOID context)
     }
     else                                // we got samples!
     {
+     V_INT decode_pos_ms = aint_read(&(pc -> decode_pos_ms));
+
      if(len >= NS_PERTIME)              // some protector
      {
       // int timestamp = pb_iface.outMod -> GetWrittenTime();   // Winamp recomended...
 
       // give the samples to the vis subsystems
       pb_iface.SAAddPCMData(pc -> play_sample_buffer, 2 /* OUT channels */,
-        out_size << (3 - 1 /*ONE ch bps*/), pc -> decode_pos_ms /* timestamp */);
+        out_size << (3 - 1 /*ONE ch bps*/), decode_pos_ms /* timestamp */);
       pb_iface.VSAAddPCMData(pc -> play_sample_buffer, 2 /* OUT channels */,
-        out_size << (3 - 1 /*ONE ch bps*/), pc -> decode_pos_ms /* timestamp */);
+        out_size << (3 - 1 /*ONE ch bps*/), decode_pos_ms /* timestamp */);
      }
 
      // adjust decode position variable
-     pc -> decode_pos_ms += (mc -> xr -> really_readed * 1000) / mc -> xr -> sample_rate;
+     decode_pos_ms += (mc -> xr -> really_readed * 1000) / mc -> xr -> sample_rate;
+     aint_write(&(pc -> decode_pos_ms), decode_pos_ms);
 
      // if we have a DSP plug-in, then call it on our samples [???]
      if(pb_iface.dsp_isactive())

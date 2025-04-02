@@ -223,13 +223,13 @@ static const double ns_fir_high_shibata_44100[] =
 }; 
 // 44100 Hz -- Gesemann; ns_iir() to calculate.
 // Origin: SoX - Sound eXchange, http://sox.sourceforge.net/
-static const double ns_iir_gesmann_44100[] =
+static const double ns_iir_gesemann_44100[] =
 {
   2.2061, -0.4706, -0.2534, -0.6214, 1.0587, 0.0676, -0.6054, -0.2738
 };
 // 48000 Hz -- Gesemann; ns_iir() to calculate.
 // Origin: SoX - Sound eXchange, http://sox.sourceforge.net/
-static const double ns_iir_gesmann_48000[] =
+static const double ns_iir_gesemann_48000[] =
 {
   2.2374, -0.7339, -0.1251, -0.6033, 0.903, 0.0116, -0.5853, -0.2571
 };
@@ -244,126 +244,144 @@ static const NS_SHAPER_DSC shaper_dscs[] =
    &ns_empty,
    NULL,
    0,
-   0 /* any sampling frequency */
- },
+   0, /* any sampling frequency */
+   _T("Flat (no noise shaping)")
+},
 // 44100 Hz -- F-weighted; ns_fir() to calculate. [SND_NSHAPE_FW44]
  {
    &ns_fir,
    ns_fir_fwght_44100,
    sizeof(ns_fir_fwght_44100) / sizeof(double),
-   44100
+   44100,
+   _T("[44K]F-weighted")
  },
 // 44100/48000 Hz -- modified E-weighted; ns_fir() to calculate. [SND_NSHAPE_MEW44]
  {
    &ns_fir,
    ns_fir_mewght_44100,
    sizeof(ns_fir_mewght_44100) / sizeof(double),
-   44100
+   44100,
+   _T("[44-48K]Modified E-wtd")
  },
 // 44100/48000 Hz -- improved E-weighted; ns_fir() to calculate. [SND_NSHAPE_IEW44]
  {
    &ns_fir,
    ns_fir_iewght_44100,
    sizeof(ns_fir_iewght_44100) / sizeof(double),
-   44100
+   44100,
+   _T("[44-48K]Improved E-wtd")
  },
 // 44100 Hz -- Lipshitz; ns_fir() to calculate. [SND_NSHAPE_LIPSH44]
  {
    &ns_fir,
    ns_fir_lipshitz_44100,
    sizeof(ns_fir_lipshitz_44100) / sizeof(double),
-   44100
+   44100,
+   _T("[44K]Lipshitz")
  },
 // 48000 Hz -- Shibata; ns_fir() to calculate. [SND_NSHAPE_SHIB48]
  {
    &ns_fir,
    ns_fir_shibata_48000,
    sizeof(ns_fir_shibata_48000) / sizeof(double),
-   48000
+   48000,
+   _T("[48K]Shibata")
  },
 // 44100 Hz -- Shibata; ns_fir() to calculate. [SND_NSHAPE_SHIB44]
  {
    &ns_fir,
    ns_fir_shibata_44100,
    sizeof(ns_fir_shibata_44100) / sizeof(double),
-   44100
+   44100,
+   _T("[44K]Shibata")
  },
 // 38000 Hz -- Shibata; ns_fir() to calculate. [SND_NSHAPE_SHIB38]
  {
    &ns_fir,
    ns_fir_shibata_38000,
    sizeof(ns_fir_shibata_38000) / sizeof(double),
-   38000
+   38000,
+   _T("[38K]Shibata")
  },
 // 32000 Hz -- Shibata; ns_fir() to calculate. [SND_NSHAPE_SHIB32]
  {
    &ns_fir,
    ns_fir_shibata_32000,
    sizeof(ns_fir_shibata_32000) / sizeof(double),
-   32000
+   32000,
+   _T("[32K]Shibata")
  },
 // 22050 Hz -- Shibata; ns_fir() to calculate. [SND_NSHAPE_SHIB22]
  {
    &ns_fir,
    ns_fir_shibata_22050,
    sizeof(ns_fir_shibata_22050) / sizeof(double),
-   22050
+   22050,
+   _T("[22K]Shibata")
  },
 // 16000 Hz -- Shibata; ns_fir() to calculate. [SND_NSHAPE_SHIB16]
  {
    &ns_fir,
    ns_fir_shibata_16000,
    sizeof(ns_fir_shibata_16000) / sizeof(double),
-   16000
+   16000,
+   _T("[16K]Shibata")
  },
 // 11025 Hz -- Shibata; ns_fir() to calculate. [SND_NSHAPE_SHIB11]
  {
    &ns_fir,
    ns_fir_shibata_11025,
    sizeof(ns_fir_shibata_11025) / sizeof(double),
-   11025
+   11025,
+   _T("[11K]Shibata")
  },
 // 8000 Hz -- Shibata; ns_fir() to calculate. [SND_NSHAPE_SHIB8]
  {
    &ns_fir,
    ns_fir_shibata_8000,
    sizeof(ns_fir_shibata_8000) / sizeof(double),
-   8000
+   8000,
+   _T("[8K]Shibata")
  },
 // 48000 Hz -- Low Shibata; ns_fir() to calculate. [SND_NSHAPE_LOSHIB48]
  {
    &ns_fir,
    ns_fir_low_shibata_48000,
    sizeof(ns_fir_low_shibata_48000) / sizeof(double),
-   48000
+   48000,
+   _T("[48K]Low Shibata")
  },
 // 44100 Hz -- Low Shibata; ns_fir() to calculate. [SND_NSHAPE_LOSHIB44]
  {
    &ns_fir,
    ns_fir_low_shibata_44100,
    sizeof(ns_fir_low_shibata_44100) / sizeof(double),
-   44100
+   44100,
+   _T("[44K]Low Shibata")
  },
 // 44100 Hz -- High Shibata; ns_fir() to calculate. [SND_NSHAPE_HISHIB44]
  {
    &ns_fir,
    ns_fir_high_shibata_44100,
    sizeof(ns_fir_high_shibata_44100) / sizeof(double),
-   44100
+   44100,
+   _T("[44K]High Shibata")
  },
 // 44100 Hz -- Gesemann; ns_iir() to calculate. [SND_NSHAPE_GES44]
  {
    &ns_iir,
-   ns_iir_gesmann_44100,
-   sizeof(ns_iir_gesmann_44100) / sizeof(double) / 2 /* IIR */,
-   44100
+   ns_iir_gesemann_44100,
+   sizeof(ns_iir_gesemann_44100) / sizeof(double) / 2 /* IIR */,
+   44100,
+   _T("[44K]Gesemann(IIR)")
  },
 // 48000 Hz -- Gesemann; ns_iir() to calculate. [SND_NSHAPE_GES48]
  {
    &ns_iir,
-   ns_iir_gesmann_48000,
-   sizeof(ns_iir_gesmann_48000) / sizeof(double) / 2 /* IIR */,
-   48000
+   ns_iir_gesemann_48000,
+   sizeof(ns_iir_gesemann_48000) / sizeof(double) / 2 /* IIR */,
+   48000,
+   _T("[48K]Gesemann(IIR)")
  }
 };
 
@@ -650,30 +668,13 @@ const TCHAR **sound_render_get_rtypenames(void)
 */
 const TCHAR **sound_render_get_nshapenames(void)
 {
- // ugly style, like xxx_MAX constant(s) -- we know about
- // in the next time (_if any_) we make it better
- static const TCHAR *nshape_type_names[] =
- {
-  _T("Flat (no noise shaping)"),
-  _T("[44K]F-weighted"),
-  _T("[44-48K]Modified E-wtd"),
-  _T("[44-48K]Improved E-wtd"),
-  _T("[44K]Lipshitz"),
-  _T("[48K]Shibata"),
-  _T("[44K]Shibata"),
-  _T("[38K]Shibata"),
-  _T("[32K]Shibata"),
-  _T("[22K]Shibata"),
-  _T("[16K]Shibata"),
-  _T("[11K]Shibata"),
-  _T("[8K]Shibata"),
-  _T("[48K]Low Shibata"),
-  _T("[44K]Low Shibata"),
-  _T("[44K]High Shibata"),
-  _T("[44K]Gesemann(IIR)"),
-  _T("[48K]Gesemann(IIR)"),
-  NULL
- };
+ static const TCHAR *nshape_type_names[NM_SND_NSHAPE + 1];
+ int i;
+
+ for(i = 0; i < NM_SND_NSHAPE; ++i)
+  nshape_type_names[i] = shaper_dscs[i].shaper_str;
+
+ nshape_type_names[NM_SND_NSHAPE] = NULL;
 
  return nshape_type_names;
 }
@@ -697,7 +698,7 @@ void sound_render_value
     )
 {
 #define FES         (fes)
- // D[TPDF(-1..1) = 1/6 == this maen SIGMA = 1/SQRT(6) / +- LSBit. We take it as
+ // D[TPDF(-1..1) = 1/6 == this mean SIGMA = 1/SQRT(6) / +- LSBit. We take it as
  // some "etalon" to other dithering distributions:: ==1/SQRT(6) / +- LSBit==
 
  double rnd_dth = 0.0, tr;
@@ -834,7 +835,7 @@ void sound_render_value
 
    case SND_RENDER_GAUSS:
     // we *DON'T NEED* here a "precision" Gaussian Distribution -- it can give unwanted
-    // big deviation in single sample; wa take a sum of 12 uniform randoms and
+    // big deviation in a single sample; wa take a sum of 12 uniform randoms and
     // normalize it to dispersion == 1. And take int as value for "1 bit" dithering
     rnd_dth  = mtrnd_gen_dsopen(&sr -> jrnd);                   // 1
     rnd_dth = FC(rnd_dth + mtrnd_gen_dsopen(&sr -> jrnd));      // 2
