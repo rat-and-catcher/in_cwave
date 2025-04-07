@@ -3,7 +3,7 @@
  *
  *      playback.c -- the main playback interface
  *
- * Copyright (c) 2010-2024, Rat and Catcher Technologies
+ * Copyright (c) 2010-2025, Rat and Catcher Technologies
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -80,6 +80,7 @@ static void config(HWND hwndParent)
  if(0 == InterlockedCompareExchange(&plg.is_gui_run, 1, 0))
  {
   plg.is_gui_run = 1;
+  (void)iwa_dexit();
   if(plg.is_gui_init)
   {
    amgui_setup_dialog(pb_iface.hDllInstance, hwndParent);
@@ -92,6 +93,7 @@ static void config(HWND hwndParent)
         , MB_OK | MB_ICONWARNING);
   }
 
+  (void)iwa_eexit();
   plg.is_gui_run = 0;
  }
 }
@@ -115,7 +117,9 @@ static void about(HWND hwndParent)
  // to avoid silly code analizies warning
  msg[sizeof(msg) / sizeof(TCHAR) - 1 > safez? safez : sizeof(msg) / sizeof(TCHAR) - 1] = _T('\0');
 
+ (void)iwa_dexit();
  MessageBox(hwndParent, msg, _T("About CWAVE quad modulator"), MB_OK | MB_ICONINFORMATION);
+ (void)iwa_eexit();
 }
 
 /* any one-time initialization goes here (configuration reading, etc)
@@ -136,7 +140,7 @@ static int init(void)
  aint_write(&(plg.seek_needed), -1);
  aint_write(&(plg.kill_decode_thread), 0);
  plg.thread_handle = NULL;
- plg.is_gui_init = gui_init();
+ plg.is_gui_init = gui_init(pb_iface.hMainWindow);
  plg.show_play = TRUE;
  plg.is_gui_run = 0;
  plg.last_file_name = NULL;
@@ -403,6 +407,7 @@ static int infoBox(const TCHAR *filename, HWND hwnd)
 
   plg.is_gui_run = 1;
 
+  (void)iwa_dexit();
   if(plg.show_play)
   {
    // infoBox parenting valid for the amgui_setup_dialog() only
@@ -441,6 +446,7 @@ static int infoBox(const TCHAR *filename, HWND hwnd)
    }
   }
 
+  (void)iwa_eexit();
   plg.is_gui_run = 0;
  }
  return 0;

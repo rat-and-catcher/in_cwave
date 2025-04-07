@@ -36,7 +36,7 @@
  */
 /* one-time module initialization
 */
-BOOL gui_init(void)
+BOOL gui_init(HWND wa_wnd)
 {
  INITCOMMONCONTROLSEX icc;
 
@@ -44,6 +44,8 @@ BOOL gui_init(void)
  icc.dwICC = ICC_BAR_CLASSES;
  if(InitCommonControlsEx(&icc))
  {
+  (void)iwa_init(wa_wnd);
+
   amgui_init();
   return TRUE;
  }

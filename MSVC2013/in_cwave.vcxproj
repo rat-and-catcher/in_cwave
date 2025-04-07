@@ -165,6 +165,7 @@
     <ClInclude Include="..\src\hblpf.h" />
     <ClInclude Include="..\src\hcontrols.h" />
     <ClInclude Include="..\src\in_cwave.h" />
+    <ClInclude Include="..\src\iwa_ipc.h" />
     <ClInclude Include="..\src\lpf_hilbert_quad.h" />
     <ClInclude Include="..\src\mersene_twister\mt_jrnd.h" />
     <ClInclude Include="..\src\rc_incres.h" />
@@ -183,6 +184,7 @@
     <ClCompile Include="..\src\hblpf.c" />
     <ClCompile Include="..\src\hcontrols.c" />
     <ClCompile Include="..\src\in_cwave.c" />
+    <ClCompile Include="..\src\iwa_ipc.c" />
     <ClCompile Include="..\src\mersene_twister\mt_jrnd.c" />
     <ClCompile Include="..\src\playback.c" />
     <ClCompile Include="..\src\lpf_hilbert_quad.c" />

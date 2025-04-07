@@ -3,7 +3,7 @@
  *
  *      sound_render.c -- all about convertig double to the integer sound samples
  *
- * Copyright (c) 2010-2024, Rat and Catcher Technologies
+ * Copyright (c) 2010-2025, Rat and Catcher Technologies
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without

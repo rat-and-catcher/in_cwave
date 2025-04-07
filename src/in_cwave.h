@@ -3,7 +3,7 @@
  *
  *      in_cwave.h -- input / quad modulation plug-in -- common declarations
  *
- * Copyright (c) 2010-2024, Rat and Catcher Technologies
+ * Copyright (c) 2010-2025, Rat and Catcher Technologies
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -88,6 +88,7 @@
 #include "crc32.h"
 #include "lpf_hilbert_quad.h"
 #include "sound_render.h"
+#include "iwa_ipc.h"
 
 #include "../Winamp/in2.h"                      // all of in_ plugin
 #include "../Winamp/OUT.H"                      // internal WinAmp renderer API (opt.)
@@ -125,7 +126,9 @@
 #define MAX_CONFIG_ARGS (MAX_CONFIG_LINE - MAX_CONFIG_KEYW)
 
 // post this to the main window at end of file (after playback as stopped)
+#if !defined(WM_WA_MPEG_EOF)                    /* some SDK files define it, some not */
 #define WM_WA_MPEG_EOF  (WM_USER + 2)
+#endif
 
 #define NS_PERTIME      (576)                   /* samples per time to process */
 
@@ -682,7 +685,7 @@ void xwave_unpack_csample(double *lI, double *lQ, double *rI, double *rQ,
  */
 /* one-time module initialization
 */
-BOOL gui_init(void);
+BOOL gui_init(HWND wa_wnd);
 /* module cleanup
 */
 void gui_cleanup(void);

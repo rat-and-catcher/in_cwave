@@ -128,6 +128,10 @@
 		<Unit filename="../src/in_cwave.rc">
 			<Option compilerVar="WINDRES" />
 		</Unit>
+		<Unit filename="../src/iwa_ipc.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="../src/iwa_ipc.h" />
 		<Unit filename="../src/lpf_hilbert_quad.c">
 			<Option compilerVar="CC" />
 		</Unit>
