@@ -38,7 +38,6 @@
 
 // This is for gcc only
 #if defined(__GNUC__)
-
 // omited parts Win32 SDK
 
 // @winbase.h::
@@ -51,11 +50,18 @@ WINBASEAPI LONGLONG WINAPI InterlockedCompareExchange64(
     );
 
 // @tchar.h::
+#if defined(_UNICODE)
 typedef wint_t _TINT;
+#else
+typedef int _TINT;
+#endif
+
+#if !defined(_istblank)
 #if defined(UNICODE)
 #define _istblank   iswblank
 #else
 #define _istblank   isblank
+#endif
 #endif
 
 // @ShlObj.h::

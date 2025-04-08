@@ -43,12 +43,27 @@
 #endif
 
 #include <windows.h>
+#include <tchar.h>                              // for ./compatibility/compat_...h
 #include <stdlib.h>
 #include <string.h>
+#include <stdint.h>
 
 #include "compatibility/compat_win32_gcc.h"
 
+#if defined(__GNUC__)
+#pragma GCC diagnostic push
+// -- DANGER -- DANGER -- DANGER -- DANGER -- DANGER --
+// while "../Winamp/wa_ipc.h" used MS VC #pragmas, the GCC generatad
+// code may be wrong!
+#pragma GCC diagnostic ignored "-Wunknown-pragmas"
+#pragma GCC diagnostic ignored "-Wcomment"
+#endif
+
 #include "../Winamp/wa_ipc.h"                       // any plugin
+
+#if defined(__GNUC__)
+#pragma GCC diagnostic pop
+#endif
 
 #if defined(__cplusplus)
 extern "C" {

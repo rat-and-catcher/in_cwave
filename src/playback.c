@@ -304,11 +304,17 @@ static void stop(void)
 
 #if defined(_MSC_VER)
 // just for Microsotf static code analizer
+#pragma warning(push)
 #pragma warning(suppress: 6258)
 #endif
 
    // TODO:: this seems need for complete removal
    TerminateThread(plg.thread_handle, 0);
+
+#if defined(_MSC_VER)
+// just for Microsotf static code analizer
+#pragma warning(pop)
+#endif
   }
   CloseHandle(plg.thread_handle);
   plg.thread_handle = NULL;

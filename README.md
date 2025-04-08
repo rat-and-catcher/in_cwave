@@ -32,6 +32,10 @@ with our Win32 SDK patches, which we have made for older versions. At the
 time we don't plan to fix this - for some reason we still have use old
 version, which need our compatibility patches.
 
+**ADDED** (8-Apr-25): _It seems we lost MinGW compatibility or somewhat about.
+And, probably, can't maintain it further. MinGW compilation seems possible,
+but looks more and more dangerous, especially with new Winamp SDK files._
+
 **NOTE** From V02.02.03 we provide different build configurations for
 current Windows (Vista+) and Windows XP for both supported development
 tools -- Visual Studio 2013 (VS2013 only, XP support removed for VS2017+)
