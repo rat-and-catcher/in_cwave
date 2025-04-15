@@ -56,9 +56,10 @@ in_cwave V1.*.* (Unpublic!) Versions History -- see OLD_NEWS
         some palyback thread fixes. Renew ./Winamp -- Winamp SDK.
 14-Nov-2024 -- V2.4.3 -- Fix Playback API encoding Version for new SDK (very tiny and hard
         bug).
-08-Apr-2025 -- V2.4.4 -- Minor GUI control logic fixes, add string to sound rendering
+15-Apr-2025 -- V2.4.4 -- Minor GUI control logic fixes, add string to sound rendering
         descriprors. Return "" vs "-EMPTY-", if last file name is unknown.
         File infoBox() parenting set for amgui_setup_dialog() only.
         Integer atomic interthreads operations in initial Winamp SDK in-plugin skeliton
-        (very old code). Lock Winamp from exit while working top-level dialogs
-        shown (DOES NOT WORK ON XMPlay). Seems, we lost MinGW compatibility.
+        (very old code) + some Pharisaical atomic addons. Lock Winamp from exit while
+        working top-level dialogs shown (DOES NOT WORK ON XMPlay). Seems, we lost MinGW
+        compatibility.

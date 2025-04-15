@@ -201,10 +201,12 @@
 
 // partial DSP-processing types
 // ------- -------------- -----
+// A_INT notes: (1) BOOL does not need to ba atomic in our context; (2) "volatile int" vs A_INT
+//      mean, that it protected by common synch logic and does not need atomic operations
 // "Master" output
 typedef struct tagCMAKE_MASTER                  // one channel specific for master
 {
- volatile int tout;                             // type of the output [S_RE/S_IM/S_SUM_REIM]
+ A_INT tout;                                    // type of the output [S_RE/S_IM/S_SUM_REIM]
 } CMAKE_MASTER;
 
 typedef struct tagMAKE_MASTER                   // full "master" type
@@ -224,7 +226,7 @@ typedef struct tagMAKE_SHIFT                    // full "shift" type
 {
  CMAKE_SHIFT le;                                // left output
  CMAKE_SHIFT ri;                                // right output
- volatile int n_out;                            // output plug [1..N_INPUTS-1]
+ volatile int n_out;                            // output plug [1..N_INPUTS-1] (change under CS)
  int lock_shift;                                // 1 == L/R control locked
  int sign_lock_shift;                           // 1 == L/R controls "mirrored"
 } MAKE_SHIFT;
@@ -243,7 +245,7 @@ typedef struct tagMAKE_PM                       // full "PM" type
 {
  CMAKE_PM le;                                   // left output
  CMAKE_PM ri;                                   // right output
- volatile int n_out;                            // output plug [1..N_INPUTS-1]
+ volatile int n_out;                            // output plug [1..N_INPUTS-1] (change under CS)
  int lock_freq;                                 // 1 == L/R control locked
  int lock_phase;                                // 1 == L/R control locked
  int lock_level;                                // 1 == L/R control locked
@@ -253,7 +255,7 @@ typedef struct tagMAKE_PM                       // full "PM" type
 // "Mix" output
 typedef struct tagMAKE_MIX
 {
- volatile int n_out;                            // output plug [1..N_INPUTS-1]
+ volatile int n_out;                            // output plug [1..N_INPUTS-1] (change under CS)
 } MAKE_MIX;
 
 /* all types of outputs
@@ -275,9 +277,9 @@ typedef struct tagNODE_DSP
  volatile double l_gain;                        // left gain [0..MAX_GAIN]
  volatile double r_gain;                        // right gain [0..MAX_GAIN]
  char inputs[N_INPUTS];                         // inputs to mix (bool)
- int xch_mode;                                  // channels exchange mode XCH_xxx
- int l_iq_invert;                               // left ch. inversion of spectrum (I/Q swap), bool
- int r_iq_invert;                               // right ch. inversion of spectrum (I/Q swap), bool
+ A_INT xch_mode;                                // channels exchange mode XCH_xxx
+ volatile int l_iq_invert;                      // left ch. inversion of spectrum (I/Q swap), bool
+ volatile int r_iq_invert;                      // right ch. inversion of spectrum (I/Q swap), bool
  int mode;                                      // the type of MAKE_DSP
  MAKE_DSP dsp;                                  // DSP specific data according mode
  TCHAR name[SIZE_DSP_NAME];                     // readable name of DSP node

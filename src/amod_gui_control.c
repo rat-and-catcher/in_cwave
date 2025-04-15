@@ -701,7 +701,7 @@ static void UpdateControls(HWND hwnd, AMOD_GUI_CONTEXT *agc)
  EnDis(hwnd, IDB_GAINR, !agc -> lCur -> lock_gain);
 
  // channels exchange
- CheckRadioButton(hwnd, IDC_XCH_LR, IDC_XCH_MIX, radio_xch[agc -> lCur -> xch_mode]);
+ CheckRadioButton(hwnd, IDC_XCH_LR, IDC_XCH_MIX, radio_xch[aint_read(&(agc -> lCur -> xch_mode))]);
 
  // DSP-specific
  switch(agc -> lCur -> mode)
@@ -715,9 +715,9 @@ static void UpdateControls(HWND hwnd, AMOD_GUI_CONTEXT *agc)
    // change the rules, the next buttons stay not updated.
    // FIXME for more robast code
    CheckRadioButton(hwnd, IDC_ML_ADD_REIM, IDC_ML_IM,
-        radio_lmaster[agc -> lCur -> dsp.mk_master.le.tout]);
+        radio_lmaster[aint_read(&(agc -> lCur -> dsp.mk_master.le.tout))]);
    CheckRadioButton(hwnd, IDC_MR_ADD_REIM, IDC_MR_IM,
-        radio_rmaster[agc -> lCur -> dsp.mk_master.ri.tout]);
+        radio_rmaster[aint_read(&(agc -> lCur -> dsp.mk_master.ri.tout))]);
    break;
 
   case MODE_SHIFT:
@@ -1010,7 +1010,11 @@ static BOOL Setup_Dlg_OnInitDialog(HWND hwnd, HWND hwndFocus, LPARAM lParam)
  // window title with version
  SetWindowText(hwnd,
     _T("Advanced CWAVE Quad Modulator, version ") _T(VERSION_IN_CWAVE)
-    _T(" (") _T(__DATE__) _T(" / ") _T(__TIME__) _T(")")
+    _T(" (") _T(__DATE__)
+#if defined(_DEBUG)
+    _T(" / ") _T(__TIME__)
+#endif
+    _T(")")
     );
 
  // DSP List Box
@@ -1426,56 +1430,56 @@ static void Setup_Dlg_OnCommand(HWND hwnd, int id, HWND hwndCtl, UINT codeNotify
 
   // Channels exchange
   case IDC_XCH_LR:
-   agc -> lCur -> xch_mode = XCH_NORMAL;
+   aint_write(&(agc -> lCur -> xch_mode), XCH_NORMAL);
    break;
 
   case IDC_XCH_RL:
-   agc -> lCur -> xch_mode = XCH_SWAP;
+   aint_write(&(agc -> lCur -> xch_mode), XCH_SWAP);
    break;
 
   case IDC_XCH_LL:
-   agc -> lCur -> xch_mode = XCH_LEFTONLY;
+   aint_write(&(agc -> lCur -> xch_mode), XCH_LEFTONLY);
    break;
 
   case IDC_XCH_RR:
-   agc -> lCur -> xch_mode = XCH_RIGHTONLY;
+   aint_write(&(agc -> lCur -> xch_mode), XCH_RIGHTONLY);
    break;
 
   case IDC_XCH_MIX:
-   agc -> lCur -> xch_mode = XCH_MIXLR;
+   aint_write(&(agc -> lCur -> xch_mode), XCH_MIXLR);
    break;
 
   // Master Real/Imaginary/Middle
   case IDC_ML_ADD_REIM:                 // left = (Re + Im) / 2
-   agc -> lHead -> dsp.mk_master.le.tout = S_ADD_REIM;
+   aint_write(&(agc -> lHead -> dsp.mk_master.le.tout), S_ADD_REIM);
    break;
 
   case IDC_ML_SUB_REIM:                 // left = (Re - Im) / 2
-   agc -> lHead -> dsp.mk_master.le.tout = S_SUB_REIM;
+   aint_write(&(agc -> lHead -> dsp.mk_master.le.tout), S_SUB_REIM);
    break;
 
   case IDC_ML_RE:                       // left = real
-   agc -> lHead -> dsp.mk_master.le.tout = S_RE;
+   aint_write(&(agc -> lHead -> dsp.mk_master.le.tout), S_RE);
    break;
 
   case IDC_ML_IM:                       // left = imaginary
-   agc -> lHead -> dsp.mk_master.le.tout = S_IM;
+   aint_write(&(agc -> lHead -> dsp.mk_master.le.tout), S_IM);
    break;
 
   case IDC_MR_ADD_REIM:                 // right = (Re + Im) / 2
-   agc -> lHead -> dsp.mk_master.ri.tout = S_ADD_REIM;
+   aint_write(&(agc -> lHead -> dsp.mk_master.ri.tout), S_ADD_REIM);
    break;
 
   case IDC_MR_SUB_REIM:                 // right = (Re - Im) / 2
-   agc -> lHead -> dsp.mk_master.ri.tout = S_SUB_REIM;
+   aint_write(&(agc -> lHead -> dsp.mk_master.ri.tout), S_SUB_REIM);
    break;
 
   case IDC_MR_RE:                       // right = real
-   agc -> lHead -> dsp.mk_master.ri.tout = S_RE;
+   aint_write(&(agc -> lHead -> dsp.mk_master.ri.tout), S_RE);
    break;
 
   case IDC_MR_IM:                       // right = imaginary
-   agc -> lHead -> dsp.mk_master.ri.tout = S_IM;
+   aint_write(&(agc -> lHead -> dsp.mk_master.ri.tout), S_IM);
    break;
 
   // clear frame counters

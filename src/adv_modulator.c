@@ -484,7 +484,7 @@ double amod_true_freq(double raw_freq)
 */
 static __inline double dsp_master(CMAKE_MASTER *master, CCOMPLEX *input)
 {
- switch(master -> tout)
+ switch(aint_read(&(master -> tout)))
  {
   case S_RE:
    return input -> re;
@@ -666,7 +666,7 @@ int amod_process_samples(char *buf, MOD_CONTEXT *mc)
    }
 
    // channels exchange
-   switch(cur -> xch_mode)
+   switch(aint_read(&(cur -> xch_mode)))
    {
     case XCH_SWAP:                                      // swap left and right
      xt = data.le.re;
