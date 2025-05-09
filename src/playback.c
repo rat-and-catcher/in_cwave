@@ -566,12 +566,15 @@ void setShowPlay(BOOL nsp)
 */
 static DWORD WINAPI DecodeThread(LPVOID context)
 {
- PLUGIN_CONTEXT *pc = (PLUGIN_CONTEXT *)context;
- MOD_CONTEXT *mc = &(the.mc_playback);
+ PLUGIN_CONTEXT *const pc = (PLUGIN_CONTEXT *)context;
+ MOD_CONTEXT *const mc = &(the.mc_playback);
  V_INT seek_needed = -1;
 
+ // NULL under WinAmp, valid ptr if not
+ char *const tail = iwa_version(NULL, NULL)? pc -> play_sample_buffer : NULL;
+
  int done = 0;                          // set to TRUE if decoding has finished
- unsigned out_size = sound_render_size(&mc -> sr_left) + sound_render_size(&mc -> sr_right);
+ const unsigned out_size = sound_render_size(&mc -> sr_left) + sound_render_size(&mc -> sr_right);
 
  while (!aint_read(&(pc -> kill_decode_thread)))
  {
@@ -619,7 +622,7 @@ static DWORD WINAPI DecodeThread(LPVOID context)
      done = 1;
      // according to WinAmp src@github, we should to do this here:
      // ..but this sometimes broke XMPlay playback! So, stay without NULL as buffer
-     pb_iface.outMod -> Write(pc -> play_sample_buffer, 0);
+     pb_iface.outMod -> Write(tail /*pc -> play_sample_buffer or NULL*/, 0);
     }
     else                                // we got samples!
     {
