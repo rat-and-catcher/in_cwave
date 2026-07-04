@@ -468,7 +468,7 @@ static BOOL handle_bool(TCHAR **buf, volatile BOOL *pval, BOOL toWrite)
 
 /* handle int value
 */
-BOOL handle_int(TCHAR **buf, volatile int *pval, BOOL toWrite)
+static BOOL handle_int(TCHAR **buf, volatile int *pval, BOOL toWrite)
 {
  if(toWrite)
  {
@@ -490,7 +490,7 @@ BOOL handle_int(TCHAR **buf, volatile int *pval, BOOL toWrite)
 
 /* handle unsigned value
 */
-BOOL handle_unsigned(TCHAR **buf, volatile unsigned *pval, BOOL toWrite)
+static BOOL handle_unsigned(TCHAR **buf, volatile unsigned *pval, BOOL toWrite)
 {
  if(toWrite)
  {
@@ -512,7 +512,7 @@ BOOL handle_unsigned(TCHAR **buf, volatile unsigned *pval, BOOL toWrite)
 
 /* handle double-as-double value
 */
-BOOL handle_double(TCHAR **buf, volatile double *pval, BOOL toWrite)
+static BOOL handle_double(TCHAR **buf, volatile double *pval, BOOL toWrite)
 {
  if(toWrite)
  {
@@ -544,7 +544,7 @@ BOOL handle_double(TCHAR **buf, volatile double *pval, BOOL toWrite)
 
 /* handle double-as-64-bits-binary value
 */
-BOOL handle_double_bin(TCHAR **buf, volatile double *pval, BOOL toWrite)
+static BOOL handle_double_bin(TCHAR **buf, volatile double *pval, BOOL toWrite)
 {
  if(toWrite)
  {
@@ -776,7 +776,7 @@ static BOOL handle_node_dsp(FILE *fp, TCHAR **buf,
 
 /* reset the config to default (for internal config needs only!)
 */
-void reset_config(BOOL is_empty)
+static void reset_config(BOOL is_empty)
 {
  const CONFIG *cfg_node;
 
