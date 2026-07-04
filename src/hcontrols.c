@@ -92,13 +92,19 @@ LONG TB_GetTrack(HWND hWnd, int id)
 */
 void TXT_PrintTxt(HWND hWnd, int id, const TCHAR *fmt, ...)
 {
- TCHAR buf[MAX_INPUT_LEN+1];    // enough?!
+ TCHAR buf[MAX_INPUT_LEN + 1];  // enough?!
  va_list args;
+ int nch = -1;
+
  va_start(args, fmt);
 
- if(-1 == _vsntprintf(buf, MAX_INPUT_LEN, fmt, args))
- buf[MAX_INPUT_LEN] = _T('\0');
+ memset(buf, 0, sizeof(buf));
+ nch = _vsntprintf(buf, MAX_INPUT_LEN, fmt, args);
+ if(-1 == nch || 1 /*NB*/)
+  buf[MAX_INPUT_LEN] = _T('\0');
+
  SetWindowText(GetDlgItem(hWnd, id), buf);
+
  va_end(args);
 }
 
@@ -210,10 +216,13 @@ void LB_Printf(HWND hWnd, int id, const TCHAR *fmt, ...)
  int index;
  HWND hwndL;
  TCHAR *tmpmsg = cmalloc((MAX_PRINT_LEN + 1) * sizeof(TCHAR));  // enough??
+ int nch = -1;
 
  va_start(va_params, fmt);
 
- if(-1 == _vsntprintf(tmpmsg, MAX_PRINT_LEN, fmt, va_params))
+ memset(tmpmsg, 0, (MAX_PRINT_LEN + 1) * sizeof(TCHAR));
+ nch = _vsntprintf(tmpmsg, MAX_PRINT_LEN, fmt, va_params);
+ if(-1 == nch || 1 /*NB*/)
   tmpmsg[MAX_PRINT_LEN] = _T('\0');
 
  hwndL = GetDlgItem(hWnd, id);
@@ -224,6 +233,7 @@ void LB_Printf(HWND hWnd, int id, const TCHAR *fmt, ...)
 
   ListBox_SetCurSel(hwndL, index);
  }
+
  va_end(va_params);
  free(tmpmsg);
 }
